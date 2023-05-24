@@ -5,18 +5,21 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"time"
 
 	"github.com/nikolalohinski/free-go/types"
 )
 
 type Client interface {
 	APIVersion() (types.APIVersion, error)
+	Login() (types.Permissions, error)
 }
 
 type Config struct {
 	Endpoint string
 	Version  string
-	Token    string
+	APIKey   string
+	AppID    string
 }
 
 func New(config Config, httpClient ...*http.Client) (Client, error) {
@@ -35,13 +38,17 @@ func New(config Config, httpClient ...*http.Client) (Client, error) {
 	}
 	return &client{
 		httpClient: httpClient[0],
-		token:      config.Token,
+		apiKey:     config.APIKey,
+		appID:      config.AppID,
 		base:       fmt.Sprintf("%s/api/%s", config.Endpoint, config.Version),
 	}, nil
 }
 
 type client struct {
-	httpClient *http.Client
-	token      string
-	base       string
+	httpClient      *http.Client
+	apiKey          string
+	appID           string
+	session_token   string
+	session_expires time.Time
+	base            string
 }
