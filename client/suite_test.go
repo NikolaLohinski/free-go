@@ -11,3 +11,10 @@ func TestClient(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Client suite")
 }
+
+func Must(r interface{}, err error) interface{} {
+	if err != nil {
+		panic(err)
+	}
+	return r
+}

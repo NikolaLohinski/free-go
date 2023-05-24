@@ -1,6 +1,7 @@
 package client
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -12,15 +13,31 @@ type Client interface {
 	APIVersion() (types.APIVersion, error)
 }
 
-func New(endpoint string, version string, token string) Client {
-	if match, err := regexp.MatchString("^https?://.*", endpoint); !match || err != nil {
-		endpoint = fmt.Sprintf("http://%s", endpoint)
+type Config struct {
+	Endpoint string
+	Version  string
+	Token    string
+}
+
+func New(config Config, httpClient ...*http.Client) (Client, error) {
+	match, err := regexp.MatchString("^https?://.*", config.Endpoint)
+	if err != nil {
+		return nil, fmt.Errorf("failed to match endpoint string against regex: %s", err)
+	}
+	if !match {
+		config.Endpoint = fmt.Sprintf("http://%s", config.Endpoint)
+	}
+	if httpClient == nil {
+		httpClient = []*http.Client{http.DefaultClient}
+	}
+	if len(httpClient) > 1 {
+		return nil, errors.New("only one http client can be provided")
 	}
 	return &client{
-		httpClient: &http.Client{},
-		token:      token,
-		base:       fmt.Sprintf("%s/api/%s", endpoint, version),
-	}
+		httpClient: httpClient[0],
+		token:      config.Token,
+		base:       fmt.Sprintf("%s/api/%s", config.Endpoint, config.Version),
+	}, nil
 }
 
 type client struct {

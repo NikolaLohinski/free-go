@@ -30,7 +30,11 @@ var _ = Describe("APIVersion", func() {
 		*endpoint = server.Addr()
 	})
 	JustBeforeEach(func() {
-		*apiVersion, *returnedErr = client.New(*endpoint, version, token).APIVersion()
+		*apiVersion, *returnedErr = Must(client.New(client.Config{
+			Endpoint: *endpoint,
+			Version:  version,
+			Token:    token,
+		})).(client.Client).APIVersion()
 	})
 	AfterEach(func() {
 		server.Close()
