@@ -33,7 +33,7 @@ var _ = Describe("APIVersion", func() {
 		*apiVersion, *returnedErr = Must(client.New(client.Config{
 			Endpoint: *endpoint,
 			Version:  version,
-			APIKey:   token,
+			Token:    token,
 		})).(client.Client).APIVersion()
 	})
 	AfterEach(func() {

@@ -18,7 +18,7 @@ type Client interface {
 type Config struct {
 	Endpoint string
 	Version  string
-	APIKey   string
+	Token    string
 	AppID    string
 }
 
@@ -37,20 +37,20 @@ func New(config Config, httpClient ...*http.Client) (Client, error) {
 		return nil, errors.New("only one http client can be provided")
 	}
 	return &client{
-		httpClient: httpClient[0],
-		apiKey:     config.APIKey,
-		appID:      config.AppID,
-		base:       fmt.Sprintf("%s/api/%s", config.Endpoint, config.Version),
+		httpClient:   httpClient[0],
+		privateToken: config.Token,
+		appID:        config.AppID,
+		base:         fmt.Sprintf("%s/api/%s", config.Endpoint, config.Version),
 	}, nil
 }
 
 type client struct {
-	httpClient      *http.Client
-	apiKey          string
-	appID           string
-	session_token   string
-	session_expires time.Time
-	base            string
+	httpClient     *http.Client
+	privateToken   string
+	appID          string
+	sessionToken   string
+	sessionExpires time.Time
+	base           string
 }
 
 type genericResponse struct {

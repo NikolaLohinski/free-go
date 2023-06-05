@@ -18,6 +18,26 @@ const (
 	sessionTTL = time.Minute * 30 // Fixed by the server
 )
 
+type loginResponse struct {
+	LoggedIn     bool   `json:"logged_in"`
+	Challenge    string `json:"challenge"`
+	PasswordSalt string `json:"password_salt"`
+	PasswordSet  bool   `json:"password_set"`
+}
+
+type sessionsRequest struct {
+	AppID    string `json:"app_id"`
+	Password string `json:"password"`
+}
+
+type sessionResponse struct {
+	SessionToken string            `json:"session_token,omitempty"`
+	PasswordSet  bool              `json:"password_set,omitempty"`
+	Permissions  types.Permissions `json:"permissions,omitempty"`
+	Challenge    string            `json:"challenge"`
+	PasswordSalt string            `json:"password_salt"`
+}
+
 func (c *client) Login() (permissions types.Permissions, err error) {
 	loginHTTPResponse, err := c.httpClient.Get(fmt.Sprintf("%s/login", c.base))
 	if err != nil {
@@ -45,7 +65,7 @@ func (c *client) Login() (permissions types.Permissions, err error) {
 		return
 	}
 
-	loginResult := new(types.LoginResponse)
+	loginResult := new(loginResponse)
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		TagName: "json",
 		Result:  loginResult,
@@ -60,9 +80,9 @@ func (c *client) Login() (permissions types.Permissions, err error) {
 		return
 	}
 
-	hash := hmac.New(sha1.New, []byte(c.apiKey))
+	hash := hmac.New(sha1.New, []byte(c.privateToken))
 	hash.Write([]byte(loginResult.Challenge))
-	sessionRequest := types.SessionsRequest{
+	sessionRequest := sessionsRequest{
 		AppID:    c.appID,
 		Password: fmt.Sprintf("%x", hash.Sum(nil)),
 	}
@@ -94,7 +114,7 @@ func (c *client) Login() (permissions types.Permissions, err error) {
 		err = fmt.Errorf("failed with error code '%s': %s", response.ErrorCode, response.Message)
 		return
 	}
-	sessionResult := new(types.SessionResponse)
+	sessionResult := new(sessionResponse)
 	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		TagName: "json",
 		Result:  sessionResult,
@@ -108,8 +128,8 @@ func (c *client) Login() (permissions types.Permissions, err error) {
 		return
 	}
 
-	c.session_token = sessionResult.SessionToken
-	c.session_expires = time.Now().Add(sessionTTL)
+	c.sessionToken = sessionResult.SessionToken
+	c.sessionExpires = time.Now().Add(sessionTTL)
 
 	return sessionResult.Permissions, nil
 }

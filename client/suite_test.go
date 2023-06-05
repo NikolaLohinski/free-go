@@ -9,7 +9,7 @@ import (
 
 func TestClient(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Client suite")
+	RunSpecs(t, "unit-tests")
 }
 
 func Must(r interface{}, err error) interface{} {

@@ -34,7 +34,7 @@ var _ = Describe("Login", func() {
 		*permissions, *returnedErr = Must(client.New(client.Config{
 			Endpoint: *endpoint,
 			Version:  version,
-			APIKey:   token,
+			Token:    token,
 			AppID:    appID,
 		})).(client.Client).Login()
 	})
