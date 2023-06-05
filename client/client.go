@@ -52,3 +52,11 @@ type client struct {
 	session_expires time.Time
 	base            string
 }
+
+type genericResponse struct {
+	UID       string      `json:"uid,omitempty"`
+	Message   string      `json:"msg,omitempty"`
+	ErrorCode string      `json:"error_code,omitempty"`
+	Success   bool        `json:"success"`
+	Result    interface{} `json:"result"`
+}

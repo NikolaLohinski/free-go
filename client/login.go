@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/mitchellh/mapstructure"
 	"github.com/nikolalohinski/free-go/types"
 )
 
@@ -34,18 +35,33 @@ func (c *client) Login() (permissions types.Permissions, err error) {
 		err = fmt.Errorf("failed with status '%d': server returned '%s'", loginHTTPResponse.StatusCode, string(body))
 		return
 	}
-	loginResponse := types.LoginResponse{}
-	if err = json.Unmarshal(body, &loginResponse); err != nil {
+	response := new(genericResponse)
+	if err = json.Unmarshal(body, response); err != nil {
 		err = fmt.Errorf("failed to unmarshal response body '%s': %s", string(body), err)
 		return
 	}
-	if !loginResponse.Success {
-		err = fmt.Errorf("failed with error code '%s': %s", loginResponse.ErrorCode, loginResponse.Message)
+	if !response.Success {
+		err = fmt.Errorf("failed with error code '%s': %s", response.ErrorCode, response.Message)
+		return
+	}
+
+	loginResult := new(types.LoginResponse)
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		TagName: "json",
+		Result:  loginResult,
+	})
+	if err != nil {
+		err = fmt.Errorf("failed to instantiate a map structure decoder: %s", err)
+		return
+	}
+
+	if err = decoder.Decode(response.Result); err != nil {
+		err = fmt.Errorf("failed to decode response result to a login result: %s", err)
 		return
 	}
 
 	hash := hmac.New(sha1.New, []byte(c.apiKey))
-	hash.Write([]byte(loginResponse.Result.Challenge))
+	hash.Write([]byte(loginResult.Challenge))
 	sessionRequest := types.SessionsRequest{
 		AppID:    c.appID,
 		Password: fmt.Sprintf("%x", hash.Sum(nil)),
@@ -69,18 +85,31 @@ func (c *client) Login() (permissions types.Permissions, err error) {
 		return
 	}
 
-	sessionResponse := types.SessionResponse{}
-	if err = json.Unmarshal(body, &sessionResponse); err != nil {
+	response = new(genericResponse)
+	if err = json.Unmarshal(body, response); err != nil {
 		err = fmt.Errorf("failed to unmarshal response body '%s': %s", string(body), err)
 		return
 	}
-	if !sessionResponse.Success {
-		err = fmt.Errorf("failed with error code '%s': %s", sessionResponse.ErrorCode, sessionResponse.Message)
+	if !response.Success {
+		err = fmt.Errorf("failed with error code '%s': %s", response.ErrorCode, response.Message)
+		return
+	}
+	sessionResult := new(types.SessionResponse)
+	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		TagName: "json",
+		Result:  sessionResult,
+	})
+	if err != nil {
+		err = fmt.Errorf("failed to instantiate a map structure decoder: %s", err)
+		return
+	}
+	if err = decoder.Decode(response.Result); err != nil {
+		err = fmt.Errorf("failed to decode response result to a login result: %s", err)
 		return
 	}
 
-	c.session_token = sessionResponse.Result.SessionToken
+	c.session_token = sessionResult.SessionToken
 	c.session_expires = time.Now().Add(sessionTTL)
 
-	return sessionResponse.Result.Permissions, nil
+	return sessionResult.Permissions, nil
 }
