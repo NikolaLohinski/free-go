@@ -18,7 +18,7 @@ const (
 	sessionTTL = time.Minute * 30 // Fixed by the server
 )
 
-type loginResponse struct {
+type loginChallenge struct {
 	LoggedIn     bool   `json:"logged_in"`
 	Challenge    string `json:"challenge"`
 	PasswordSalt string `json:"password_salt"`
@@ -38,50 +38,64 @@ type sessionResponse struct {
 	PasswordSalt string            `json:"password_salt"`
 }
 
-func (c *client) Login() (permissions types.Permissions, err error) {
-	loginHTTPResponse, err := c.httpClient.Get(fmt.Sprintf("%s/login", c.base))
+func (c *client) Login() (types.Permissions, error) {
+	challenge, err := c.getLoginChallenge()
 	if err != nil {
-		err = fmt.Errorf("failed to perform request: %s", err)
-		return
+		return nil, fmt.Errorf("failed to get login challenge: %s", err)
 	}
 
-	body, err := ioutil.ReadAll(loginHTTPResponse.Body)
+	session, err := c.getSession(challenge.Challenge)
 	if err != nil {
-		err = fmt.Errorf("failed to read response body: %s", err)
-		return
+		return nil, fmt.Errorf("failed to get a session: %s", err)
 	}
 
-	if loginHTTPResponse.StatusCode >= http.StatusInternalServerError {
-		err = fmt.Errorf("failed with status '%d': server returned '%s'", loginHTTPResponse.StatusCode, string(body))
-		return
+	c.sessionToken = session.SessionToken
+	c.sessionExpires = time.Now().Add(sessionTTL)
+
+	return session.Permissions, nil
+}
+
+func (c *client) getLoginChallenge() (*loginChallenge, error) {
+	httpResponse, err := c.httpClient.Get(fmt.Sprintf("%s/login", c.base))
+	if err != nil {
+		return nil, fmt.Errorf("failed to perform request: %s", err)
+	}
+
+	body, err := ioutil.ReadAll(httpResponse.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %s", err)
+	}
+
+	if httpResponse.StatusCode >= http.StatusInternalServerError {
+		return nil, fmt.Errorf("failed with status '%d': server returned '%s'", httpResponse.StatusCode, string(body))
 	}
 	response := new(genericResponse)
 	if err = json.Unmarshal(body, response); err != nil {
-		err = fmt.Errorf("failed to unmarshal response body '%s': %s", string(body), err)
-		return
+		return nil, fmt.Errorf("failed to unmarshal response body '%s': %s", string(body), err)
 	}
 	if !response.Success {
-		err = fmt.Errorf("failed with error code '%s': %s", response.ErrorCode, response.Message)
-		return
+		return nil, fmt.Errorf("failed with error code '%s': %s", response.ErrorCode, response.Message)
 	}
 
-	loginResult := new(loginResponse)
+	result := new(loginChallenge)
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		TagName: "json",
-		Result:  loginResult,
+		Result:  result,
 	})
 	if err != nil {
-		err = fmt.Errorf("failed to instantiate a map structure decoder: %s", err)
-		return
+		return nil, fmt.Errorf("failed to instantiate a map structure decoder: %s", err)
 	}
 
 	if err = decoder.Decode(response.Result); err != nil {
-		err = fmt.Errorf("failed to decode response result to a login result: %s", err)
-		return
+		return nil, fmt.Errorf("failed to decode response result to a login result: %s", err)
 	}
 
+	return result, nil
+}
+
+func (c *client) getSession(challenge string) (*sessionResponse, error) {
 	hash := hmac.New(sha1.New, []byte(c.privateToken))
-	hash.Write([]byte(loginResult.Challenge))
+	hash.Write([]byte(challenge))
 	sessionRequest := sessionsRequest{
 		AppID:    c.appID,
 		Password: fmt.Sprintf("%x", hash.Sum(nil)),
@@ -89,47 +103,38 @@ func (c *client) Login() (permissions types.Permissions, err error) {
 	sessionRequestBody := new(bytes.Buffer)
 	json.NewEncoder(sessionRequestBody).Encode(sessionRequest)
 
-	sessionHTTPResponse, err := c.httpClient.Post(fmt.Sprintf("%s/login/session", c.base), "application/json", sessionRequestBody)
+	httpResponse, err := c.httpClient.Post(fmt.Sprintf("%s/login/session", c.base), "application/json", sessionRequestBody)
 	if err != nil {
-		err = fmt.Errorf("failed to perform request: %s", err)
-		return
+		return nil, fmt.Errorf("failed to perform request: %s", err)
 	}
-	body, err = ioutil.ReadAll(sessionHTTPResponse.Body)
+	body, err := ioutil.ReadAll(httpResponse.Body)
 	if err != nil {
-		err = fmt.Errorf("failed to read response body: %s", err)
-		return
+		return nil, fmt.Errorf("failed to read response body: %s", err)
 	}
 
-	if sessionHTTPResponse.StatusCode >= http.StatusInternalServerError {
-		err = fmt.Errorf("failed with status '%d': server returned '%s'", sessionHTTPResponse.StatusCode, string(body))
-		return
+	if httpResponse.StatusCode >= http.StatusInternalServerError {
+		return nil, fmt.Errorf("failed with status '%d': server returned '%s'", httpResponse.StatusCode, string(body))
 	}
 
-	response = new(genericResponse)
+	response := new(genericResponse)
 	if err = json.Unmarshal(body, response); err != nil {
-		err = fmt.Errorf("failed to unmarshal response body '%s': %s", string(body), err)
-		return
+		return nil, fmt.Errorf("failed to unmarshal response body '%s': %s", string(body), err)
 	}
 	if !response.Success {
-		err = fmt.Errorf("failed with error code '%s': %s", response.ErrorCode, response.Message)
-		return
+		return nil, fmt.Errorf("failed with error code '%s': %s", response.ErrorCode, response.Message)
 	}
-	sessionResult := new(sessionResponse)
-	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+
+	result := new(sessionResponse)
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		TagName: "json",
-		Result:  sessionResult,
+		Result:  result,
 	})
 	if err != nil {
-		err = fmt.Errorf("failed to instantiate a map structure decoder: %s", err)
-		return
+		return nil, fmt.Errorf("failed to instantiate a map structure decoder: %s", err)
 	}
 	if err = decoder.Decode(response.Result); err != nil {
-		err = fmt.Errorf("failed to decode response result to a login result: %s", err)
-		return
+		return nil, fmt.Errorf("failed to decode response result to a login result: %s", err)
 	}
 
-	c.sessionToken = sessionResult.SessionToken
-	c.sessionExpires = time.Now().Add(sessionTTL)
-
-	return sessionResult.Permissions, nil
+	return result, nil
 }

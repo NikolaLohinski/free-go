@@ -1,11 +1,10 @@
-//go:build integration
-
 package integration_test
 
 import (
 	"os"
 	"testing"
 
+	"github.com/nikolalohinski/free-go/client"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -14,6 +13,9 @@ var (
 	version  string
 	endpoint string
 	token    string
+	appID    string
+
+	freeboxClient client.Client
 )
 
 func init() {
@@ -25,10 +27,21 @@ func init() {
 	if version == "" {
 		panic("FREEBOX_VERSION environment variable must be set")
 	}
+	appID = os.Getenv("FREEBOX_APP_ID")
+	if appID == "" {
+		panic("FREEBOX_APP_ID environment variable must be set")
+	}
 	token = os.Getenv("FREEBOX_TOKEN")
 	if token == "" {
 		panic("FREEBOX_TOKEN environment variable must be set")
 	}
+
+	freeboxClient = Must(client.New(client.Config{
+		Endpoint: endpoint,
+		Version:  version,
+		Token:    token,
+		AppID:    appID,
+	})).(client.Client)
 }
 
 func TestClient(t *testing.T) {
