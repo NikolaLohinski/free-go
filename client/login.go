@@ -1,13 +1,9 @@
 package client
 
 import (
-	"bytes"
 	"crypto/hmac"
 	"crypto/sha1"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"time"
 
 	"github.com/mitchellh/mapstructure"
@@ -56,25 +52,9 @@ func (c *client) Login() (types.Permissions, error) {
 }
 
 func (c *client) getLoginChallenge() (*loginChallenge, error) {
-	httpResponse, err := c.httpClient.Get(fmt.Sprintf("%s/login", c.base))
+	response, err := c.genericGET("login")
 	if err != nil {
-		return nil, fmt.Errorf("failed to perform request: %s", err)
-	}
-
-	body, err := ioutil.ReadAll(httpResponse.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %s", err)
-	}
-
-	if httpResponse.StatusCode >= http.StatusInternalServerError {
-		return nil, fmt.Errorf("failed with status '%d': server returned '%s'", httpResponse.StatusCode, string(body))
-	}
-	response := new(genericResponse)
-	if err = json.Unmarshal(body, response); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response body '%s': %s", string(body), err)
-	}
-	if !response.Success {
-		return nil, fmt.Errorf("failed with error code '%s': %s", response.ErrorCode, response.Message)
+		return nil, fmt.Errorf("failed to GET login endpoint: %s", err)
 	}
 
 	result := new(loginChallenge)
@@ -94,34 +74,22 @@ func (c *client) getLoginChallenge() (*loginChallenge, error) {
 }
 
 func (c *client) getSession(challenge string) (*sessionResponse, error) {
-	hash := hmac.New(sha1.New, []byte(c.privateToken))
+	if c.privateToken == nil {
+		return nil, fmt.Errorf("private token is not set")
+	}
+	hash := hmac.New(sha1.New, []byte(*c.privateToken))
 	hash.Write([]byte(challenge))
-	sessionRequest := sessionsRequest{
-		AppID:    c.appID,
+
+	if c.appID == nil {
+		return nil, fmt.Errorf("app ID is not set")
+	}
+
+	response, err := c.genericPOST("login/session", sessionsRequest{
+		AppID:    *c.appID,
 		Password: fmt.Sprintf("%x", hash.Sum(nil)),
-	}
-	sessionRequestBody := new(bytes.Buffer)
-	json.NewEncoder(sessionRequestBody).Encode(sessionRequest)
-
-	httpResponse, err := c.httpClient.Post(fmt.Sprintf("%s/login/session", c.base), "application/json", sessionRequestBody)
+	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to perform request: %s", err)
-	}
-	body, err := ioutil.ReadAll(httpResponse.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %s", err)
-	}
-
-	if httpResponse.StatusCode >= http.StatusInternalServerError {
-		return nil, fmt.Errorf("failed with status '%d': server returned '%s'", httpResponse.StatusCode, string(body))
-	}
-
-	response := new(genericResponse)
-	if err = json.Unmarshal(body, response); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response body '%s': %s", string(body), err)
-	}
-	if !response.Success {
-		return nil, fmt.Errorf("failed with error code '%s': %s", response.ErrorCode, response.Message)
+		return nil, fmt.Errorf("failed to POST login/session endpoint: %s", err)
 	}
 
 	result := new(sessionResponse)

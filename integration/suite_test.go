@@ -36,12 +36,7 @@ func init() {
 		panic("FREEBOX_TOKEN environment variable must be set")
 	}
 
-	freeboxClient = Must(client.New(client.Config{
-		Endpoint: endpoint,
-		Version:  version,
-		Token:    token,
-		AppID:    appID,
-	})).(client.Client)
+	freeboxClient = Must(client.New(endpoint, version)).(client.Client)
 }
 
 func TestClient(t *testing.T) {

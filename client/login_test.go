@@ -31,12 +31,10 @@ var _ = Describe("Login", func() {
 		*endpoint = server.Addr()
 	})
 	JustBeforeEach(func() {
-		*permissions, *returnedErr = Must(client.New(client.Config{
-			Endpoint: *endpoint,
-			Version:  version,
-			Token:    token,
-			AppID:    appID,
-		})).(client.Client).Login()
+		*permissions, *returnedErr = Must(client.New(*endpoint, version)).(client.Client).
+			WithAppID(appID).
+			WithPrivateToken(token).
+			Login()
 	})
 	AfterEach(func() {
 		server.Close()
@@ -118,7 +116,7 @@ var _ = Describe("Login", func() {
 			})
 			It("should return an error", func() {
 				Expect(*returnedErr).ToNot(BeNil())
-				Expect((*returnedErr).Error()).To(MatchRegexp("failed to perform request: .*"))
+				Expect((*returnedErr).Error()).To(MatchRegexp(".* connect: connection refused"))
 			})
 		})
 		Context("between both calls", func() {
@@ -143,7 +141,7 @@ var _ = Describe("Login", func() {
 			})
 			It("should return an error", func() {
 				Expect(*returnedErr).ToNot(BeNil())
-				Expect((*returnedErr).Error()).To(MatchRegexp("failed to perform request: .*"))
+				Expect((*returnedErr).Error()).To(MatchRegexp(".* EOF"))
 			})
 		})
 	})
