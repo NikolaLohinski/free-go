@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mitchellh/mapstructure"
 	"github.com/nikolalohinski/free-go/types"
 )
 
 var (
-	AuthorizeHardGrantingTimeout = time.Minute * 5
-	AuthorizeRetryDelay          = time.Second * 5
+	ClientAuthorizeGrantingTimeout = time.Minute * 5
+	ClientAuthorizeRetryDelay      = time.Second * 5
 )
 
 type authorizationRequest struct {
@@ -46,7 +45,7 @@ func (c *client) requestToken(request types.AuthorizationRequest) (*authorizatio
 	if c.appID == nil {
 		return nil, fmt.Errorf("app ID is not set")
 	}
-	response, err := c.genericPOST("login/authorize", authorizationRequest{
+	response, err := c.genericPost("login/authorize", authorizationRequest{
 		AppID:      *c.appID,
 		AppName:    request.Name,
 		AppVersion: request.Version,
@@ -55,46 +54,34 @@ func (c *client) requestToken(request types.AuthorizationRequest) (*authorizatio
 	if err != nil {
 		return nil, fmt.Errorf("failed to POST to login/authorize endpoint: %s", err)
 	}
+
 	result := new(authorizationResponse)
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		TagName: "json",
-		Result:  result,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to instantiate a map structure decoder: %s", err)
+	if err = c.fromGenericResponse(response, &result); err != nil {
+		return nil, fmt.Errorf("failed to get authorization response from generic response: %s", err)
 	}
-	if err = decoder.Decode(response.Result); err != nil {
-		return nil, fmt.Errorf("failed to decode response result: %s", err)
-	}
+
 	return result, nil
 }
 
 func (c *client) waitForTokenApproval(trackID int64) error {
-	expiration := time.Now().Add(AuthorizeHardGrantingTimeout)
+	expiration := time.Now().Add(ClientAuthorizeGrantingTimeout)
 	for {
 		if time.Now().After(expiration) {
-			return fmt.Errorf("reached hard timeout after %s waiting for token approval", AuthorizeHardGrantingTimeout)
+			return fmt.Errorf("reached hard timeout after %s waiting for token approval", ClientAuthorizeGrantingTimeout)
 		}
 
-		response, err := c.genericGET(fmt.Sprintf("login/authorize/%d", trackID))
+		response, err := c.genericGet(fmt.Sprintf("login/authorize/%d", trackID))
 		if err != nil {
 			return fmt.Errorf("failed to GET login/authorize/%d endpoint: %s", trackID, err)
 		}
-		result := new(trackResponse)
-		decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-			TagName: "json",
-			Result:  result,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to instantiate a map structure decoder: %s", err)
-		}
 
-		if err = decoder.Decode(response.Result); err != nil {
-			return fmt.Errorf("failed to decode response result: %s", err)
+		result := new(trackResponse)
+		if err = c.fromGenericResponse(response, &result); err != nil {
+			return fmt.Errorf("failed to get track response from generic response: %s", err)
 		}
 
 		if result.Status == "pending" {
-			time.Sleep(AuthorizeRetryDelay)
+			time.Sleep(ClientAuthorizeRetryDelay)
 			continue
 		}
 		if result.Status != "granted" {

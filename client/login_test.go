@@ -13,7 +13,7 @@ import (
 	"github.com/nikolalohinski/free-go/types"
 )
 
-var _ = Describe("Login", func() {
+var _ = Describe("login", func() {
 	const (
 		version = "v0"
 		appID   = "test"

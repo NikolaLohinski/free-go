@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mitchellh/mapstructure"
 	"github.com/nikolalohinski/free-go/types"
 )
 
-const (
-	sessionTTL = time.Minute * 30 // Fixed by the server
+var (
+	ClientLoginSessionTTL = time.Minute * 30 // Fixed by the freebox server, but made into a variable for unit testing
 )
 
 type loginChallenge struct {
@@ -40,34 +39,27 @@ func (c *client) Login() (types.Permissions, error) {
 		return nil, fmt.Errorf("failed to get login challenge: %s", err)
 	}
 
-	session, err := c.getSession(challenge.Challenge)
+	sessionResponse, err := c.getSession(challenge.Challenge)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get a session: %s", err)
 	}
+	c.session = &session{
+		token:   sessionResponse.SessionToken,
+		expires: time.Now().Add(ClientLoginSessionTTL),
+	}
 
-	c.sessionToken = session.SessionToken
-	c.sessionExpires = time.Now().Add(sessionTTL)
-
-	return session.Permissions, nil
+	return sessionResponse.Permissions, nil
 }
 
 func (c *client) getLoginChallenge() (*loginChallenge, error) {
-	response, err := c.genericGET("login")
+	response, err := c.genericGet("login")
 	if err != nil {
 		return nil, fmt.Errorf("failed to GET login endpoint: %s", err)
 	}
 
 	result := new(loginChallenge)
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		TagName: "json",
-		Result:  result,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to instantiate a map structure decoder: %s", err)
-	}
-
-	if err = decoder.Decode(response.Result); err != nil {
-		return nil, fmt.Errorf("failed to decode response result to a login result: %s", err)
+	if err = c.fromGenericResponse(response, &result); err != nil {
+		return nil, fmt.Errorf("failed to get login challenge from generic response: %s", err)
 	}
 
 	return result, nil
@@ -84,7 +76,7 @@ func (c *client) getSession(challenge string) (*sessionResponse, error) {
 		return nil, fmt.Errorf("app ID is not set")
 	}
 
-	response, err := c.genericPOST("login/session", sessionsRequest{
+	response, err := c.genericPost("login/session", sessionsRequest{
 		AppID:    *c.appID,
 		Password: fmt.Sprintf("%x", hash.Sum(nil)),
 	})
@@ -93,15 +85,8 @@ func (c *client) getSession(challenge string) (*sessionResponse, error) {
 	}
 
 	result := new(sessionResponse)
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		TagName: "json",
-		Result:  result,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to instantiate a map structure decoder: %s", err)
-	}
-	if err = decoder.Decode(response.Result); err != nil {
-		return nil, fmt.Errorf("failed to decode response result to a login result: %s", err)
+	if err = c.fromGenericResponse(response, &result); err != nil {
+		return nil, fmt.Errorf("failed to get session response from generic response: %s", err)
 	}
 
 	return result, nil

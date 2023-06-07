@@ -13,7 +13,7 @@ import (
 	"github.com/nikolalohinski/free-go/types"
 )
 
-var _ = Describe("Authorize", func() {
+var _ = Describe("authorize", func() {
 	const (
 		version = "v0"
 		appID   = "test"
@@ -49,7 +49,7 @@ var _ = Describe("Authorize", func() {
 	})
 	Context("when the authorization is approved after some time", func() {
 		BeforeEach(func() {
-			client.AuthorizeRetryDelay = time.Millisecond * 50
+			client.ClientAuthorizeRetryDelay = time.Millisecond * 50
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/login/authorize", version)),
@@ -99,7 +99,7 @@ var _ = Describe("Authorize", func() {
 	})
 	Context("when the authorization ends in an unexpected status", func() {
 		BeforeEach(func() {
-			client.AuthorizeRetryDelay = time.Millisecond * 50
+			client.ClientAuthorizeRetryDelay = time.Millisecond * 50
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/login/authorize", version)),
@@ -136,8 +136,8 @@ var _ = Describe("Authorize", func() {
 	})
 	Context("when the authorization times out on client side", func() {
 		BeforeEach(func() {
-			client.AuthorizeRetryDelay = time.Millisecond * 50
-			client.AuthorizeHardGrantingTimeout = time.Millisecond * 1
+			client.ClientAuthorizeRetryDelay = time.Millisecond * 50
+			client.ClientAuthorizeGrantingTimeout = time.Millisecond * 1
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/login/authorize", version)),

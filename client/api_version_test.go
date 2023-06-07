@@ -13,7 +13,7 @@ import (
 	"github.com/nikolalohinski/free-go/types"
 )
 
-var _ = Describe("APIVersion", func() {
+var _ = Describe("api version", func() {
 	const (
 		version = "v0"
 		token   = ""
