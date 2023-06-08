@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/MakeNowJust/heredoc v1.0.0
+	github.com/magefile/mage v1.15.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/onsi/ginkgo/v2 v2.9.5
 	github.com/onsi/gomega v1.27.7

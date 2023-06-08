@@ -69,9 +69,7 @@ var _ = Describe("Port forwarding", func() {
 		server.Close()
 	})
 	Context("listing port forwarding rules", func() {
-		var (
-			returnedRules = new([]types.PortForwardingRule)
-		)
+		returnedRules := new([]types.PortForwardingRule)
 		JustBeforeEach(func() {
 			*returnedRules, *returnedErr = freeboxClient.PortForwardingRules()
 		})
@@ -167,6 +165,5 @@ var _ = Describe("Port forwarding", func() {
 				Expect(*returnedRules).To(BeEmpty())
 			})
 		})
-
 	})
 })

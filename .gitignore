@@ -23,3 +23,7 @@ go.work
 # Editor
 .idea/
 .vscode/
+
+# Coverage
+cover.html
+cover.out

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 
@@ -22,42 +22,66 @@ type genericResponse struct {
 
 type HTTPOption = func(*http.Request) error
 
-func (c *client) genericGet(path string, options ...HTTPOption) (*genericResponse, error) {
+func (c *client) genericGet(path string, options ...HTTPOption) (response *genericResponse, err error) {
 	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", c.base, path), nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to forge new request: %s", err)
+		return nil, fmt.Errorf("failed to forge new request: %w", err)
 	}
+
 	for _, option := range options {
 		if err := option(request); err != nil {
-			return nil, fmt.Errorf("failed to apply option to request: %s", err)
+			return nil, fmt.Errorf("failed to apply option to request: %w", err)
 		}
 	}
 
 	httpResponse, err := c.httpClient.Do(request)
 	if err != nil {
-		return nil, fmt.Errorf("failed to perform GET %s request: %s", path, err)
+		return nil, fmt.Errorf("failed to perform GET %s request: %w", path, err)
 	}
+
+	defer func() {
+		closeError := httpResponse.Body.Close()
+		if err == nil {
+			err = closeError
+		} else if closeError != nil {
+			err = fmt.Errorf("%w: %w", closeError, err)
+		}
+	}()
+
 	return c.fromHTTPResponse(httpResponse)
 }
 
 func (c *client) genericPost(path string, body interface{}, options ...HTTPOption) (*genericResponse, error) {
 	requestBody := new(bytes.Buffer)
-	json.NewEncoder(requestBody).Encode(body)
+	if err := json.NewEncoder(requestBody).Encode(body); err != nil {
+		return nil, fmt.Errorf("failed to encode body to JSON: %w", err)
+	}
 
 	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/%s", c.base, path), requestBody)
 	if err != nil {
-		return nil, fmt.Errorf("failed to forge new request: %s", err)
+		return nil, fmt.Errorf("failed to forge new request: %w", err)
 	}
+
 	for _, option := range append(options, c.withJSONContentType) {
 		if err := option(request); err != nil {
-			return nil, fmt.Errorf("failed to apply option to request: %s", err)
+			return nil, fmt.Errorf("failed to apply option to request: %w", err)
 		}
 	}
 
 	httpResponse, err := c.httpClient.Do(request)
 	if err != nil {
-		return nil, fmt.Errorf("failed to perform GET %s request: %s", path, err)
+		return nil, fmt.Errorf("failed to perform GET %s request: %w", path, err)
 	}
+
+	defer func() {
+		closeError := httpResponse.Body.Close()
+		if err == nil {
+			err = closeError
+		} else if closeError != nil {
+			err = fmt.Errorf("%w: %w", closeError, err)
+		}
+	}()
+
 	return c.fromHTTPResponse(httpResponse)
 }
 
@@ -68,50 +92,58 @@ func (c *client) fromGenericResponse(generic *genericResponse, target interface{
 		DecodeHook: types.Float64ToTimeHookFunc(),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to instantiate a map structure decoder: %s", err)
+		return fmt.Errorf("failed to instantiate a map structure decoder: %w", err)
 	}
 
 	if err = decoder.Decode(generic.Result); err != nil {
-		return fmt.Errorf("failed to decode response result to given target: %s", err)
+		return fmt.Errorf("failed to decode response result to given target: %w", err)
 	}
 
 	return nil
 }
 
 func (c *client) fromHTTPResponse(httpResponse *http.Response) (*genericResponse, error) {
-	body, err := ioutil.ReadAll(httpResponse.Body)
+	body, err := io.ReadAll(httpResponse.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %s", err)
+		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
+
 	if httpResponse.StatusCode >= http.StatusInternalServerError {
 		return nil, fmt.Errorf("failed with status '%d': server returned '%s'", httpResponse.StatusCode, string(body))
 	}
+
 	response := new(genericResponse)
 	if err = json.Unmarshal(body, response); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response body '%s': %s", string(body), err)
+		return nil, fmt.Errorf("failed to unmarshal response body '%s': %w", string(body), err)
 	}
+
 	if !response.Success {
 		return nil, fmt.Errorf("failed with error code '%s': %s", response.ErrorCode, response.Message)
 	}
+
 	return response, nil
 }
 
 func (c *client) withJSONContentType(req *http.Request) error {
 	req.Header.Add("Content-Type", "application/json")
+
 	return nil
 }
 
 func (c *client) withSession(req *http.Request) error {
 	if c.session == nil {
 		if _, err := c.Login(); err != nil {
-			return fmt.Errorf("failed to login before attempting request: %s", err)
+			return fmt.Errorf("failed to login before attempting request: %w", err)
 		}
 	}
+
 	if time.Now().After(c.session.expires) {
 		if _, err := c.Login(); err != nil {
-			return fmt.Errorf("failed to login again after session expired: %s", err)
+			return fmt.Errorf("failed to login again after session expired: %w", err)
 		}
 	}
+
 	req.Header.Add("X-Fbx-App-Auth", c.session.token)
+
 	return nil
 }

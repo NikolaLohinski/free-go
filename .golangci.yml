@@ -1,0 +1,54 @@
+run:
+  # default concurrency is a available CPU number
+  concurrency: 4
+  # timeout for analysis, e.g. 30s, 5m, default is 1m
+  deadline: 20m
+  # exit code when at least one issue was found, default is 1
+  issues-exit-code: 1
+  # include test files or not, default is true
+  tests: false
+
+  skip-files:
+    - ".*\\.pb\\.go$"
+    - ".*\\.gen\\.go$"
+    - ".*\\_gen\\.go$"
+    - "mock_.*\\.go"
+
+  skip-dirs:
+    - tools
+    - spellbook
+
+linters:
+  enable-all: true
+  disable:
+  # deprecated
+  - ifshort 
+  - maligned 
+  - nosnakecase 
+  - interfacer 
+  - exhaustivestruct 
+  - deadcode 
+  - structcheck 
+  - scopelint 
+  - varcheck 
+  - golint
+  # disabled
+  - gochecknoglobals
+  - tagliatelle
+  - depguard
+  - ireturn
+  - goerr113
+  - noctx
+  - exhaustruct
+  - nonamedreturns
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+
+issues:
+  max-per-linter: 0
+  max-same: 0
+  new: false
+  exclude-use-default: true

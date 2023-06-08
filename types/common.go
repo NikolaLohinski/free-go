@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 	"time"
@@ -13,35 +14,43 @@ type Timestamp struct {
 }
 
 func (t *Timestamp) MarshalJSON() ([]byte, error) {
-	return []byte(strconv.FormatInt(time.Time(t.Time).Unix(), 10)), nil
+	return []byte(strconv.FormatInt(t.Time.Unix(), 10)), nil
 }
 
 func (t *Timestamp) UnmarshalJSON(data []byte) error {
-	i, err := strconv.ParseInt(string(data[:]), 10, 64)
+	epoch, err := strconv.ParseInt(string(data), 10, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse int: %w", err)
 	}
-	t = &Timestamp{
-		time.Unix(i, 0),
+
+	*t = Timestamp{
+		time.Unix(epoch, 0),
 	}
+
 	return nil
 }
 
 func Float64ToTimeHookFunc() mapstructure.DecodeHookFunc {
 	return func(
-		f reflect.Type,
-		t reflect.Type,
-		data interface{}) (interface{}, error) {
-		if f.Kind() != reflect.Float64 {
-			return data, nil
-		}
-		if t != reflect.TypeOf(Timestamp{}) {
+		field reflect.Type,
+		typ reflect.Type,
+		data interface{},
+	) (interface{}, error) {
+		if field.Kind() != reflect.Float64 {
 			return data, nil
 		}
 
-		i := int64(data.(float64))
+		if typ != reflect.TypeOf(Timestamp{time.Now()}) {
+			return data, nil
+		}
+
+		epoch, ok := data.(float64)
+		if !ok {
+			return nil, fmt.Errorf("%v is not of a float", data)
+		}
+
 		return &Timestamp{
-			time.Unix(i, 0),
+			time.Unix(int64(epoch), 0),
 		}, nil
 	}
 }
