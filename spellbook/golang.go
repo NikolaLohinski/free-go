@@ -17,7 +17,7 @@ type Go mg.Namespace
 // Runs ginkgo for unit tests
 func (Go) Test() error {
 	fmt.Println("🤞 Running unit tests")
-	return sh.RunV("ginkgo", "./client/...")
+	return RunSub("ginkgo", "./client/...")
 }
 
 // Runs ginkgo for integration test
@@ -35,7 +35,7 @@ func (Go) Tidy() error {
 // Run linter on code
 func (Go) Lint() error {
 	fmt.Println("✨ Running golang-ci linter on code base")
-	return sh.RunV("golangci-lint", "run")
+	return RunSub("golangci-lint", "run", "--verbose")
 }
 
 // Run formatting tools on code base
