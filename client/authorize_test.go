@@ -15,9 +15,6 @@ import (
 
 var _ = Describe("authorize", func() {
 	const (
-		version = "v0"
-		appID   = "test"
-
 		returnedTrackID      = "123"
 		returnedPrivateToken = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 	)

@@ -14,10 +14,6 @@ import (
 )
 
 var _ = Describe("api version", func() {
-	const (
-		version = "v0"
-		token   = ""
-	)
 	var (
 		server   *ghttp.Server
 		endpoint = new(string)

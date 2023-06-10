@@ -14,11 +14,6 @@ import (
 )
 
 var _ = Describe("login", func() {
-	const (
-		version = "v0"
-		appID   = "test"
-		token   = "xxxxxxxxxxxxxxxxxxxxxxxxx"
-	)
 	var (
 		server   *ghttp.Server
 		endpoint = new(string)
@@ -33,7 +28,7 @@ var _ = Describe("login", func() {
 	JustBeforeEach(func() {
 		*permissions, *returnedErr = Must(client.New(*endpoint, version)).(client.Client).
 			WithAppID(appID).
-			WithPrivateToken(token).
+			WithPrivateToken(privateToken).
 			Login()
 	})
 	AfterEach(func() {
@@ -59,7 +54,7 @@ var _ = Describe("login", func() {
 					ghttp.VerifyContentType("application/json"),
 					ghttp.VerifyJSON(`{
 					    "app_id": "`+appID+`",
-					    "password": "aac0e1f841e689230f7e2f5815807918ced96e82"
+					    "password": "c3464d210c1be4f1ef6f34c578d463fc28d40a61"
 					}`),
 					ghttp.RespondWith(http.StatusOK, heredoc.Doc(`{
 						"result": {
@@ -219,7 +214,7 @@ var _ = Describe("login", func() {
 						ghttp.VerifyContentType("application/json"),
 						ghttp.VerifyJSON(`{
 						    "app_id": "`+appID+`",
-						    "password": "aac0e1f841e689230f7e2f5815807918ced96e82"
+						    "password": "c3464d210c1be4f1ef6f34c578d463fc28d40a61"
 						}`),
 						ghttp.RespondWith(http.StatusBadGateway, "test body"),
 					),
@@ -238,7 +233,7 @@ var _ = Describe("login", func() {
 						ghttp.VerifyContentType("application/json"),
 						ghttp.VerifyJSON(`{
 						    "app_id": "`+appID+`",
-						    "password": "aac0e1f841e689230f7e2f5815807918ced96e82"
+						    "password": "c3464d210c1be4f1ef6f34c578d463fc28d40a61"
 						}`),
 						ghttp.RespondWith(http.StatusForbidden, heredoc.Doc(`{
 						    "uid": "9bb8f32441fcb41e4c9f2d9b60af3b13",
@@ -266,7 +261,7 @@ var _ = Describe("login", func() {
 						ghttp.VerifyContentType("application/json"),
 						ghttp.VerifyJSON(`{
 						    "app_id": "`+appID+`",
-						    "password": "aac0e1f841e689230f7e2f5815807918ced96e82"
+						    "password": "c3464d210c1be4f1ef6f34c578d463fc28d40a61"
 						}`),
 						ghttp.RespondWith(http.StatusForbidden, "{"),
 					),

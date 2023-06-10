@@ -22,7 +22,7 @@ type genericResponse struct {
 
 type HTTPOption = func(*http.Request) error
 
-func (c *client) genericGet(path string, options ...HTTPOption) (response *genericResponse, err error) {
+func (c *client) Get(path string, options ...HTTPOption) (response *genericResponse, err error) {
 	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", c.base, path), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to forge new request: %w", err)
@@ -34,24 +34,10 @@ func (c *client) genericGet(path string, options ...HTTPOption) (response *gener
 		}
 	}
 
-	httpResponse, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("failed to perform GET %s request: %w", path, err)
-	}
-
-	defer func() {
-		closeError := httpResponse.Body.Close()
-		if err == nil {
-			err = closeError
-		} else if closeError != nil {
-			err = fmt.Errorf("%w: %w", closeError, err)
-		}
-	}()
-
-	return c.fromHTTPResponse(httpResponse)
+	return c.Do(request)
 }
 
-func (c *client) genericPost(path string, body interface{}, options ...HTTPOption) (*genericResponse, error) {
+func (c *client) Post(path string, body interface{}, options ...HTTPOption) (*genericResponse, error) {
 	requestBody := new(bytes.Buffer)
 	if err := json.NewEncoder(requestBody).Encode(body); err != nil {
 		return nil, fmt.Errorf("failed to encode body to JSON: %w", err)
@@ -68,9 +54,13 @@ func (c *client) genericPost(path string, body interface{}, options ...HTTPOptio
 		}
 	}
 
+	return c.Do(request)
+}
+
+func (c *client) Do(request *http.Request) (*genericResponse, error) {
 	httpResponse, err := c.httpClient.Do(request)
 	if err != nil {
-		return nil, fmt.Errorf("failed to perform GET %s request: %w", path, err)
+		return nil, fmt.Errorf("failed to perform request: %w", err)
 	}
 
 	defer func() {
@@ -118,7 +108,7 @@ func (c *client) fromHTTPResponse(httpResponse *http.Response) (*genericResponse
 	}
 
 	if !response.Success {
-		return nil, fmt.Errorf("failed with error code '%s': %s", response.ErrorCode, response.Message)
+		return response, fmt.Errorf("failed with error code '%s': %s", response.ErrorCode, response.Message)
 	}
 
 	return response, nil

@@ -18,7 +18,14 @@ type Client interface {
 	APIVersion() (types.APIVersion, error)
 	Authorize(types.AuthorizationRequest) (types.PrivateToken, error)
 	Login() (types.Permissions, error)
-	PortForwardingRules() ([]types.PortForwardingRule, error)
+	ListPortForwardingRules() ([]types.PortForwardingRule, error)
+	GetPortForwardingRule(identifier int64) (types.PortForwardingRule, error)
+}
+
+type Error string
+
+func (e Error) Error() string {
+	return string(e)
 }
 
 func New(endpoint, version string) (Client, error) {

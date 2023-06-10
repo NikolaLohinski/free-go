@@ -8,6 +8,9 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
+	"runtime"
+	"strings"
 
 	// mage:import
 	"github.com/nikolalohinski/free-go/spellbook"
@@ -32,6 +35,19 @@ func init() {
 	if err = os.Setenv("PATH", fmt.Sprintf("%s:%s", p, os.Getenv("PATH"))); err != nil {
 		panic(err)
 	}
+
+	if len(os.Args) == 1 {
+		defaultTargeName := strings.ToLower(strings.TrimPrefix(runtime.FuncForPC(reflect.ValueOf(Default).Pointer()).Name(), "main."))
+		fmt.Println("┌ mage", defaultTargeName)
+
+		return
+	}
+
+	if os.Args[1] == "install" {
+		return
+	}
+
+	fmt.Println("┌ mage", strings.Join(os.Args[1:], " "))
 }
 
 // Fetch and installs tooling for development

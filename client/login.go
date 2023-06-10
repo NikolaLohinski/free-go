@@ -51,7 +51,7 @@ func (c *client) Login() (types.Permissions, error) {
 }
 
 func (c *client) getLoginChallenge() (*loginChallenge, error) {
-	response, err := c.genericGet("login")
+	response, err := c.Get("login")
 	if err != nil {
 		return nil, fmt.Errorf("failed to GET login endpoint: %w", err)
 	}
@@ -77,7 +77,7 @@ func (c *client) getSession(challenge string) (*sessionResponse, error) {
 		return nil, fmt.Errorf("app ID is not set")
 	}
 
-	response, err := c.genericPost("login/session", sessionsRequest{
+	response, err := c.Post("login/session", sessionsRequest{
 		AppID:    *c.appID,
 		Password: fmt.Sprintf("%x", hash.Sum(nil)),
 	})

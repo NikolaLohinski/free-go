@@ -9,19 +9,20 @@ import (
 	"github.com/magefile/mage/sh"
 )
 
+func Step(message string) {
+	fmt.Printf("├─ %s\n", message)
+}
+
 func RunSub(cmd string, args ...string) error {
-	fmt.Println("╷")
 	_, err := sh.Exec(
 		nil,
-		&prefixer{prefix: "│ ", writer: os.Stdout, trailingNewline: true},
-		&prefixer{prefix: "│ ", writer: os.Stderr, trailingNewline: true},
+		&prefixer{prefix: "│    ", writer: os.Stdout, trailingNewline: true},
+		&prefixer{prefix: "│    ", writer: os.Stderr, trailingNewline: true},
 		cmd,
 		args...,
 	)
-	if err == nil {
-		fmt.Println("└─ ✔️")
-	} else {
-		fmt.Println("└ ❌")
+	if err != nil {
+		fmt.Println("└─ ❌")
 	}
 	return err
 }

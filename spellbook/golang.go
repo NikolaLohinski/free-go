@@ -1,7 +1,6 @@
 package spellbook
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -16,39 +15,39 @@ type Go mg.Namespace
 
 // Runs ginkgo for unit tests
 func (Go) Test() error {
-	fmt.Println("🤞 Running unit tests")
+	Step("Running unit tests")
 	return RunSub("ginkgo", "./client/...")
 }
 
 // Runs ginkgo for integration test
 func (Go) Integration() error {
-	fmt.Println("🤞 Running integration tests")
-	return sh.RunV("ginkgo", "-tags=integration", "./integration/...")
+	Step("Running integration tests")
+	return RunSub("ginkgo", "-tags=integration", "./integration/...")
 }
 
 // Clean dependencies and imports
 func (Go) Tidy() error {
-	fmt.Println("🧼 Cleaning dependencies and imports in code files")
+	Step("Cleaning dependencies and imports in code files")
 	return sh.RunV("go", "mod", "tidy", "-v")
 }
 
 // Run linter on code
 func (Go) Lint() error {
-	fmt.Println("✨ Running golang-ci linter on code base")
-	return RunSub("golangci-lint", "run", "--verbose")
+	Step("Running golang-ci linter on code base")
+	return RunSub("golangci-lint", "run", "--verbose", "--fix")
 }
 
 // Run formatting tools on code base
 func (Go) Format() error {
-	fmt.Println("🧽 Running gofumpt formatter on code base")
+	Step("Running gofumpt formatter on code base")
 	args := append([]string{"-w"}, getGoFiles()...)
 	return sh.RunV("gofumpt", args...)
 }
 
 // Build and open coverage report
 func (Go) Cover() error {
-	fmt.Println("🕵  Generating coverage report")
-	if err := sh.RunV("go", "test", "-v", "-coverprofile", "cover.out", "./client/..."); err != nil {
+	Step("Generating coverage report")
+	if err := RunSub("go", "test", "-v", "-coverprofile", "cover.out", "./client/..."); err != nil {
 		panic(err)
 	}
 	if err := sh.RunV("go", "tool", "cover", "-html", "cover.out", "-o", "cover.html"); err != nil {

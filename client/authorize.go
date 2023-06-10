@@ -46,7 +46,7 @@ func (c *client) requestToken(request types.AuthorizationRequest) (*authorizatio
 		return nil, fmt.Errorf("app ID is not set")
 	}
 
-	response, err := c.genericPost("login/authorize", authorizationRequest{
+	response, err := c.Post("login/authorize", authorizationRequest{
 		AppID:      *c.appID,
 		AppName:    request.Name,
 		AppVersion: request.Version,
@@ -72,7 +72,7 @@ func (c *client) waitForTokenApproval(trackID int64) error {
 			return fmt.Errorf("reached hard timeout after %s waiting for token approval", ClientAuthorizeGrantingTimeout)
 		}
 
-		response, err := c.genericGet(fmt.Sprintf("login/authorize/%d", trackID))
+		response, err := c.Get(fmt.Sprintf("login/authorize/%d", trackID))
 		if err != nil {
 			return fmt.Errorf("failed to GET login/authorize/%d endpoint: %w", trackID, err)
 		}

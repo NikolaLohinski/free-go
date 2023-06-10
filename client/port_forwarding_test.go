@@ -14,18 +14,14 @@ import (
 	"github.com/nikolalohinski/free-go/types"
 )
 
-var _ = Describe("Port forwarding", func() {
-	const (
-		version      = "v0"
-		appID        = "test"
-		privateToken = "xxxxxxxxxxxxxxxxxxxxxxxxx"
-		sessionToken = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-	)
+var _ = Describe("port forwarding", func() {
 	var (
 		freeboxClient client.Client
 
 		server   *ghttp.Server
 		endpoint = new(string)
+
+		sessionToken = new(string)
 
 		returnedErr = new(error)
 	)
@@ -33,37 +29,11 @@ var _ = Describe("Port forwarding", func() {
 		server = ghttp.NewServer()
 		*endpoint = server.Addr()
 
-		freeboxClient = Must(client.New(*endpoint, version)).(client.Client).WithAppID(appID).WithPrivateToken(privateToken)
+		freeboxClient = Must(client.New(*endpoint, version)).(client.Client).
+			WithAppID(appID).
+			WithPrivateToken(privateToken)
 
-		// setup login flow
-		server.AppendHandlers(
-			ghttp.CombineHandlers(
-				ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/login", version)),
-				ghttp.RespondWith(http.StatusOK, `{
-					"success": true,
-					"result": {
-						"logged_in": false,
-						"challenge": "9Va31tSgQWM853j0kSCtBUyzYNhPN7IY"
-					}
-				}`),
-			),
-			ghttp.CombineHandlers(
-				ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/login/session", version)),
-				ghttp.VerifyContentType("application/json"),
-				ghttp.VerifyJSON(`{
-				    "app_id": "`+appID+`",
-				    "password": "aac0e1f841e689230f7e2f5815807918ced96e82"
-				}`),
-				ghttp.RespondWith(http.StatusOK, `{
-					"result": {
-						"session_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-						"challenge": "9Va31tSgQWM853j0kSCtBUyzYNhPN7IY",
-						"permissions": {}
-					},
-					"success": true
-				}`),
-			),
-		)
+		*sessionToken = setupLoginFlow(server)
 	})
 	AfterEach(func() {
 		server.Close()
@@ -71,7 +41,7 @@ var _ = Describe("Port forwarding", func() {
 	Context("listing port forwarding rules", func() {
 		returnedRules := new([]types.PortForwardingRule)
 		JustBeforeEach(func() {
-			*returnedRules, *returnedErr = freeboxClient.PortForwardingRules()
+			*returnedRules, *returnedErr = freeboxClient.ListPortForwardingRules()
 		})
 		Context("default", func() {
 			BeforeEach(func() {
@@ -134,21 +104,20 @@ var _ = Describe("Port forwarding", func() {
 					),
 				)
 			})
-			It("should return the private token provided by the server", func() {
+			It("should return the correct forwarding rules", func() {
 				Expect(*returnedErr).To(BeNil())
 				Expect(*returnedRules).ToNot(BeEmpty())
 				Expect(*returnedRules).To(HaveLen(1))
 				Expect((*returnedRules)[0]).To(MatchFields(IgnoreExtras, Fields{
-					"Hostname": Equal("testing"),
-					"LanPort":  Equal(int64(80)),
-					"ProtoIP":  Equal("tcp"),
+					"Hostname":   Equal("testing"),
+					"LanPort":    Equal(int64(80)),
+					"IPProtocol": Equal(types.TCP),
 					"Host": MatchFields(IgnoreExtras, Fields{
 						"LastActivity": Equal(types.Timestamp{Time: time.Unix(1682579132, 0)}),
 					}),
 				}))
 			})
 		})
-
 		Context("when there are no port forwarding rules", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
@@ -163,6 +132,157 @@ var _ = Describe("Port forwarding", func() {
 			It("should return the private token provided by the server", func() {
 				Expect(*returnedErr).To(BeNil())
 				Expect(*returnedRules).To(BeEmpty())
+			})
+		})
+		Context("when server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the server returns an unexpected payload", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fw/redir/", version)),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": {
+								"foo": "bar"
+							}
+						}`),
+					),
+				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+	})
+	Context("getting a port forwarding rule", func() {
+		const (
+			identifier = int64(5)
+		)
+		returnedRule := new(types.PortForwardingRule)
+		JustBeforeEach(func() {
+			*returnedRule, *returnedErr = freeboxClient.GetPortForwardingRule(identifier)
+		})
+		Context("default", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fw/redir/%d", version, identifier)),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": {
+								"enabled": true,
+								"comment": "test",
+								"id": 5,
+								"valid": true,
+								"host": {
+									"l2ident": {
+										"id": "7E:EC:37:CD:5B:6A",
+										"type": "mac_address"
+									},
+									"active": false,
+									"persistent": false,
+									"names": [
+										{
+											"name": "test",
+											"source": "dhcp"
+										}
+									],
+									"vendor_name": "",
+									"host_type": "workstation",
+									"interface": "pub",
+									"id": "ether-7e:ec:37:cd:5b:6a",
+									"last_time_reachable": 1682579132,
+									"primary_name_manual": false,
+									"l3connectivities": [
+										{
+											"addr": "192.168.1.254",
+											"active": false,
+											"reachable": false,
+											"last_activity": 1682579111,
+											"af": "ipv4",
+											"last_time_reachable": 1682579111
+										}
+									],
+									"default_name": "testing",
+									"first_activity": 1682578724,
+									"reachable": false,
+									"last_activity": 1682579132,
+									"primary_name": "testing"
+								},
+								"src_ip": "0.0.0.0",
+								"hostname": "testing",
+								"lan_port": 80,
+								"wan_port_end": 12345,
+								"wan_port_start": 12345,
+								"lan_ip": "192.168.1.254",
+								"ip_proto": "tcp"
+							}
+						}`),
+					),
+				)
+			})
+
+			It("should return the correct forwarding rule", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(*returnedRule).To(MatchFields(IgnoreExtras, Fields{
+					"ID":         Equal(int64(5)),
+					"Hostname":   Equal("testing"),
+					"LanPort":    Equal(int64(80)),
+					"IPProtocol": Equal(types.TCP),
+					"Host": MatchFields(IgnoreExtras, Fields{
+						"LastActivity": Equal(types.Timestamp{Time: time.Unix(1682579132, 0)}),
+					}),
+				}))
+			})
+		})
+		Context("when port forwarding rule is not found", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fw/redir/%d", version, identifier)),
+						ghttp.RespondWith(http.StatusOK, `{
+							"msg": "Impossible de récupérer la redirection : Entrée non trouvée",
+							"success": false,
+							"error_code": "noent"
+						}`),
+					),
+				)
+			})
+			It("should return the private token provided by the server", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+				Expect(*returnedErr).To(Equal(client.ErrPortForwardingRuleNotFound))
+			})
+		})
+
+		Context("when server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the server returns an unexpected payload", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fw/redir/%d", version, identifier)),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": []
+						}`),
+					),
+				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
 			})
 		})
 	})
