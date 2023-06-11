@@ -40,3 +40,31 @@ func (c *client) GetPortForwardingRule(identifier int64) (rule types.PortForward
 
 	return rule, nil
 }
+
+func (c *client) CreatePortForwardingRule(
+	payload types.PortForwardingRulePayload,
+) (rule types.PortForwardingRule, err error) {
+	response, err := c.Post("fw/redir/", payload, c.withSession)
+	if err != nil {
+		return rule, fmt.Errorf("failed to POST to fw/redir/ endpoint: %w", err)
+	}
+
+	if err = c.fromGenericResponse(response, &rule); err != nil {
+		return rule, fmt.Errorf("failed to get a port forwarding rule from a generic response: %w", err)
+	}
+
+	return rule, nil
+}
+
+func (c *client) DeletePortForwardingRule(identifier int64) error {
+	response, err := c.Delete(fmt.Sprintf("fw/redir/%d", identifier), c.withSession)
+	if err != nil {
+		if response != nil && response.ErrorCode == "noent" {
+			return ErrPortForwardingRuleNotFound
+		}
+
+		return fmt.Errorf("failed to GET fw/redir/%d endpoint: %w", identifier, err)
+	}
+
+	return nil
+}

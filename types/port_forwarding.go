@@ -7,19 +7,23 @@ const (
 	UDP ipProtocol = "udp"
 )
 
+type PortForwardingRulePayload struct {
+	Enabled      bool       `json:"enabled"`
+	IPProtocol   ipProtocol `json:"ip_proto"`
+	WanPortStart int64      `json:"wan_port_start"`
+	WanPortEnd   int64      `json:"wan_port_end"`
+	LanIP        string     `json:"lan_ip"`
+	LanPort      int64      `json:"lan_port"`
+	SourceIP     string     `json:"src_ip"`
+	Comment      string     `json:"comment"`
+}
+
 type PortForwardingRule struct {
-	Enabled      bool               `json:"enabled"`
-	Comment      string             `json:"comment"`
-	ID           int64              `json:"id"`
-	Valid        bool               `json:"valid"`
-	SourceIP     string             `json:"src_ip"`
-	Hostname     string             `json:"hostname"`
-	LanPort      int64              `json:"lan_port"`
-	LanIP        string             `json:"lan_ip"`
-	IPProtocol   ipProtocol         `json:"ip_proto"`
-	WanPortEnd   int64              `json:"wan_port_end"`
-	WanPortStart int64              `json:"wan_port_start"`
-	Host         PortForwardingHost `json:"host"`
+	PortForwardingRulePayload `json:",squash"`   //nolint:staticcheck
+	ID                        int64              `json:"id"`
+	Valid                     bool               `json:"valid"`
+	Hostname                  string             `json:"hostname"`
+	Host                      PortForwardingHost `json:"host"`
 }
 
 type hostType string

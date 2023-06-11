@@ -20,6 +20,8 @@ type Client interface {
 	Login() (types.Permissions, error)
 	ListPortForwardingRules() ([]types.PortForwardingRule, error)
 	GetPortForwardingRule(identifier int64) (types.PortForwardingRule, error)
+	CreatePortForwardingRule(payload types.PortForwardingRulePayload) (types.PortForwardingRule, error)
+	DeletePortForwardingRule(identifier int64) error
 }
 
 type Error string
@@ -28,13 +30,10 @@ func (e Error) Error() string {
 	return string(e)
 }
 
-func New(endpoint, version string) (Client, error) {
-	match, err := regexp.MatchString("^https?://.*", endpoint)
-	if err != nil {
-		return nil, fmt.Errorf("failed to match endpoint string against regex: %w", err)
-	}
+var matchHTTPS = regexp.MustCompile("^https?://.*")
 
-	if !match {
+func New(endpoint, version string) (Client, error) {
+	if !matchHTTPS.MatchString(endpoint) {
 		endpoint = fmt.Sprintf("http://%s", endpoint)
 	}
 

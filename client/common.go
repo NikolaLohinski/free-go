@@ -28,13 +28,16 @@ func (c *client) Get(path string, options ...HTTPOption) (response *genericRespo
 		return nil, fmt.Errorf("failed to forge new request: %w", err)
 	}
 
-	for _, option := range options {
-		if err := option(request); err != nil {
-			return nil, fmt.Errorf("failed to apply option to request: %w", err)
-		}
+	return c.Do(request, options...)
+}
+
+func (c *client) Delete(path string, options ...HTTPOption) (response *genericResponse, err error) {
+	request, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/%s", c.base, path), nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to forge new request: %w", err)
 	}
 
-	return c.Do(request)
+	return c.Do(request, options...)
 }
 
 func (c *client) Post(path string, body interface{}, options ...HTTPOption) (*genericResponse, error) {
@@ -48,16 +51,18 @@ func (c *client) Post(path string, body interface{}, options ...HTTPOption) (*ge
 		return nil, fmt.Errorf("failed to forge new request: %w", err)
 	}
 
-	for _, option := range append(options, c.withJSONContentType) {
+	options = append(options, c.withJSONContentType)
+
+	return c.Do(request, options...)
+}
+
+func (c *client) Do(request *http.Request, options ...HTTPOption) (*genericResponse, error) {
+	for _, option := range options {
 		if err := option(request); err != nil {
 			return nil, fmt.Errorf("failed to apply option to request: %w", err)
 		}
 	}
 
-	return c.Do(request)
-}
-
-func (c *client) Do(request *http.Request) (*genericResponse, error) {
 	httpResponse, err := c.httpClient.Do(request)
 	if err != nil {
 		return nil, fmt.Errorf("failed to perform request: %w", err)
