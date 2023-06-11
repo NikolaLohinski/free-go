@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	codeNotFound                  = "noent"
 	ErrPortForwardingRuleNotFound = Error("port forwarding rule not found")
 )
 
@@ -27,7 +28,7 @@ func (c *client) ListPortForwardingRules() ([]types.PortForwardingRule, error) {
 func (c *client) GetPortForwardingRule(identifier int64) (rule types.PortForwardingRule, err error) {
 	response, err := c.Get(fmt.Sprintf("fw/redir/%d", identifier), c.withSession)
 	if err != nil {
-		if response != nil && response.ErrorCode == "noent" {
+		if response != nil && response.ErrorCode == codeNotFound {
 			return rule, ErrPortForwardingRuleNotFound
 		}
 
@@ -59,7 +60,7 @@ func (c *client) CreatePortForwardingRule(
 func (c *client) DeletePortForwardingRule(identifier int64) error {
 	response, err := c.Delete(fmt.Sprintf("fw/redir/%d", identifier), c.withSession)
 	if err != nil {
-		if response != nil && response.ErrorCode == "noent" {
+		if response != nil && response.ErrorCode == codeNotFound {
 			return ErrPortForwardingRuleNotFound
 		}
 
@@ -67,4 +68,24 @@ func (c *client) DeletePortForwardingRule(identifier int64) error {
 	}
 
 	return nil
+}
+
+func (c *client) UpdatePortForwardingRule(
+	identifier int64,
+	payload types.PortForwardingRulePayload,
+) (rule types.PortForwardingRule, err error) {
+	response, err := c.Put(fmt.Sprintf("fw/redir/%d", identifier), payload, c.withSession)
+	if err != nil {
+		if response != nil && response.ErrorCode == codeNotFound {
+			return rule, ErrPortForwardingRuleNotFound
+		}
+
+		return rule, fmt.Errorf("failed to GET fw/redir/%d endpoint: %w", identifier, err)
+	}
+
+	if err = c.fromGenericResponse(response, &rule); err != nil {
+		return rule, fmt.Errorf("failed to get a port forwarding rule from a generic response: %w", err)
+	}
+
+	return rule, nil
 }

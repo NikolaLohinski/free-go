@@ -9,18 +9,21 @@ import (
 	"github.com/nikolalohinski/free-go/types"
 )
 
+//nolint:interfacebloat
 type Client interface {
-	// Configuration
+	// configuration
 	WithAppID(string) Client
 	WithPrivateToken(types.PrivateToken) Client
 	WithHTTPClient(*http.Client) Client
-	// Methods
+	// unauthenticated
 	APIVersion() (types.APIVersion, error)
 	Authorize(types.AuthorizationRequest) (types.PrivateToken, error)
 	Login() (types.Permissions, error)
+	// port forwarding
 	ListPortForwardingRules() ([]types.PortForwardingRule, error)
 	GetPortForwardingRule(identifier int64) (types.PortForwardingRule, error)
 	CreatePortForwardingRule(payload types.PortForwardingRulePayload) (types.PortForwardingRule, error)
+	UpdatePortForwardingRule(identifier int64, payload types.PortForwardingRulePayload) (types.PortForwardingRule, error)
 	DeletePortForwardingRule(identifier int64) error
 }
 

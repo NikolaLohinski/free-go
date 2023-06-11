@@ -40,6 +40,22 @@ func (c *client) Delete(path string, options ...HTTPOption) (response *genericRe
 	return c.Do(request, options...)
 }
 
+func (c *client) Put(path string, body interface{}, options ...HTTPOption) (*genericResponse, error) {
+	requestBody := new(bytes.Buffer)
+	if err := json.NewEncoder(requestBody).Encode(body); err != nil {
+		return nil, fmt.Errorf("failed to encode body to JSON: %w", err)
+	}
+
+	request, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/%s", c.base, path), requestBody)
+	if err != nil {
+		return nil, fmt.Errorf("failed to forge new request: %w", err)
+	}
+
+	options = append(options, c.withJSONContentType)
+
+	return c.Do(request, options...)
+}
+
 func (c *client) Post(path string, body interface{}, options ...HTTPOption) (*genericResponse, error) {
 	requestBody := new(bytes.Buffer)
 	if err := json.NewEncoder(requestBody).Encode(body); err != nil {
