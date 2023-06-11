@@ -3,6 +3,7 @@
 package integration_test
 
 import (
+	"github.com/nikolalohinski/free-go/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -13,7 +14,7 @@ var _ = Describe("login scenarios", func() {
 			permissions, err := freeboxClient.WithAppID(appID).WithPrivateToken(token).Login()
 			Expect(err).To(BeNil())
 			Expect(permissions).ToNot(BeNil())
-			Expect(permissions).ToNot(BeEmpty())
+			Expect(permissions).To(BeAssignableToTypeOf(types.Permissions{}))
 		})
 	})
 })

@@ -86,21 +86,9 @@ var _ = Describe("login", func() {
 		})
 		It("should return the correct permissions", func() {
 			Expect(*returnedErr).To(BeNil())
-			Expect(*permissions).To(Equal(map[string]bool{
-				"parental":   false,
-				"player":     false,
-				"explorer":   false,
-				"tv":         false,
-				"wdo":        false,
-				"downloader": false,
-				"profile":    false,
-				"camera":     false,
-				"settings":   true,
-				"calls":      false,
-				"home":       false,
-				"pvr":        false,
-				"vm":         true,
-				"contacts":   false,
+			Expect(*permissions).To(Equal(types.Permissions{
+				Settings: true,
+				VM:       true,
 			}))
 		})
 	})

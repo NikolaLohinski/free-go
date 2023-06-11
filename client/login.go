@@ -31,15 +31,15 @@ type sessionResponse struct {
 	PasswordSalt string            `json:"password_salt"`
 }
 
-func (c *client) Login() (types.Permissions, error) {
+func (c *client) Login() (permissions types.Permissions, err error) {
 	challenge, err := c.getLoginChallenge()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get login challenge: %w", err)
+		return permissions, fmt.Errorf("failed to get login challenge: %w", err)
 	}
 
 	sessionResponse, err := c.getSession(challenge.Challenge)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get a session: %w", err)
+		return permissions, fmt.Errorf("failed to get a session: %w", err)
 	}
 
 	c.session = &session{
