@@ -13,7 +13,6 @@ import (
 )
 
 var _ = Describe("port forwarding scenarios", func() {
-
 	BeforeEach(func() {
 		freeboxClient = freeboxClient.WithAppID(appID).WithPrivateToken(token)
 

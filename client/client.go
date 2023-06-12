@@ -25,6 +25,8 @@ type Client interface {
 	CreatePortForwardingRule(payload types.PortForwardingRulePayload) (types.PortForwardingRule, error)
 	UpdatePortForwardingRule(identifier int64, payload types.PortForwardingRulePayload) (types.PortForwardingRule, error)
 	DeletePortForwardingRule(identifier int64) error
+	// lan browser
+	ListLanInterfaceInfo() ([]types.LanInfo, error)
 }
 
 type Error string
