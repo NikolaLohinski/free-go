@@ -28,6 +28,7 @@ type Client interface {
 	// lan browser
 	ListLanInterfaceInfo() ([]types.LanInfo, error)
 	GetLanInterface(name string) (result []types.LanInterfaceHost, err error)
+	GetLanInterfaceHost(interfaceName, identifier string) (result types.LanInterfaceHost, err error)
 }
 
 type Error string

@@ -19,8 +19,9 @@ And use it as follows:
 package main
 
 import (
+    "fmt"
+
     "github.com/nikolalohinski/free-go/client"
-    "github.com/nikolalohinski/free-go/types"
 )
 
 func main() {

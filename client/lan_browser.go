@@ -7,8 +7,11 @@ import (
 )
 
 const (
-	interfaceNotFoundCode = "nodev"
-	ErrInterfaceNotFound  = Error("interface not found")
+	interfaceNotFoundCode     = "nodev"
+	interfaceHostNotFoundCode = "nohost"
+
+	ErrInterfaceNotFound     = Error("interface not found")
+	ErrInterfaceHostNotFound = Error("interface host not found")
 )
 
 func (c *client) ListLanInterfaceInfo() (result []types.LanInfo, err error) {
@@ -18,7 +21,7 @@ func (c *client) ListLanInterfaceInfo() (result []types.LanInfo, err error) {
 	}
 
 	if err = c.fromGenericResponse(response, &result); err != nil {
-		return nil, fmt.Errorf("failed to get port lan info from generic response: %w", err)
+		return nil, fmt.Errorf("failed to get lan info from generic response: %w", err)
 	}
 
 	return result, nil
@@ -30,11 +33,33 @@ func (c *client) GetLanInterface(name string) (result []types.LanInterfaceHost, 
 		if response != nil && response.ErrorCode == interfaceNotFoundCode {
 			return result, ErrInterfaceNotFound
 		}
+
 		return result, fmt.Errorf("failed to GET lan/browser/%s endpoint: %w", name, err)
 	}
 
 	if err = c.fromGenericResponse(response, &result); err != nil {
-		return result, fmt.Errorf("failed to get port lan interface from generic response: %w", err)
+		return result, fmt.Errorf("failed to get lan interface from generic response: %w", err)
+	}
+
+	return result, nil
+}
+
+func (c *client) GetLanInterfaceHost(interfaceName, identifier string) (result types.LanInterfaceHost, err error) {
+	response, err := c.Get(fmt.Sprintf("lan/browser/%s/%s", interfaceName, identifier), c.withSession)
+	if err != nil {
+		if response != nil && response.ErrorCode == interfaceNotFoundCode {
+			return result, ErrInterfaceNotFound
+		}
+
+		if response != nil && response.ErrorCode == interfaceHostNotFoundCode {
+			return result, ErrInterfaceHostNotFound
+		}
+
+		return result, fmt.Errorf("failed to GET lan/browser/%s/%s endpoint: %w", interfaceName, identifier, err)
+	}
+
+	if err = c.fromGenericResponse(response, &result); err != nil {
+		return result, fmt.Errorf("failed to get port lan interface host from generic response: %w", err)
 	}
 
 	return result, nil
