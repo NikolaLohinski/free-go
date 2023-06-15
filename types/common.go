@@ -5,8 +5,6 @@ import (
 	"reflect"
 	"strconv"
 	"time"
-
-	"github.com/mitchellh/mapstructure"
 )
 
 type Timestamp struct {
@@ -30,11 +28,7 @@ func (t *Timestamp) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-var Float64ToTimeDecodeHook mapstructure.DecodeHookFunc = func(
-	field reflect.Type,
-	typ reflect.Type,
-	data interface{},
-) (interface{}, error) {
+func Float64ToTimeDecodeHook(field reflect.Type, typ reflect.Type, data interface{}) (interface{}, error) {
 	if field.Kind() != reflect.Float64 {
 		return data, nil
 	}

@@ -1,7 +1,9 @@
 package client_test
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"testing"
 
@@ -66,4 +68,35 @@ func setupLoginFlow(server *ghttp.Server) string {
 	)
 
 	return sessionToken
+}
+
+type mockHTTPClient struct {
+	statusCode   int
+	err          error
+	returnedBody io.ReadCloser
+}
+
+func (m mockHTTPClient) Do(*http.Request) (*http.Response, error) {
+	return &http.Response{
+		StatusCode: m.statusCode,
+		Body:       m.returnedBody,
+	}, m.err
+}
+
+type errorReader struct{}
+
+func (e errorReader) Read(p []byte) (n int, err error) {
+	return 0, errors.New("always return an error")
+}
+
+func (e errorReader) Close() (err error) {
+	return nil
+}
+
+type errorCloser struct {
+	io.Reader
+}
+
+func (e errorCloser) Close() (err error) {
+	return errors.New("always return an error")
 }

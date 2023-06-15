@@ -76,7 +76,7 @@ func (c *client) post(path string, body interface{}, options ...HTTPOption) (*ge
 	return c.do(request, options...)
 }
 
-func (c *client) do(request *http.Request, options ...HTTPOption) (*genericResponse, error) {
+func (c *client) do(request *http.Request, options ...HTTPOption) (response *genericResponse, err error) {
 	for _, option := range options {
 		if err := option(request); err != nil {
 			return nil, fmt.Errorf("failed to apply option to request: %w", err)

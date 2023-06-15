@@ -414,6 +414,16 @@ var _ = Describe("port forwarding", func() {
 				Expect(*returnedErr).ToNot(BeNil())
 			})
 		})
+		Context("when the endpoint is invalid", func() {
+			BeforeEach(func() {
+				freeboxClient = Must(client.New("$:]}{://}", version)).(client.Client).
+					WithAppID(appID).
+					WithPrivateToken(privateToken)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
 		Context("when the server returns an unexpected payload", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
@@ -454,6 +464,16 @@ var _ = Describe("port forwarding", func() {
 
 			It("should not return an error", func() {
 				Expect(*returnedErr).To(BeNil())
+			})
+		})
+		Context("when the endpoint is invalid", func() {
+			BeforeEach(func() {
+				freeboxClient = Must(client.New("$:]}{://}", version)).(client.Client).
+					WithAppID(appID).
+					WithPrivateToken(privateToken)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
 			})
 		})
 		Context("when the port forwarding rule is not found", func() {
@@ -581,6 +601,16 @@ var _ = Describe("port forwarding", func() {
 						"IPProtocol": Equal(types.TCP),
 					}),
 				}))
+			})
+		})
+		Context("when the endpoint is invalid", func() {
+			BeforeEach(func() {
+				freeboxClient = Must(client.New("$:]}{://}", version)).(client.Client).
+					WithAppID(appID).
+					WithPrivateToken(privateToken)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
 			})
 		})
 		Context("when the port forwarding rule is not found", func() {

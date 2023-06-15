@@ -3,6 +3,7 @@ package client_test
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -83,6 +84,66 @@ var _ = Describe("lan browser", func() {
 		Context("when server fails to respond", func() {
 			BeforeEach(func() {
 				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the endpoint is invalid", func() {
+			BeforeEach(func() {
+				freeboxClient = Must(client.New("$:]}{://}", version)).(client.Client).
+					WithAppID(appID).
+					WithPrivateToken(privateToken)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when reading the body returns an error", func() {
+			BeforeEach(func() {
+				freeboxClient = Must(client.New(*endpoint, version)).(client.Client).
+					WithAppID(appID).
+					WithPrivateToken(privateToken).
+					WithHTTPClient(mockHTTPClient{
+						returnedBody: errorReader{},
+					})
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when closing the body returns an error while an error was already there", func() {
+			BeforeEach(func() {
+				freeboxClient = Must(client.New(*endpoint, version)).(client.Client).
+					WithAppID(appID).
+					WithPrivateToken(privateToken).
+					WithHTTPClient(mockHTTPClient{
+						statusCode: http.StatusInternalServerError,
+						returnedBody: errorCloser{
+							strings.NewReader(`{}`),
+						},
+					})
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the sessions has expired and trying to login again fails", func() {
+			BeforeEach(func() {
+				client.LoginSessionTTL = 0
+				Must(freeboxClient.Login())
+				server.Close()
+			})
+			AfterEach(func() {
+				client.LoginSessionTTL = 30 * time.Minute
 			})
 			It("should return an error", func() {
 				Expect(*returnedErr).ToNot(BeNil())

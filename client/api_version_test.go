@@ -3,6 +3,7 @@ package client_test
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/MakeNowJust/heredoc"
 	. "github.com/onsi/ginkgo/v2"
@@ -15,18 +16,20 @@ import (
 
 var _ = Describe("api version", func() {
 	var (
-		server   *ghttp.Server
-		endpoint = new(string)
+		server *ghttp.Server
+
+		freeboxClient client.Client
 
 		apiVersion  = new(types.APIVersion)
 		returnedErr = new(error)
 	)
 	BeforeEach(func() {
 		server = ghttp.NewServer()
-		*endpoint = server.Addr()
+
+		freeboxClient = Must(client.New(server.Addr(), version)).(client.Client)
 	})
 	JustBeforeEach(func() {
-		*apiVersion, *returnedErr = Must(client.New(*endpoint, version)).(client.Client).APIVersion()
+		*apiVersion, *returnedErr = freeboxClient.APIVersion()
 	})
 	AfterEach(func() {
 		server.Close()
@@ -65,6 +68,47 @@ var _ = Describe("api version", func() {
 				APIVersion:     "0",
 				DeviceType:     "FreeboxServer0,0",
 			}))
+		})
+	})
+	Context("when the endpoint is invalid", func() {
+		BeforeEach(func() {
+			freeboxClient = Must(client.New(":{/@)=$£", version)).(client.Client)
+		})
+		It("should return an error", func() {
+			Expect(*returnedErr).ToNot(BeNil())
+		})
+	})
+	Context("when reading the body returns an error", func() {
+		BeforeEach(func() {
+			freeboxClient = Must(client.New(server.Addr(), version)).(client.Client).WithHTTPClient(&mockHTTPClient{
+				returnedBody: errorReader{},
+			})
+		})
+		It("should return an error", func() {
+			Expect(*returnedErr).ToNot(BeNil())
+		})
+	})
+	Context("when closing the body returns an error", func() {
+		BeforeEach(func() {
+			freeboxClient = Must(client.New(server.Addr(), version)).(client.Client).WithHTTPClient(&mockHTTPClient{
+				returnedBody: errorCloser{
+					strings.NewReader(`
+						"box_model_name": "Freebox v0",
+						"api_base_url": "/api/",
+						"https_port": 12345,
+						"device_name": "Freebox Server",
+						"https_available": true,
+						"box_model": "unit/test",
+						"api_domain": "test.fbxos.fr",
+						"uid": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+						"api_version": "0",
+						"device_type": "FreeboxServer0,0"
+					}`),
+				},
+			})
+		})
+		It("should return an error", func() {
+			Expect(*returnedErr).ToNot(BeNil())
 		})
 	})
 	Context("when the server is unavailable", func() {
