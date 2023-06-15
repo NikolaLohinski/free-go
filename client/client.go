@@ -14,7 +14,7 @@ type Client interface {
 	// configuration
 	WithAppID(string) Client
 	WithPrivateToken(types.PrivateToken) Client
-	WithHTTPClient(*http.Client) Client
+	WithHTTPClient(HTTPClient) Client
 	// unauthenticated
 	APIVersion() (types.APIVersion, error)
 	Authorize(types.AuthorizationRequest) (types.PrivateToken, error)
@@ -31,16 +31,14 @@ type Client interface {
 	GetLanInterfaceHost(interfaceName, identifier string) (result types.LanInterfaceHost, err error)
 }
 
-type Error string
-
-func (e Error) Error() string {
-	return string(e)
+type HTTPClient interface {
+	Do(*http.Request) (*http.Response, error)
 }
 
-var matchHTTPS = regexp.MustCompile("^https?://.*")
+var matchHTTPSRegex = regexp.MustCompile("^https?://.*")
 
 func New(endpoint, version string) (Client, error) {
-	if !matchHTTPS.MatchString(endpoint) {
+	if !matchHTTPSRegex.MatchString(endpoint) {
 		endpoint = fmt.Sprintf("http://%s", endpoint)
 	}
 
@@ -51,7 +49,7 @@ func New(endpoint, version string) (Client, error) {
 }
 
 type client struct {
-	httpClient   *http.Client
+	httpClient   HTTPClient
 	privateToken *string
 	appID        *string
 
@@ -76,7 +74,7 @@ func (c *client) WithPrivateToken(privateToken types.PrivateToken) Client {
 	return c
 }
 
-func (c *client) WithHTTPClient(httpClient *http.Client) Client {
+func (c *client) WithHTTPClient(httpClient HTTPClient) Client {
 	c.httpClient = httpClient
 
 	return c

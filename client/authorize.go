@@ -7,11 +7,6 @@ import (
 	"github.com/nikolalohinski/free-go/types"
 )
 
-var (
-	ClientAuthorizeGrantingTimeout = time.Minute * 5
-	ClientAuthorizeRetryDelay      = time.Second * 5
-)
-
 type authorizationRequest struct {
 	AppID      string `json:"app_id"`
 	AppName    string `json:"app_name"`
@@ -29,6 +24,10 @@ type trackResponse struct {
 }
 
 func (c *client) Authorize(request types.AuthorizationRequest) (types.PrivateToken, error) {
+	if c.appID == nil {
+		return "", ErrAppIDIsNotSet
+	}
+
 	authorization, err := c.requestToken(request)
 	if err != nil {
 		return "", fmt.Errorf("failed to request a private token: %w", err)
@@ -42,11 +41,7 @@ func (c *client) Authorize(request types.AuthorizationRequest) (types.PrivateTok
 }
 
 func (c *client) requestToken(request types.AuthorizationRequest) (*authorizationResponse, error) {
-	if c.appID == nil {
-		return nil, fmt.Errorf("app ID is not set")
-	}
-
-	response, err := c.Post("login/authorize", authorizationRequest{
+	response, err := c.post("login/authorize", authorizationRequest{
 		AppID:      *c.appID,
 		AppName:    request.Name,
 		AppVersion: request.Version,
@@ -65,14 +60,14 @@ func (c *client) requestToken(request types.AuthorizationRequest) (*authorizatio
 }
 
 func (c *client) waitForTokenApproval(trackID int64) error {
-	expiration := time.Now().Add(ClientAuthorizeGrantingTimeout)
+	expiration := time.Now().Add(AuthorizeGrantingTimeout)
 
 	for {
 		if time.Now().After(expiration) {
-			return fmt.Errorf("reached hard timeout after %s waiting for token approval", ClientAuthorizeGrantingTimeout)
+			return fmt.Errorf("reached hard timeout after %s waiting for token approval", AuthorizeGrantingTimeout)
 		}
 
-		response, err := c.Get(fmt.Sprintf("login/authorize/%d", trackID))
+		response, err := c.get(fmt.Sprintf("login/authorize/%d", trackID))
 		if err != nil {
 			return fmt.Errorf("failed to GET login/authorize/%d endpoint: %w", trackID, err)
 		}
@@ -83,7 +78,7 @@ func (c *client) waitForTokenApproval(trackID int64) error {
 		}
 
 		if result.Status == "pending" {
-			time.Sleep(ClientAuthorizeRetryDelay)
+			time.Sleep(AuthorizeRetryDelay)
 
 			continue
 		}

@@ -11,12 +11,12 @@ import (
 	"github.com/nikolalohinski/free-go/client"
 )
 
-type transportMock struct {
+type httpClientMock struct {
 	request  *http.Request
 	response func() (*http.Response, error)
 }
 
-func (m *transportMock) RoundTrip(request *http.Request) (*http.Response, error) {
+func (m *httpClientMock) Do(request *http.Request) (*http.Response, error) {
 	m.request = request
 	return m.response()
 }
@@ -45,21 +45,19 @@ var _ = Describe("client", func() {
 		})
 	})
 	Context("when overriding the default http client", func() {
-		mock := new(transportMock)
+		httpMock := new(httpClientMock)
 		BeforeEach(func() {
-			mock = &transportMock{
+			httpMock = &httpClientMock{
 				response: func() (*http.Response, error) {
 					return nil, errors.New("just fail")
 				},
 			}
 		})
 		JustBeforeEach(func() {
-			_, *returnedErr = freeboxClient.WithHTTPClient(&http.Client{
-				Transport: mock,
-			}).APIVersion()
+			_, *returnedErr = freeboxClient.WithHTTPClient(httpMock).APIVersion()
 		})
 		It("should have called the overridden HTTP client", func() {
-			Expect(*mock.request).ToNot(BeNil())
+			Expect(*httpMock.request).ToNot(BeNil())
 			Expect((*returnedErr).Error()).To(MatchRegexp("just fail"))
 		})
 	})

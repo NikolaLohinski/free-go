@@ -47,6 +47,7 @@ var _ = Describe("lan browser", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/lan/browser/interfaces/", version)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 						    "success": true,
 						    "result": [
@@ -92,6 +93,7 @@ var _ = Describe("lan browser", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/lan/browser/interfaces/", version)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
 							"result": {
@@ -119,6 +121,7 @@ var _ = Describe("lan browser", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/lan/browser/%s", version, interfaceName)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
 							"result": [{
@@ -214,6 +217,7 @@ var _ = Describe("lan browser", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/lan/browser/%s", version, interfaceName)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"msg": "Erreur lors de la récupération de la liste des hôtes : Interface invalide",
 							"success": false,
@@ -241,6 +245,7 @@ var _ = Describe("lan browser", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/lan/browser/%s", version, interfaceName)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
 							"result": {
@@ -269,6 +274,7 @@ var _ = Describe("lan browser", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/lan/browser/%s/%s", version, interfaceName, hostIdentifier)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
 							"result": {
@@ -362,6 +368,7 @@ var _ = Describe("lan browser", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/lan/browser/%s/%s", version, interfaceName, hostIdentifier)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"msg": "Erreur lors de la récupération de la liste des hôtes : Interface invalide",
 							"success": false,
@@ -381,6 +388,7 @@ var _ = Describe("lan browser", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/lan/browser/%s/%s", version, interfaceName, hostIdentifier)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"msg": "Erreur lors de la récupération de la liste des hôtes : Pas d'hôte avec cet identifiant",
 							"success": false,
@@ -408,6 +416,7 @@ var _ = Describe("lan browser", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/lan/browser/%s/%s", version, interfaceName, hostIdentifier)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
 							"result": []

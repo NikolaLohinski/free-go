@@ -9,13 +9,10 @@ import (
 const (
 	interfaceNotFoundCode     = "nodev"
 	interfaceHostNotFoundCode = "nohost"
-
-	ErrInterfaceNotFound     = Error("interface not found")
-	ErrInterfaceHostNotFound = Error("interface host not found")
 )
 
 func (c *client) ListLanInterfaceInfo() (result []types.LanInfo, err error) {
-	response, err := c.Get("lan/browser/interfaces/", c.withSession)
+	response, err := c.get("lan/browser/interfaces/", c.withSession)
 	if err != nil {
 		return nil, fmt.Errorf("failed to GET lan/browser/interfaces/ endpoint: %w", err)
 	}
@@ -28,7 +25,7 @@ func (c *client) ListLanInterfaceInfo() (result []types.LanInfo, err error) {
 }
 
 func (c *client) GetLanInterface(name string) (result []types.LanInterfaceHost, err error) {
-	response, err := c.Get(fmt.Sprintf("lan/browser/%s", name), c.withSession)
+	response, err := c.get(fmt.Sprintf("lan/browser/%s", name), c.withSession)
 	if err != nil {
 		if response != nil && response.ErrorCode == interfaceNotFoundCode {
 			return result, ErrInterfaceNotFound
@@ -45,7 +42,7 @@ func (c *client) GetLanInterface(name string) (result []types.LanInterfaceHost, 
 }
 
 func (c *client) GetLanInterfaceHost(interfaceName, identifier string) (result types.LanInterfaceHost, err error) {
-	response, err := c.Get(fmt.Sprintf("lan/browser/%s/%s", interfaceName, identifier), c.withSession)
+	response, err := c.get(fmt.Sprintf("lan/browser/%s/%s", interfaceName, identifier), c.withSession)
 	if err != nil {
 		if response != nil && response.ErrorCode == interfaceNotFoundCode {
 			return result, ErrInterfaceNotFound

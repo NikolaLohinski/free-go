@@ -9,8 +9,6 @@ import (
 	"github.com/nikolalohinski/free-go/types"
 )
 
-var ClientLoginSessionTTL = time.Minute * 30 // Fixed by the freebox server, but made into a variable for unit testing
-
 type loginChallenge struct {
 	LoggedIn     bool   `json:"logged_in"`
 	Challenge    string `json:"challenge"`
@@ -32,6 +30,14 @@ type sessionResponse struct {
 }
 
 func (c *client) Login() (permissions types.Permissions, err error) {
+	if c.appID == nil {
+		return permissions, ErrAppIDIsNotSet
+	}
+
+	if c.privateToken == nil {
+		return permissions, ErrPrivateTokenIsNotSet
+	}
+
 	challenge, err := c.getLoginChallenge()
 	if err != nil {
 		return permissions, fmt.Errorf("failed to get login challenge: %w", err)
@@ -44,14 +50,14 @@ func (c *client) Login() (permissions types.Permissions, err error) {
 
 	c.session = &session{
 		token:   sessionResponse.SessionToken,
-		expires: time.Now().Add(ClientLoginSessionTTL),
+		expires: time.Now().Add(LoginSessionTTL),
 	}
 
 	return sessionResponse.Permissions, nil
 }
 
 func (c *client) getLoginChallenge() (*loginChallenge, error) {
-	response, err := c.Get("login")
+	response, err := c.get("login")
 	if err != nil {
 		return nil, fmt.Errorf("failed to GET login endpoint: %w", err)
 	}
@@ -65,19 +71,11 @@ func (c *client) getLoginChallenge() (*loginChallenge, error) {
 }
 
 func (c *client) getSession(challenge string) (*sessionResponse, error) {
-	if c.privateToken == nil {
-		return nil, fmt.Errorf("private token is not set")
-	}
-
 	hash := hmac.New(sha1.New, []byte(*c.privateToken))
 
 	hash.Write([]byte(challenge))
 
-	if c.appID == nil {
-		return nil, fmt.Errorf("app ID is not set")
-	}
-
-	response, err := c.Post("login/session", sessionsRequest{
+	response, err := c.post("login/session", sessionsRequest{
 		AppID:    *c.appID,
 		Password: fmt.Sprintf("%x", hash.Sum(nil)),
 	})

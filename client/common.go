@@ -12,6 +12,10 @@ import (
 	"github.com/nikolalohinski/free-go/types"
 )
 
+const (
+	AuthHeader = "X-Fbx-App-Auth"
+)
+
 type genericResponse struct {
 	UID       string      `json:"uid,omitempty"`
 	Message   string      `json:"msg,omitempty"`
@@ -22,25 +26,25 @@ type genericResponse struct {
 
 type HTTPOption = func(*http.Request) error
 
-func (c *client) Get(path string, options ...HTTPOption) (response *genericResponse, err error) {
+func (c *client) get(path string, options ...HTTPOption) (response *genericResponse, err error) {
 	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", c.base, path), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to forge new request: %w", err)
 	}
 
-	return c.Do(request, options...)
+	return c.do(request, options...)
 }
 
-func (c *client) Delete(path string, options ...HTTPOption) (response *genericResponse, err error) {
+func (c *client) delete(path string, options ...HTTPOption) (response *genericResponse, err error) {
 	request, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/%s", c.base, path), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to forge new request: %w", err)
 	}
 
-	return c.Do(request, options...)
+	return c.do(request, options...)
 }
 
-func (c *client) Put(path string, body interface{}, options ...HTTPOption) (*genericResponse, error) {
+func (c *client) put(path string, body interface{}, options ...HTTPOption) (*genericResponse, error) {
 	requestBody := new(bytes.Buffer)
 	if err := json.NewEncoder(requestBody).Encode(body); err != nil {
 		return nil, fmt.Errorf("failed to encode body to JSON: %w", err)
@@ -53,10 +57,10 @@ func (c *client) Put(path string, body interface{}, options ...HTTPOption) (*gen
 
 	options = append(options, c.withJSONContentType)
 
-	return c.Do(request, options...)
+	return c.do(request, options...)
 }
 
-func (c *client) Post(path string, body interface{}, options ...HTTPOption) (*genericResponse, error) {
+func (c *client) post(path string, body interface{}, options ...HTTPOption) (*genericResponse, error) {
 	requestBody := new(bytes.Buffer)
 	if err := json.NewEncoder(requestBody).Encode(body); err != nil {
 		return nil, fmt.Errorf("failed to encode body to JSON: %w", err)
@@ -69,10 +73,10 @@ func (c *client) Post(path string, body interface{}, options ...HTTPOption) (*ge
 
 	options = append(options, c.withJSONContentType)
 
-	return c.Do(request, options...)
+	return c.do(request, options...)
 }
 
-func (c *client) Do(request *http.Request, options ...HTTPOption) (*genericResponse, error) {
+func (c *client) do(request *http.Request, options ...HTTPOption) (*genericResponse, error) {
 	for _, option := range options {
 		if err := option(request); err != nil {
 			return nil, fmt.Errorf("failed to apply option to request: %w", err)
@@ -100,7 +104,7 @@ func (c *client) fromGenericResponse(generic *genericResponse, target interface{
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		TagName:    "json",
 		Result:     target,
-		DecodeHook: types.Float64ToTimeHookFunc(),
+		DecodeHook: types.Float64ToTimeDecodeHook,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to instantiate a map structure decoder: %w", err)
@@ -154,7 +158,7 @@ func (c *client) withSession(req *http.Request) error {
 		}
 	}
 
-	req.Header.Add("X-Fbx-App-Auth", c.session.token)
+	req.Header.Add(AuthHeader, c.session.token)
 
 	return nil
 }

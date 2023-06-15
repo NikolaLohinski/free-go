@@ -7,12 +7,11 @@ import (
 )
 
 const (
-	codeNotFound                  = "noent"
-	ErrPortForwardingRuleNotFound = Error("port forwarding rule not found")
+	codeNotFound = "noent"
 )
 
 func (c *client) ListPortForwardingRules() ([]types.PortForwardingRule, error) {
-	response, err := c.Get("fw/redir/", c.withSession)
+	response, err := c.get("fw/redir/", c.withSession)
 	if err != nil {
 		return nil, fmt.Errorf("failed to GET fw/redir/ endpoint: %w", err)
 	}
@@ -26,7 +25,7 @@ func (c *client) ListPortForwardingRules() ([]types.PortForwardingRule, error) {
 }
 
 func (c *client) GetPortForwardingRule(identifier int64) (rule types.PortForwardingRule, err error) {
-	response, err := c.Get(fmt.Sprintf("fw/redir/%d", identifier), c.withSession)
+	response, err := c.get(fmt.Sprintf("fw/redir/%d", identifier), c.withSession)
 	if err != nil {
 		if response != nil && response.ErrorCode == codeNotFound {
 			return rule, ErrPortForwardingRuleNotFound
@@ -45,7 +44,7 @@ func (c *client) GetPortForwardingRule(identifier int64) (rule types.PortForward
 func (c *client) CreatePortForwardingRule(
 	payload types.PortForwardingRulePayload,
 ) (rule types.PortForwardingRule, err error) {
-	response, err := c.Post("fw/redir/", payload, c.withSession)
+	response, err := c.post("fw/redir/", payload, c.withSession)
 	if err != nil {
 		return rule, fmt.Errorf("failed to POST to fw/redir/ endpoint: %w", err)
 	}
@@ -58,7 +57,7 @@ func (c *client) CreatePortForwardingRule(
 }
 
 func (c *client) DeletePortForwardingRule(identifier int64) error {
-	response, err := c.Delete(fmt.Sprintf("fw/redir/%d", identifier), c.withSession)
+	response, err := c.delete(fmt.Sprintf("fw/redir/%d", identifier), c.withSession)
 	if err != nil {
 		if response != nil && response.ErrorCode == codeNotFound {
 			return ErrPortForwardingRuleNotFound
@@ -74,7 +73,7 @@ func (c *client) UpdatePortForwardingRule(
 	identifier int64,
 	payload types.PortForwardingRulePayload,
 ) (rule types.PortForwardingRule, err error) {
-	response, err := c.Put(fmt.Sprintf("fw/redir/%d", identifier), payload, c.withSession)
+	response, err := c.put(fmt.Sprintf("fw/redir/%d", identifier), payload, c.withSession)
 	if err != nil {
 		if response != nil && response.ErrorCode == codeNotFound {
 			return rule, ErrPortForwardingRuleNotFound

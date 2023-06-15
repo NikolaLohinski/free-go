@@ -10,7 +10,12 @@ import (
 )
 
 func (c *client) APIVersion() (version types.APIVersion, err error) {
-	response, err := c.httpClient.Get(fmt.Sprintf("%s/api_version", c.base))
+	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api_version", c.base), nil)
+	if err != nil {
+		return version, fmt.Errorf("failed to build request: %w", err)
+	}
+
+	response, err := c.httpClient.Do(request)
 	if err != nil {
 		return version, fmt.Errorf("failed to perform request: %w", err)
 	}

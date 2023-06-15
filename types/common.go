@@ -30,27 +30,25 @@ func (t *Timestamp) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func Float64ToTimeHookFunc() mapstructure.DecodeHookFunc {
-	return func(
-		field reflect.Type,
-		typ reflect.Type,
-		data interface{},
-	) (interface{}, error) {
-		if field.Kind() != reflect.Float64 {
-			return data, nil
-		}
-
-		if typ != reflect.TypeOf(Timestamp{time.Now()}) {
-			return data, nil
-		}
-
-		epoch, ok := data.(float64)
-		if !ok {
-			return nil, fmt.Errorf("%v is not of a float", data)
-		}
-
-		return &Timestamp{
-			time.Unix(int64(epoch), 0),
-		}, nil
+var Float64ToTimeDecodeHook mapstructure.DecodeHookFunc = func(
+	field reflect.Type,
+	typ reflect.Type,
+	data interface{},
+) (interface{}, error) {
+	if field.Kind() != reflect.Float64 {
+		return data, nil
 	}
+
+	if typ != reflect.TypeOf(Timestamp{time.Now()}) {
+		return data, nil
+	}
+
+	epoch, ok := data.(float64)
+	if !ok {
+		return nil, fmt.Errorf("%v is not of a float", data)
+	}
+
+	return &Timestamp{
+		time.Unix(int64(epoch), 0),
+	}, nil
 }

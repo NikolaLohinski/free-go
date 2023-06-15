@@ -18,18 +18,21 @@ var _ = Describe("login", func() {
 		server   *ghttp.Server
 		endpoint = new(string)
 
+		freeboxClient client.Client
+
 		permissions = new(types.Permissions)
 		returnedErr = new(error)
 	)
 	BeforeEach(func() {
 		server = ghttp.NewServer()
 		*endpoint = server.Addr()
+
+		freeboxClient = Must(client.New(*endpoint, version)).(client.Client).
+			WithAppID(appID).
+			WithPrivateToken(privateToken)
 	})
 	JustBeforeEach(func() {
-		*permissions, *returnedErr = Must(client.New(*endpoint, version)).(client.Client).
-			WithAppID(appID).
-			WithPrivateToken(privateToken).
-			Login()
+		*permissions, *returnedErr = freeboxClient.Login()
 	})
 	AfterEach(func() {
 		server.Close()
@@ -128,7 +131,6 @@ var _ = Describe("login", func() {
 			})
 		})
 	})
-
 	Context("when getting the challenge fails", func() {
 		Context("with an unexpected status code", func() {
 			BeforeEach(func() {
@@ -259,6 +261,77 @@ var _ = Describe("login", func() {
 				Expect(*returnedErr).ToNot(BeNil())
 				Expect((*returnedErr).Error()).To(MatchRegexp("failed to unmarshal response body '{': .*"))
 			})
+		})
+	})
+	Context("when the server returned an unexpected payload for the login challenge", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/login", version)),
+					ghttp.RespondWith(http.StatusOK, heredoc.Doc(`{
+						"success": true,
+						"result": []
+					}`)),
+				),
+			)
+		})
+		It("should return an error", func() {
+			Expect(*returnedErr).ToNot(BeNil())
+		})
+	})
+	Context("when the server returned an unexpected payload for the session result", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/login", version)),
+					ghttp.RespondWith(http.StatusOK, heredoc.Doc(`{
+						"success": true,
+						"result": {
+							"logged_in": false,
+							"challenge": "9Va31tSgQWM853j0kSCtBUyzYNhPN7IY",
+							"password_salt": "PJpG867vNjvbYY2z67Yy4164kEmmfrOC",
+							"password_set": true
+						}
+					}`)),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/login/session", version)),
+					ghttp.VerifyContentType("application/json"),
+					ghttp.VerifyJSON(`{
+					    "app_id": "`+appID+`",
+					    "password": "c3464d210c1be4f1ef6f34c578d463fc28d40a61"
+					}`),
+					ghttp.RespondWith(http.StatusOK, heredoc.Doc(`{
+						"success": true,
+						"result": []
+					}`)),
+				),
+			)
+		})
+		It("should return an error", func() {
+			Expect(*returnedErr).ToNot(BeNil())
+		})
+	})
+	Context("when app id is not set", func() {
+		BeforeEach(func() {
+			freeboxClient = Must(client.New(*endpoint, version)).(client.Client).
+				WithPrivateToken(privateToken)
+		})
+
+		It("should return the correct error", func() {
+			Expect(*returnedErr).ToNot(BeNil())
+			Expect(*returnedErr).To(Equal(client.ErrAppIDIsNotSet))
+		})
+	})
+	Context("when private token is not set", func() {
+		BeforeEach(func() {
+			freeboxClient = Must(client.New(*endpoint, version)).(client.Client).
+				WithAppID(appID)
+		})
+
+		It("should return the correct error", func() {
+			Expect(*returnedErr).ToNot(BeNil())
+			Expect(*returnedErr).To(Equal(client.ErrPrivateTokenIsNotSet))
 		})
 	})
 })

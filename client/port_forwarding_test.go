@@ -48,6 +48,7 @@ var _ = Describe("port forwarding", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fw/redir/", version)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
 							"result": [
@@ -125,6 +126,7 @@ var _ = Describe("port forwarding", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fw/redir/", version)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true
 						}`),
@@ -149,6 +151,7 @@ var _ = Describe("port forwarding", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fw/redir/", version)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
 							"result": {
@@ -176,6 +179,7 @@ var _ = Describe("port forwarding", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fw/redir/%d", version, identifier)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
 							"result": {
@@ -251,6 +255,7 @@ var _ = Describe("port forwarding", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fw/redir/%d", version, identifier)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"msg": "Impossible de récupérer la redirection : Entrée non trouvée",
 							"success": false,
@@ -279,6 +284,7 @@ var _ = Describe("port forwarding", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fw/redir/%d", version, identifier)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
 							"result": []
@@ -318,6 +324,7 @@ var _ = Describe("port forwarding", func() {
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/fw/redir/", version)),
 						ghttp.VerifyContentType("application/json"),
+						verifyAuth(*sessionToken),
 						ghttp.VerifyJSON(`{
 							"enabled": true,
 							"comment": "test",
@@ -412,6 +419,7 @@ var _ = Describe("port forwarding", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/fw/redir/", version)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
 							"result": []
@@ -436,6 +444,7 @@ var _ = Describe("port forwarding", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodDelete, fmt.Sprintf("/api/%s/fw/redir/%d", version, identifier)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true
 						}`),
@@ -452,6 +461,7 @@ var _ = Describe("port forwarding", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodDelete, fmt.Sprintf("/api/%s/fw/redir/%d", version, identifier)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"msg": "Impossible de récupérer la redirection : Entrée non trouvée",
 							"success": false,
@@ -497,6 +507,7 @@ var _ = Describe("port forwarding", func() {
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodPut, fmt.Sprintf("/api/%s/fw/redir/%d", version, identifier)),
 						ghttp.VerifyContentType("application/json"),
+						verifyAuth(*sessionToken),
 						ghttp.VerifyJSON(`{
 							"enabled": false
 						}`),
@@ -577,6 +588,7 @@ var _ = Describe("port forwarding", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodPut, fmt.Sprintf("/api/%s/fw/redir/%d", version, identifier)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"msg": "Impossible de récupérer la redirection : Entrée non trouvée",
 							"success": false,
@@ -603,6 +615,7 @@ var _ = Describe("port forwarding", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodPut, fmt.Sprintf("/api/%s/fw/redir/%d", version, identifier)),
+						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
 							"result": []

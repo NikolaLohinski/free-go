@@ -36,6 +36,8 @@ var _ = Describe("authorize", func() {
 		server = ghttp.NewServer()
 		*endpoint = server.Addr()
 
+		client.AuthorizeRetryDelay = time.Millisecond * 50
+
 		freeboxClient = Must(client.New(*endpoint, version)).(client.Client).WithAppID(appID)
 	})
 	JustBeforeEach(func() {
@@ -46,7 +48,6 @@ var _ = Describe("authorize", func() {
 	})
 	Context("when the authorization is approved after some time", func() {
 		BeforeEach(func() {
-			client.ClientAuthorizeRetryDelay = time.Millisecond * 50
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/login/authorize", version)),
@@ -96,7 +97,6 @@ var _ = Describe("authorize", func() {
 	})
 	Context("when the authorization ends in an unexpected status", func() {
 		BeforeEach(func() {
-			client.ClientAuthorizeRetryDelay = time.Millisecond * 50
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/login/authorize", version)),
@@ -133,8 +133,7 @@ var _ = Describe("authorize", func() {
 	})
 	Context("when the authorization times out on client side", func() {
 		BeforeEach(func() {
-			client.ClientAuthorizeRetryDelay = time.Millisecond * 50
-			client.ClientAuthorizeGrantingTimeout = time.Millisecond * 1
+			client.AuthorizeGrantingTimeout = time.Millisecond * 1
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/login/authorize", version)),
@@ -171,14 +170,120 @@ var _ = Describe("authorize", func() {
 			Expect((*returnedErr).Error()).To(MatchRegexp(".* reached hard timeout after .* waiting for token approval"))
 		})
 	})
-
+	Context("when the server returns an unexpected status during authorization request ", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/login/authorize", version)),
+					ghttp.VerifyContentType("application/json"),
+					ghttp.VerifyJSON(`{
+						"app_id": "`+appID+`",
+						"app_name": "`+authorizationRequest.Name+`",
+						"app_version": "`+authorizationRequest.Version+`",
+						"device_name": "`+authorizationRequest.Device+`"
+					}`),
+					ghttp.RespondWith(http.StatusInternalServerError, nil),
+				),
+			)
+		})
+		It("should return an error", func() {
+			Expect(*returnedErr).ToNot(BeNil())
+		})
+	})
+	Context("when the server returns an unexpected payload during authorization request ", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/login/authorize", version)),
+					ghttp.VerifyContentType("application/json"),
+					ghttp.VerifyJSON(`{
+						"app_id": "`+appID+`",
+						"app_name": "`+authorizationRequest.Name+`",
+						"app_version": "`+authorizationRequest.Version+`",
+						"device_name": "`+authorizationRequest.Device+`"
+					}`),
+					ghttp.RespondWith(http.StatusOK, `{
+					    "success": true,
+					    "result": []
+					}`),
+				),
+			)
+		})
+		It("should return an error", func() {
+			Expect(*returnedErr).ToNot(BeNil())
+		})
+	})
+	Context("when the server returns an unexpected status during tracking", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/login/authorize", version)),
+					ghttp.VerifyContentType("application/json"),
+					ghttp.VerifyJSON(`{
+						"app_id": "`+appID+`",
+						"app_name": "`+authorizationRequest.Name+`",
+						"app_version": "`+authorizationRequest.Version+`",
+						"device_name": "`+authorizationRequest.Device+`"
+					}`),
+					ghttp.RespondWith(http.StatusOK, `{
+					    "success": true,
+					    "result": {
+					        "app_token": "`+returnedPrivateToken+`",
+					        "track_id": `+returnedTrackID+`
+					    }
+					}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/login/authorize/%s", version, returnedTrackID)),
+					ghttp.RespondWith(http.StatusOK, `{
+					    "success": true,
+					    "result": []
+					}`),
+				),
+			)
+		})
+		It("should return an error", func() {
+			Expect(*returnedErr).ToNot(BeNil())
+		})
+	})
+	Context("when the server returns an unexpected payload during tracking", func() {
+		BeforeEach(func() {
+			client.AuthorizeRetryDelay = time.Millisecond * 50
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/login/authorize", version)),
+					ghttp.VerifyContentType("application/json"),
+					ghttp.VerifyJSON(`{
+						"app_id": "`+appID+`",
+						"app_name": "`+authorizationRequest.Name+`",
+						"app_version": "`+authorizationRequest.Version+`",
+						"device_name": "`+authorizationRequest.Device+`"
+					}`),
+					ghttp.RespondWith(http.StatusOK, `{
+					    "success": true,
+					    "result": {
+					        "app_token": "`+returnedPrivateToken+`",
+					        "track_id": `+returnedTrackID+`
+					    }
+					}`),
+				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/login/authorize/%s", version, returnedTrackID)),
+					ghttp.RespondWith(http.StatusInternalServerError, nil),
+				),
+			)
+		})
+		It("should return an error", func() {
+			Expect(*returnedErr).ToNot(BeNil())
+		})
+	})
 	Context("when appID is not set", func() {
 		BeforeEach(func() {
 			freeboxClient = Must(client.New(*endpoint, version)).(client.Client)
 		})
 		It("should return the private token provided by the server", func() {
 			Expect(*returnedErr).ToNot(BeNil())
-			Expect((*returnedErr).Error()).To(MatchRegexp(".* app ID is not set"))
+			Expect(*returnedErr).To(Equal(client.ErrAppIDIsNotSet))
 		})
 	})
 })

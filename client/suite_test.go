@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/nikolalohinski/free-go/client"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
@@ -26,6 +27,10 @@ func Must(r interface{}, err error) interface{} {
 		panic(err)
 	}
 	return r
+}
+
+func verifyAuth(sessionToken string) http.HandlerFunc {
+	return ghttp.VerifyHeaderKV(client.AuthHeader, sessionToken)
 }
 
 func setupLoginFlow(server *ghttp.Server) string {
