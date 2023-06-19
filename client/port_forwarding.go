@@ -17,8 +17,10 @@ func (c *client) ListPortForwardingRules() ([]types.PortForwardingRule, error) {
 	}
 
 	result := make([]types.PortForwardingRule, 0)
-	if err = c.fromGenericResponse(response, &result); err != nil {
-		return nil, fmt.Errorf("failed to get port forwarding rules from generic response: %w", err)
+	if response.Result != nil {
+		if err = c.fromGenericResponse(response, &result); err != nil {
+			return nil, fmt.Errorf("failed to get port forwarding rules from generic response: %w", err)
+		}
 	}
 
 	return result, nil

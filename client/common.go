@@ -7,9 +7,6 @@ import (
 	"io"
 	"net/http"
 	"time"
-
-	"github.com/mitchellh/mapstructure"
-	"github.com/nikolalohinski/free-go/types"
 )
 
 const (
@@ -17,11 +14,11 @@ const (
 )
 
 type genericResponse struct {
-	UID       string      `json:"uid,omitempty"`
-	Message   string      `json:"msg,omitempty"`
-	ErrorCode string      `json:"error_code,omitempty"`
-	Success   bool        `json:"success"`
-	Result    interface{} `json:"result"`
+	UID       string          `json:"uid,omitempty"`
+	Message   string          `json:"msg,omitempty"`
+	ErrorCode string          `json:"error_code,omitempty"`
+	Success   bool            `json:"success"`
+	Result    json.RawMessage `json:"result"`
 }
 
 type HTTPOption = func(*http.Request) error
@@ -101,16 +98,7 @@ func (c *client) do(request *http.Request, options ...HTTPOption) (response *gen
 }
 
 func (c *client) fromGenericResponse(generic *genericResponse, target interface{}) error {
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		TagName:    "json",
-		Result:     target,
-		DecodeHook: types.Float64ToTimeDecodeHook,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to instantiate a map structure decoder: %w", err)
-	}
-
-	if err = decoder.Decode(generic.Result); err != nil {
+	if err := json.Unmarshal(generic.Result, target); err != nil {
 		return fmt.Errorf("failed to decode response result to given target: %w", err)
 	}
 

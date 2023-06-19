@@ -19,9 +19,9 @@ type PortForwardingRulePayload struct {
 }
 
 type PortForwardingRule struct {
-	PortForwardingRulePayload `json:",squash"` //nolint:staticcheck
-	ID                        int64            `json:"id"`
-	Valid                     bool             `json:"valid"`
-	Hostname                  string           `json:"hostname"`
-	Host                      LanInterfaceHost `json:"host"`
+	PortForwardingRulePayload
+	ID       int64            `json:"id"`
+	Valid    bool             `json:"valid"`
+	Hostname string           `json:"hostname"`
+	Host     LanInterfaceHost `json:"host"`
 }
