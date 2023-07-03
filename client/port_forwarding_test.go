@@ -112,7 +112,7 @@ var _ = Describe("port forwarding", func() {
 				Expect((*returnedRules)[0]).To(MatchFields(IgnoreExtras, Fields{
 					"Hostname": Equal("testing"),
 					"Host": MatchFields(IgnoreExtras, Fields{
-						"LastActivity": Equal(types.Timestamp{Time: time.Unix(1682579132, 0)}),
+						"LastActivity": Equal(types.Timestamp{Time: time.Unix(1682579132, 0).UTC()}),
 					}),
 					"PortForwardingRulePayload": MatchFields(IgnoreExtras, Fields{
 						"LanPort":    Equal(int64(80)),
@@ -240,7 +240,7 @@ var _ = Describe("port forwarding", func() {
 				Expect(*returnedRule).To(MatchFields(IgnoreExtras, Fields{
 					"Hostname": Equal("testing"),
 					"Host": MatchFields(IgnoreExtras, Fields{
-						"LastActivity": Equal(types.Timestamp{Time: time.Unix(1682579132, 0)}),
+						"LastActivity": Equal(types.Timestamp{Time: time.Unix(1682579132, 0).UTC()}),
 					}),
 					"ID": Equal(int64(5)),
 					"PortForwardingRulePayload": MatchFields(IgnoreExtras, Fields{
@@ -395,7 +395,7 @@ var _ = Describe("port forwarding", func() {
 				Expect(*returnedRule).To(MatchFields(IgnoreExtras, Fields{
 					"Hostname": Equal("testing"),
 					"Host": MatchFields(IgnoreExtras, Fields{
-						"LastActivity": Equal(types.Timestamp{Time: time.Unix(1682579132, 0)}),
+						"LastActivity": Equal(types.Timestamp{Time: time.Unix(1682579132, 0).UTC()}),
 					}),
 					"ID":    Equal(int64(5)),
 					"Valid": Equal(true),
@@ -591,7 +591,7 @@ var _ = Describe("port forwarding", func() {
 				Expect(*returnedRule).To(MatchFields(IgnoreExtras, Fields{
 					"Hostname": Equal("testing"),
 					"Host": MatchFields(IgnoreExtras, Fields{
-						"LastActivity": Equal(types.Timestamp{Time: time.Unix(1682579132, 0)}),
+						"LastActivity": Equal(types.Timestamp{Time: time.Unix(1682579132, 0).UTC()}),
 					}),
 					"ID":    Equal(int64(5)),
 					"Valid": Equal(true),

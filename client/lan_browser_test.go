@@ -237,13 +237,13 @@ var _ = Describe("lan browser", func() {
 						Interface:         "pub",
 						ID:                "ether-7e:ec:37:cd:5b:6a",
 						LastTimeReachable: types.Timestamp{
-							Time: Must(time.Parse(time.RFC3339, "2023-04-27T09:05:32+02:00")).(time.Time),
+							Time: Must(time.Parse(time.RFC3339, "2023-04-27T09:05:32+02:00")).(time.Time).UTC(),
 						},
 						FirstActivity: types.Timestamp{
-							Time: Must(time.Parse(time.RFC3339, "2023-04-27T08:58:44+02:00")).(time.Time),
+							Time: Must(time.Parse(time.RFC3339, "2023-04-27T08:58:44+02:00")).(time.Time).UTC(),
 						},
 						LastActivity: types.Timestamp{
-							Time: Must(time.Parse(time.RFC3339, "2023-04-27T09:05:32+02:00")).(time.Time),
+							Time: Must(time.Parse(time.RFC3339, "2023-04-27T09:05:32+02:00")).(time.Time).UTC(),
 						},
 						PrimaryName: "testing",
 						DefaultName: "testing",
@@ -260,10 +260,10 @@ var _ = Describe("lan browser", func() {
 								Active:    false,
 								Reachable: false,
 								LastActivity: types.Timestamp{
-									Time: Must(time.Parse(time.RFC3339, "2023-04-27T09:05:11+02:00")).(time.Time),
+									Time: Must(time.Parse(time.RFC3339, "2023-04-27T09:05:11+02:00")).(time.Time).UTC(),
 								},
 								LastTimeReachable: types.Timestamp{
-									Time: Must(time.Parse(time.RFC3339, "2023-04-27T09:05:11+02:00")).(time.Time),
+									Time: Must(time.Parse(time.RFC3339, "2023-04-27T09:05:11+02:00")).(time.Time).UTC(),
 								},
 								Type: "ipv4",
 							},
@@ -389,13 +389,13 @@ var _ = Describe("lan browser", func() {
 					Interface:         "pub",
 					ID:                "ether-7e:ec:37:cd:5b:6a",
 					LastTimeReachable: types.Timestamp{
-						Time: Must(time.Parse(time.RFC3339, "2023-04-27T09:05:32+02:00")).(time.Time),
+						Time: Must(time.Parse(time.RFC3339, "2023-04-27T09:05:32+02:00")).(time.Time).UTC(),
 					},
 					FirstActivity: types.Timestamp{
-						Time: Must(time.Parse(time.RFC3339, "2023-04-27T08:58:44+02:00")).(time.Time),
+						Time: Must(time.Parse(time.RFC3339, "2023-04-27T08:58:44+02:00")).(time.Time).UTC(),
 					},
 					LastActivity: types.Timestamp{
-						Time: Must(time.Parse(time.RFC3339, "2023-04-27T09:05:32+02:00")).(time.Time),
+						Time: Must(time.Parse(time.RFC3339, "2023-04-27T09:05:32+02:00")).(time.Time).UTC(),
 					},
 					PrimaryName: "testing",
 					DefaultName: "testing",
@@ -412,10 +412,10 @@ var _ = Describe("lan browser", func() {
 							Active:    false,
 							Reachable: false,
 							LastActivity: types.Timestamp{
-								Time: Must(time.Parse(time.RFC3339, "2023-04-27T09:05:11+02:00")).(time.Time),
+								Time: Must(time.Parse(time.RFC3339, "2023-04-27T09:05:11+02:00")).(time.Time).UTC(),
 							},
 							LastTimeReachable: types.Timestamp{
-								Time: Must(time.Parse(time.RFC3339, "2023-04-27T09:05:11+02:00")).(time.Time),
+								Time: Must(time.Parse(time.RFC3339, "2023-04-27T09:05:11+02:00")).(time.Time).UTC(),
 							},
 							Type: "ipv4",
 						},

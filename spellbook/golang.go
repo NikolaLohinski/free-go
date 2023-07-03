@@ -16,7 +16,7 @@ type Go mg.Namespace
 // Runs ginkgo for unit tests
 func (Go) Test() error {
 	Step("Running unit tests")
-	return RunSub("ginkgo", "./client/...")
+	return RunSub("ginkgo", "./...")
 }
 
 // Runs ginkgo for integration test
@@ -47,7 +47,7 @@ func (Go) Format() error {
 // Build and open coverage report
 func (Go) Cover() error {
 	Step("Generating coverage report")
-	if err := RunSub("go", "test", "-v", "-coverprofile", "cover.out", "./client/..."); err != nil {
+	if err := RunSub("go", "test", "-v", "-coverprofile", "cover.out", "./..."); err != nil {
 		panic(err)
 	}
 	if err := sh.RunV("go", "tool", "cover", "-html", "cover.out", "-o", "cover.html"); err != nil {

@@ -29,6 +29,10 @@ type Client interface {
 	ListLanInterfaceInfo() ([]types.LanInfo, error)
 	GetLanInterface(name string) (result []types.LanInterfaceHost, err error)
 	GetLanInterfaceHost(interfaceName, identifier string) (result types.LanInterfaceHost, err error)
+	// virtual machines
+	GetVirtualMachineInfo() (result types.VirtualMachinesInfo, err error)
+	GetVirtualMachineDistributions() (result []types.VirtualMachineDistribution, err error)
+	ListVirtualMachines() (result []types.VirtualMachine, err error)
 }
 
 type HTTPClient interface {
