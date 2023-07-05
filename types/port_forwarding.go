@@ -1,6 +1,6 @@
 package types
 
-type ipProtocol string
+type ipProtocol = string
 
 const (
 	TCP ipProtocol = "tcp"

@@ -5,7 +5,7 @@ type LanInfo struct {
 	HostCount int    `json:"host_count"`
 }
 
-type hostType string
+type hostType = string
 
 const (
 	Workstation      hostType = "workstation"
@@ -56,7 +56,7 @@ type HostName struct {
 	Source string `json:"source"`
 }
 
-type l2IdentType string
+type l2IdentType = string
 
 const (
 	DHCP    l2IdentType = "dhcp"
@@ -72,7 +72,7 @@ type L2Ident struct {
 	Type l2IdentType `json:"type"`
 }
 
-type af string
+type af = string
 
 const (
 	IPV4 af = "ipv4"

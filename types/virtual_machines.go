@@ -24,14 +24,14 @@ type VirtualMachineDistribution struct {
 	Name string `json:"name"`
 }
 
-type diskType string
+type diskType = string
 
 const (
 	RawDisk   diskType = "raw"
 	QCow2Disk diskType = "qcow2"
 )
 
-type os string
+type os = string
 
 const (
 	UnknownOS    os = "unknown"
@@ -45,7 +45,7 @@ const (
 	HomebridgeOS os = "homebridge"
 )
 
-type machineStatus string
+type machineStatus = string
 
 const (
 	StoppedStatus  machineStatus = "stopped"

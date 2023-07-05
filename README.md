@@ -28,7 +28,7 @@ func main() {
     var (
         endpoint     = "mafreebox.freebox.fr"
         version      = "v10" 
-        appID        = "..." // See https://dev.freebox.fr/sdk/os/login/ to understand 
+        appID        = "..." // See https://dev.freebox.fr/sdk/os/login/ to learn
         privateToken = "..." // how to define an app and generate a private token
     )
 
@@ -45,8 +45,52 @@ func main() {
     }
 
     fmt.Println(permissions)
+
+    vms, err := freebox.ListVirtualMachines()
+    if err != nil {
+        panic(err)
+    }
+
+    fmt.Println(vms)
 }
 ```
+
+## Supported and planned endpoints
+
+- [x] [Authentication](https://dev.freebox.fr/sdk/os/login/) : `/login/*`
+- [x] [Discovery over HTTP](https://dev.freebox.fr/sdk/os/) : `/api_version`
+- [ ] [Lan](https://dev.freebox.fr/sdk/os/lan/#lan) : `/lan/*`
+  - [x] Getting the list of browsable LAN interfaces
+  - [x] Getting the list of hosts on a given interface
+  - [x] Getting an host information
+  - [ ] Updating an host information
+  - [ ] Wake on LAN
+  - [ ] Get the current Lan configuration
+  - [ ] Update the current Lan configuration
+- [x] [Port forwarding](https://dev.freebox.fr/sdk/os/nat/#port-forwarding): `/fw/redir/*`
+- [ ] [Virtual machines](http://mafreebox.freebox.fr/#Fbx.os.app.help.app) (UNSTABLE) : `/vm/*`
+  - [x] Get VM System Info
+  - [x] Get Installable VM distributions
+  - [x] Get the list of all VMs
+  - [ ] Get a VM
+  - [ ] Add a VM
+  - [ ] Delete a VM
+  - [ ] Update a VM
+  - [ ] Start a VM
+  - [ ] Send a powerbutton signal to a VM
+  - [ ] Stop a VM
+  - [ ] Reset a VM
+  - [ ] Watch for VM status changes
+  - [ ] VM virtual console
+  - [ ] VM virtual screen
+  - [ ] Get information on a virtual disk
+  - [ ] Create a virtual disk
+  - [ ] Resize a virtual disk
+  - [ ] Get a virtual disk task
+  - [ ] Delete a virtual disk task
+- [ ] [Air media](https://dev.freebox.fr/sdk/os/airmedia/) : `/airmedia/*`
+- [ ] [Call](https://dev.freebox.fr/sdk/os/call/) : `/call/*`
+- [ ] [Contacts](https://dev.freebox.fr/sdk/os/contacts/) : `/contact/*`
 
 ## Development
 
@@ -88,3 +132,9 @@ Then, you should be able to run:
 ```shell
 mage go:integration
 ```
+
+## About
+
+This project aims to provide the base Go components to create a `terraform` provider for the Freebox Delta, mostly to leverage its VMs scheduling capability via infrastructure as code. It does also aim to reach feature parity with [`juju2013/go-freebox`](https://github.com/juju2013/go-freebox) and [`moul/go-freebox`](https://github.com/moul/go-freebox) but with actual unit and integration testing to make it really reliable.
+
+Contributions are welcomed !
