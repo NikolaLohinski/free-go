@@ -17,8 +17,10 @@ type Client interface {
 	WithHTTPClient(HTTPClient) Client
 	// unauthenticated
 	APIVersion() (types.APIVersion, error)
+	// authentication
 	Authorize(types.AuthorizationRequest) (types.PrivateToken, error)
 	Login() (types.Permissions, error)
+	Logout() error
 	// port forwarding
 	ListPortForwardingRules() ([]types.PortForwardingRule, error)
 	GetPortForwardingRule(identifier int64) (types.PortForwardingRule, error)

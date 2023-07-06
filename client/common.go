@@ -43,8 +43,10 @@ func (c *client) delete(path string, options ...HTTPOption) (response *genericRe
 
 func (c *client) put(path string, body interface{}, options ...HTTPOption) (*genericResponse, error) {
 	requestBody := new(bytes.Buffer)
-	if err := json.NewEncoder(requestBody).Encode(body); err != nil {
-		return nil, fmt.Errorf("failed to encode body to JSON: %w", err)
+	if body != nil {
+		if err := json.NewEncoder(requestBody).Encode(body); err != nil {
+			return nil, fmt.Errorf("failed to encode body to JSON: %w", err)
+		}
 	}
 
 	request, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/%s", c.base, path), requestBody)
@@ -59,8 +61,10 @@ func (c *client) put(path string, body interface{}, options ...HTTPOption) (*gen
 
 func (c *client) post(path string, body interface{}, options ...HTTPOption) (*genericResponse, error) {
 	requestBody := new(bytes.Buffer)
-	if err := json.NewEncoder(requestBody).Encode(body); err != nil {
-		return nil, fmt.Errorf("failed to encode body to JSON: %w", err)
+	if body != nil {
+		if err := json.NewEncoder(requestBody).Encode(body); err != nil {
+			return nil, fmt.Errorf("failed to encode body to JSON: %w", err)
+		}
 	}
 
 	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/%s", c.base, path), requestBody)

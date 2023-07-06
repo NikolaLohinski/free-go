@@ -58,16 +58,26 @@ func main() {
 ## Supported and planned endpoints
 
 - [x] [Authentication](https://dev.freebox.fr/sdk/os/login/) : `/login/*`
+  - [x] Request authorization
+  - [x] Track authorization progress (as part of the `Request authorization` process)
+  - [x] Getting the challenge value 
+  - [x] Opening a session
+  - [x] Closing the current session
 - [x] [Discovery over HTTP](https://dev.freebox.fr/sdk/os/) : `/api_version`
 - [ ] [Lan](https://dev.freebox.fr/sdk/os/lan/#lan) : `/lan/*`
   - [x] Getting the list of browsable LAN interfaces
   - [x] Getting the list of hosts on a given interface
-  - [x] Getting an host information
-  - [ ] Updating an host information
+  - [x] Getting a host information
+  - [ ] Updating a host information
   - [ ] Wake on LAN
   - [ ] Get the current Lan configuration
   - [ ] Update the current Lan configuration
 - [x] [Port forwarding](https://dev.freebox.fr/sdk/os/nat/#port-forwarding): `/fw/redir/*`
+  - [x] Getting the list of port forwarding
+  - [x] Getting a specific port forwarding
+  - [x] Updating a port forwarding
+  - [x] Add a port forwarding
+  - [x] Delete a port forwarding
 - [ ] [Virtual machines](http://mafreebox.freebox.fr/#Fbx.os.app.help.app) (UNSTABLE) : `/vm/*`
   - [x] Get VM System Info
   - [x] Get Installable VM distributions
@@ -89,8 +99,28 @@ func main() {
   - [ ] Get a virtual disk task
   - [ ] Delete a virtual disk task
 - [ ] [Air media](https://dev.freebox.fr/sdk/os/airmedia/) : `/airmedia/*`
+  - [ ] Get the current AirMedia configuration
+  - [ ] Update the current AirMedia configuration
+  - [ ] Get the list of available AirMedia receivers
+  - [ ] Sending a new request to an AirMedia receiver
 - [ ] [Call](https://dev.freebox.fr/sdk/os/call/) : `/call/*`
+  - [ ] List every calls
+  - [ ] Delete every calls
+  - [ ] Mark every calls as read
+  - [ ] Access a given call entry
+  - [ ] Delete a call
+  - [ ] Update a call entry
 - [ ] [Contacts](https://dev.freebox.fr/sdk/os/contacts/) : `/contact/*`
+  - [ ] Get a list of contacts
+  - [ ] Access a given contact entry
+  - [ ] Create a contact
+  - [ ] Delete a contact
+  - [ ] Update a contact entry
+  - [ ] Get the list of numbers for a given contact
+  - [ ] Access a given contact number
+  - [ ] Create a contact number
+  - [ ] Delete a contact number
+  - [ ] Update a contact number
 
 ## Development
 
@@ -135,6 +165,6 @@ mage go:integration
 
 ## About
 
-This project aims to provide the base Go components to create a `terraform` provider for the Freebox Delta, mostly to leverage its VMs scheduling capability via infrastructure as code. It does also aim to reach feature parity with [`juju2013/go-freebox`](https://github.com/juju2013/go-freebox) and [`moul/go-freebox`](https://github.com/moul/go-freebox) but with actual unit and integration testing to make it really reliable.
+This project aims to provide the base Go components to create a `terraform` provider for the Freebox Delta to be able to leverage its VMs scheduling capabilities via infrastructure as code. It also aims to reach feature parity with [`juju2013/go-freebox`](https://github.com/juju2013/go-freebox), [`moul/go-freebox`](https://github.com/moul/go-freebox) and eventually [`hacf-fr/freebox-api`](https://github.com/hacf-fr/freebox-api) but with actual unit tests, maximal code coverage and integration testing.
 
 Contributions are welcomed !
