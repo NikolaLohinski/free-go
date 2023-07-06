@@ -211,7 +211,7 @@ var _ = Describe("virtual machines", func() {
 									"id": 0,
 									"os": "debian",
 									"enable_cloudinit": true,
-									"disk_path": "RnJlZWJveC9WTXMvZGViaWFuLnFjb3cy",
+									"disk_path": "L0ZyZWVib3gvZGlzay1wYXRo",
 									"vcpus": 1,
 									"memory": 300,
 									"name": "testing",
@@ -226,24 +226,26 @@ var _ = Describe("virtual machines", func() {
 					),
 				)
 			})
-			It("should return the correct virtual machine info", func() {
+			It("should return the correct virtual machine", func() {
 				Expect(*returnedErr).To(BeNil())
 				Expect((*returnedMachines)).To(Equal([]types.VirtualMachine{{
-					ID:                0,
-					Name:              "testing",
-					Mac:               "f6:69:9c:d9:4f:3d",
-					DiskPath:          "RnJlZWJveC9WTXMvZGViaWFuLnFjb3cy",
-					DiskType:          types.QCow2Disk,
-					CDPath:            "/Freebox/path/to/image",
-					Memory:            300,
-					OS:                types.DebianOS,
-					VCPUs:             1,
-					Status:            types.StoppedStatus,
-					EnableScreen:      false,
-					BindUSBPorts:      []string{},
-					EnableCloudInit:   true,
-					CloudInitUserData: "\n#cloud-config\n\n\nsystem_info:\n  default_user:\n    name: freemind\n",
-					CloudHostName:     "testing",
+					ID:     0,
+					Mac:    "f6:69:9c:d9:4f:3d",
+					Status: types.StoppedStatus,
+					VirtualMachinePayload: types.VirtualMachinePayload{
+						Name:              "testing",
+						DiskPath:          "/Freebox/disk-path",
+						DiskType:          types.QCow2Disk,
+						CDPath:            "/Freebox/path/to/image",
+						Memory:            300,
+						OS:                types.DebianOS,
+						VCPUs:             1,
+						EnableScreen:      false,
+						BindUSBPorts:      []string{},
+						EnableCloudInit:   true,
+						CloudInitUserData: "\n#cloud-config\n\n\nsystem_info:\n  default_user:\n    name: freemind\n",
+						CloudHostName:     "testing",
+					},
 				}}))
 			})
 		})
@@ -263,6 +265,118 @@ var _ = Describe("virtual machines", func() {
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
 							"result": {}
+						}`),
+					),
+				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+	})
+	Context("creating a virtual machine", func() {
+		var (
+			payload         = new(types.VirtualMachinePayload)
+			returnedMachine = new(types.VirtualMachine)
+		)
+		BeforeEach(func() {
+			*payload = types.VirtualMachinePayload{
+				CloudInitUserData: "\n#cloud-config\n\n\nsystem_info:\n  default_user:\n    name: freemind\n",
+				CDPath:            "/Freebox/path/to/image",
+				OS:                types.DebianOS,
+				EnableCloudInit:   true,
+				DiskPath:          "/Freebox/disk-path",
+				VCPUs:             1,
+				Memory:            300,
+				Name:              "testing",
+				CloudHostName:     "testing",
+				BindUSBPorts:      []string{},
+				EnableScreen:      false,
+				DiskType:          types.QCow2Disk,
+			}
+		})
+		JustBeforeEach(func() {
+			*returnedMachine, *returnedErr = freeboxClient.CreateVirtualMachine(*payload)
+		})
+		Context("default", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/vm/", version)),
+						ghttp.VerifyJSON(`{
+							"cloudinit_userdata": "\n#cloud-config\n\n\nsystem_info:\n  default_user:\n    name: freemind\n",
+							"cd_path": "L0ZyZWVib3gvcGF0aC90by9pbWFnZQ==",
+							"os": "debian",
+							"enable_cloudinit": true,
+							"disk_path": "L0ZyZWVib3gvZGlzay1wYXRo",
+							"vcpus": 1,
+							"memory": 300,
+							"name": "testing",
+							"cloudinit_hostname": "testing",
+							"disk_type": "qcow2"
+						}`),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": {
+								"mac": "f6:69:9c:d9:4f:3d",
+								"cloudinit_userdata": "\n#cloud-config\n\n\nsystem_info:\n  default_user:\n    name: freemind\n",
+								"cd_path": "L0ZyZWVib3gvcGF0aC90by9pbWFnZQ==",
+								"id": 0,
+								"os": "debian",
+								"enable_cloudinit": true,
+								"disk_path": "L0ZyZWVib3gvZGlzay1wYXRo",
+								"vcpus": 1,
+								"memory": 300,
+								"name": "testing",
+								"cloudinit_hostname": "testing",
+								"status": "stopped",
+								"bind_usb_ports": "",
+								"enable_screen": false,
+								"disk_type": "qcow2"
+							}
+						}`),
+					),
+				)
+			})
+			It("should return the correct virtual machine", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect((*returnedMachine)).To(Equal(types.VirtualMachine{
+					ID:     0,
+					Mac:    "f6:69:9c:d9:4f:3d",
+					Status: types.StoppedStatus,
+					VirtualMachinePayload: types.VirtualMachinePayload{
+						Name:              "testing",
+						DiskPath:          "/Freebox/disk-path",
+						DiskType:          types.QCow2Disk,
+						CDPath:            "/Freebox/path/to/image",
+						Memory:            300,
+						OS:                types.DebianOS,
+						VCPUs:             1,
+						EnableScreen:      false,
+						BindUSBPorts:      []string{},
+						EnableCloudInit:   true,
+						CloudInitUserData: "\n#cloud-config\n\n\nsystem_info:\n  default_user:\n    name: freemind\n",
+						CloudHostName:     "testing",
+					},
+				}))
+			})
+		})
+		Context("when server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the server returns an unexpected payload", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/vm/", version)),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": []
 						}`),
 					),
 				)

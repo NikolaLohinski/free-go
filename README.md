@@ -83,7 +83,7 @@ func main() {
   - [x] Get Installable VM distributions
   - [x] Get the list of all VMs
   - [ ] Get a VM
-  - [ ] Add a VM
+  - [x] Add a VM
   - [ ] Delete a VM
   - [ ] Update a VM
   - [ ] Start a VM

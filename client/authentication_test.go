@@ -600,9 +600,7 @@ var _ = Describe("authentication", func() {
 		})
 	})
 	Context("logout", func() {
-		var (
-			sessionToken = new(string)
-		)
+		sessionToken := new(string)
 		BeforeEach(func() {
 			freeboxClient = freeboxClient.
 				WithPrivateToken(privateToken)

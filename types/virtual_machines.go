@@ -54,27 +54,35 @@ const (
 	StoppingStatus machineStatus = "stopping"
 )
 
-type VirtualMachine struct {
-	ID                int64         `json:"id"`
-	Name              string        `json:"name"`
-	Mac               string        `json:"mac"`
-	DiskPath          string        `json:"disk_path"`
-	DiskType          diskType      `json:"disk_type"`
-	CDPath            CDPath        `json:"cd_path"` // Base64 encoded
-	Memory            int64         `json:"memory"`
-	OS                os            `json:"os"`
-	VCPUs             int64         `json:"vcpus"`
-	Status            machineStatus `json:"status"`
-	EnableScreen      bool          `json:"enable_screen"`
-	BindUSBPorts      BindUSBPorts  `json:"bind_usb_ports"` // Empty string returned if no binds defined
-	EnableCloudInit   bool          `json:"enable_cloudinit"`
-	CloudInitUserData string        `json:"cloudinit_userdata"`
-	CloudHostName     string        `json:"cloudinit_hostname"`
+type VirtualMachinePayload struct {
+	Name              string       `json:"name,omitempty"`
+	DiskPath          Base64Path   `json:"disk_path,omitempty"` // Base64 encoded
+	DiskType          diskType     `json:"disk_type,omitempty"`
+	CDPath            Base64Path   `json:"cd_path,omitempty"` // Base64 encoded
+	Memory            int64        `json:"memory,omitempty"`
+	OS                os           `json:"os,omitempty"`
+	VCPUs             int64        `json:"vcpus,omitempty"`
+	EnableScreen      bool         `json:"enable_screen,omitempty"`
+	BindUSBPorts      BindUSBPorts `json:"bind_usb_ports,omitempty"` // Empty string returned if no binds defined
+	EnableCloudInit   bool         `json:"enable_cloudinit,omitempty"`
+	CloudInitUserData string       `json:"cloudinit_userdata,omitempty"`
+	CloudHostName     string       `json:"cloudinit_hostname,omitempty"`
 }
 
-type CDPath string
+type VirtualMachine struct {
+	VirtualMachinePayload
+	ID     int64         `json:"id"`
+	Mac    string        `json:"mac"`
+	Status machineStatus `json:"status"`
+}
 
-func (c *CDPath) UnmarshalJSON(data []byte) error {
+type Base64Path string
+
+func (c Base64Path) MarshalJSON() ([]byte, error) {
+	return json.Marshal(base64.StdEncoding.EncodeToString([]byte(c))) //nolint:wrapcheck
+}
+
+func (c *Base64Path) UnmarshalJSON(data []byte) error {
 	var raw string
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return fmt.Errorf("failed to unmarshal cd_path: %w", err)
@@ -85,7 +93,7 @@ func (c *CDPath) UnmarshalJSON(data []byte) error {
 		return fmt.Errorf("failed to decode '%s' from base64: %w", raw, err)
 	}
 
-	*c = CDPath(string(result))
+	*c = Base64Path(string(result))
 
 	return nil
 }

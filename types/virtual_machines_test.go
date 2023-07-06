@@ -34,7 +34,9 @@ var _ = Describe("virtual machines", func() {
 			It("should return the correct usb port binds", func() {
 				Expect(*returnedErr).To(BeNil())
 				Expect((*virtualMachine)).To(MatchFields(IgnoreExtras, Fields{
-					"BindUSBPorts": BeEmpty(),
+					"VirtualMachinePayload": MatchFields(IgnoreExtras, Fields{
+						"BindUSBPorts": BeEmpty(),
+					}),
 				}))
 			})
 		})
@@ -57,7 +59,9 @@ var _ = Describe("virtual machines", func() {
 			It("should return the correct usb port binds", func() {
 				Expect(*returnedErr).To(BeNil())
 				Expect((*virtualMachine)).To(MatchFields(IgnoreExtras, Fields{
-					"BindUSBPorts": Equal(types.BindUSBPorts{"foo", "bar"}),
+					"VirtualMachinePayload": MatchFields(IgnoreExtras, Fields{
+						"BindUSBPorts": Equal(types.BindUSBPorts{"foo", "bar"}),
+					}),
 				}))
 			})
 		})
@@ -90,38 +94,47 @@ var _ = Describe("virtual machines", func() {
 			})
 		})
 	})
-	Context("json unmarshal of cd_path in the VirtualMachine object", func() {
+	Context("json marshal of a Base64Path", func() {
+		var (
+			result []byte
+
+			path = types.Base64Path("/tmp/example/")
+		)
+		JustBeforeEach(func() {
+			result, *returnedErr = json.Marshal(path)
+		})
+
+		It("should return the correct usb port binds", func() {
+			Expect(*returnedErr).To(BeNil())
+			Expect(string(result)).To(Equal("\"L3RtcC9leGFtcGxlLw==\""))
+		})
+	})
+	Context("json unmarshal of a Base64Path", func() {
 		var (
 			payload []byte
 
-			virtualMachine *types.VirtualMachine
+			encodedPath *types.Base64Path
 		)
 		BeforeEach(func() {
 			payload = make([]byte, 0)
 
-			virtualMachine = new(types.VirtualMachine)
+			encodedPath = new(types.Base64Path)
 		})
 		JustBeforeEach(func() {
-			*returnedErr = json.Unmarshal(payload, virtualMachine)
+			*returnedErr = json.Unmarshal(payload, encodedPath)
 		})
 		Context("when cd_path is a base64 encoded string", func() {
 			BeforeEach(func() {
-				payload = []byte(`{
-					"cd_path": "L0ZyZWVib3gvcGF0aC90by9pbWFnZQ=="
-				}`)
+				payload = []byte(`"L0ZyZWVib3gvcGF0aC90by9pbWFnZQ=="`)
 			})
-			It("should return the correct usb port binds", func() {
+			It("should return the correct object", func() {
 				Expect(*returnedErr).To(BeNil())
-				Expect((*virtualMachine)).To(MatchFields(IgnoreExtras, Fields{
-					"CDPath": Equal(types.CDPath("/Freebox/path/to/image")),
-				}))
+				Expect((*encodedPath)).To(Equal(types.Base64Path("/Freebox/path/to/image")))
 			})
 		})
 		Context("when cd_path is a string but is not base64 encoded", func() {
 			BeforeEach(func() {
-				payload = []byte(`{
-					"cd_path": "\nà@"
-				}`)
+				payload = []byte(`"\nà@"`)
 			})
 			It("should return an error", func() {
 				Expect(*returnedErr).ToNot(BeNil())
@@ -129,9 +142,7 @@ var _ = Describe("virtual machines", func() {
 		})
 		Context("when cd_path is not a string", func() {
 			BeforeEach(func() {
-				payload = []byte(`{
-					"cd_path": 123
-				}`)
+				payload = []byte(`123`)
 			})
 			It("should return an error", func() {
 				Expect(*returnedErr).ToNot(BeNil())
