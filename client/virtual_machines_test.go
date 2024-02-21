@@ -386,4 +386,85 @@ var _ = Describe("virtual machines", func() {
 			})
 		})
 	})
+	Context("getting a virtual machine", func() {
+		returnedMachine := new(types.VirtualMachine)
+		JustBeforeEach(func() {
+			*returnedMachine, *returnedErr = freeboxClient.GetVirtualMachine(1234)
+		})
+		Context("default", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/vm/1234", version)),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": {
+								"mac": "f6:69:9c:d9:4f:3d",
+								"cloudinit_userdata": "\n#cloud-config\n\n\nsystem_info:\n  default_user:\n    name: freemind\n",
+								"cd_path": "L0ZyZWVib3gvcGF0aC90by9pbWFnZQ==",
+								"id": 1234,
+								"os": "debian",
+								"enable_cloudinit": true,
+								"disk_path": "L0ZyZWVib3gvZGlzay1wYXRo",
+								"vcpus": 1,
+								"memory": 300,
+								"name": "testing",
+								"cloudinit_hostname": "testing",
+								"status": "stopped",
+								"bind_usb_ports": "",
+								"enable_screen": false,
+								"disk_type": "qcow2"
+							}
+						}`),
+					),
+				)
+			})
+			It("should return the correct virtual machine", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect((*returnedMachine)).To(Equal(types.VirtualMachine{
+					ID:     1234,
+					Mac:    "f6:69:9c:d9:4f:3d",
+					Status: types.StoppedStatus,
+					VirtualMachinePayload: types.VirtualMachinePayload{
+						Name:              "testing",
+						DiskPath:          "/Freebox/disk-path",
+						DiskType:          types.QCow2Disk,
+						CDPath:            "/Freebox/path/to/image",
+						Memory:            300,
+						OS:                types.DebianOS,
+						VCPUs:             1,
+						EnableScreen:      false,
+						BindUSBPorts:      []string{},
+						EnableCloudInit:   true,
+						CloudInitUserData: "\n#cloud-config\n\n\nsystem_info:\n  default_user:\n    name: freemind\n",
+						CloudHostName:     "testing",
+					},
+				}))
+			})
+		})
+		Context("when server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the server returns an unexpected payload", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/vm/1234", version)),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": []
+						}`),
+					),
+				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+	})
 })

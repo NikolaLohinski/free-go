@@ -57,3 +57,16 @@ func (c *client) CreateVirtualMachine(payload types.VirtualMachinePayload) (resu
 
 	return result, nil
 }
+
+func (c *client) GetVirtualMachine(identifier int64) (result types.VirtualMachine, err error) {
+	response, err := c.get(fmt.Sprintf("vm/%d", identifier), c.withSession)
+	if err != nil {
+		return result, fmt.Errorf("failed to GET to vm/%d endpoint: %w", identifier, err)
+	}
+
+	if err = c.fromGenericResponse(response, &result); err != nil {
+		return result, fmt.Errorf("failed to get vm from generic response: %w", err)
+	}
+
+	return result, nil
+}

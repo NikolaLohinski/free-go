@@ -36,6 +36,7 @@ type Client interface {
 	GetVirtualMachineDistributions() (result []types.VirtualMachineDistribution, err error)
 	ListVirtualMachines() (result []types.VirtualMachine, err error)
 	CreateVirtualMachine(payload types.VirtualMachinePayload) (result types.VirtualMachine, err error)
+	GetVirtualMachine(identifier int64) (result types.VirtualMachine, err error)
 }
 
 type HTTPClient interface {
