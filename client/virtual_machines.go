@@ -6,6 +6,10 @@ import (
 	"github.com/nikolalohinski/free-go/types"
 )
 
+const (
+	codeVirtualMachineNotFound = "no_such_vm"
+)
+
 func (c *client) GetVirtualMachineInfo() (result types.VirtualMachinesInfo, err error) {
 	response, err := c.get("vm/info/", c.withSession)
 	if err != nil {
@@ -61,6 +65,9 @@ func (c *client) CreateVirtualMachine(payload types.VirtualMachinePayload) (resu
 func (c *client) GetVirtualMachine(identifier int64) (result types.VirtualMachine, err error) {
 	response, err := c.get(fmt.Sprintf("vm/%d", identifier), c.withSession)
 	if err != nil {
+		if response != nil && response.ErrorCode == codeVirtualMachineNotFound {
+			return result, ErrVirtualMachineNotFound
+		}
 		return result, fmt.Errorf("failed to GET to vm/%d endpoint: %w", identifier, err)
 	}
 
@@ -69,4 +76,16 @@ func (c *client) GetVirtualMachine(identifier int64) (result types.VirtualMachin
 	}
 
 	return result, nil
+}
+
+func (c *client) DeleteVirtualMachine(identifier int64) error {
+	response, err := c.delete(fmt.Sprintf("vm/%d", identifier), c.withSession)
+	if err != nil {
+		if response != nil && response.ErrorCode == codeVirtualMachineNotFound {
+			return ErrVirtualMachineNotFound
+		}
+		return fmt.Errorf("failed to DELETE to vm/%d endpoint: %w", identifier, err)
+	}
+
+	return nil
 }

@@ -17,6 +17,7 @@ const (
 	ErrInterfaceNotFound          = Error("interface not found")
 	ErrInterfaceHostNotFound      = Error("interface host not found")
 	ErrPortForwardingRuleNotFound = Error("port forwarding rule not found")
+	ErrVirtualMachineNotFound     = Error("virtual machine not found")
 )
 
 var (

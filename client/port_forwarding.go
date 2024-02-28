@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	codeNotFound = "noent"
+	codePortForwardingNotFound = "noent"
 )
 
 func (c *client) ListPortForwardingRules() ([]types.PortForwardingRule, error) {
@@ -29,7 +29,7 @@ func (c *client) ListPortForwardingRules() ([]types.PortForwardingRule, error) {
 func (c *client) GetPortForwardingRule(identifier int64) (rule types.PortForwardingRule, err error) {
 	response, err := c.get(fmt.Sprintf("fw/redir/%d", identifier), c.withSession)
 	if err != nil {
-		if response != nil && response.ErrorCode == codeNotFound {
+		if response != nil && response.ErrorCode == codePortForwardingNotFound {
 			return rule, ErrPortForwardingRuleNotFound
 		}
 
@@ -61,7 +61,7 @@ func (c *client) CreatePortForwardingRule(
 func (c *client) DeletePortForwardingRule(identifier int64) error {
 	response, err := c.delete(fmt.Sprintf("fw/redir/%d", identifier), c.withSession)
 	if err != nil {
-		if response != nil && response.ErrorCode == codeNotFound {
+		if response != nil && response.ErrorCode == codePortForwardingNotFound {
 			return ErrPortForwardingRuleNotFound
 		}
 
@@ -77,7 +77,7 @@ func (c *client) UpdatePortForwardingRule(
 ) (rule types.PortForwardingRule, err error) {
 	response, err := c.put(fmt.Sprintf("fw/redir/%d", identifier), payload, c.withSession)
 	if err != nil {
-		if response != nil && response.ErrorCode == codeNotFound {
+		if response != nil && response.ErrorCode == codePortForwardingNotFound {
 			return rule, ErrPortForwardingRuleNotFound
 		}
 

@@ -84,7 +84,7 @@ func main() {
   - [x] Get the list of all VMs
   - [x] Get a VM
   - [x] Add a VM
-  - [ ] Delete a VM
+  - [x] Delete a VM
   - [ ] Update a VM
   - [ ] Start a VM
   - [ ] Send a powerbutton signal to a VM
