@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,8 +10,8 @@ import (
 	"github.com/nikolalohinski/free-go/types"
 )
 
-func (c *client) APIVersion() (version types.APIVersion, err error) {
-	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api_version", c.base), nil)
+func (c *client) APIVersion(ctx context.Context) (version types.APIVersion, err error) {
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("%s/api_version", c.base), nil)
 	if err != nil {
 		return version, fmt.Errorf("failed to build request: %w", err)
 	}
@@ -25,7 +26,7 @@ func (c *client) APIVersion() (version types.APIVersion, err error) {
 		if err == nil {
 			err = closeError
 		} else if closeError != nil {
-			err = fmt.Errorf("%w: %w", closeError, err)
+			err = fmt.Errorf("%s: %w", closeError.Error(), err)
 		}
 	}()
 

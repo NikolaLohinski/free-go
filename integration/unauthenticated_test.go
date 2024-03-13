@@ -3,6 +3,7 @@
 package integration_test
 
 import (
+	"context"
 	"strings"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -13,7 +14,7 @@ import (
 var _ = Describe("unauthenticated scenarios", func() {
 	Context("getting API version information", func() {
 		It("should not return an error nor unexpected responses", func() {
-			apiVersion, err := freeboxClient.APIVersion()
+			apiVersion, err := freeboxClient.APIVersion(context.Background())
 			Expect(err).To(BeNil())
 			Expect(apiVersion).To(MatchFields(IgnoreExtras, Fields{
 				"APIBaseURL": Equal("/api/"),

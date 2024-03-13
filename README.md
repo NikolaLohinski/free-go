@@ -121,6 +121,8 @@ func main() {
   - [ ] Create a contact number
   - [ ] Delete a contact number
   - [ ] Update a contact number
+- [ ] [Websocket API](https://dev.freebox.fr/sdk/os/) : `/ws/*`
+  - [ ] WebSocket event API 
 
 ## Development
 

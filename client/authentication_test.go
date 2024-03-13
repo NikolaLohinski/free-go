@@ -1,6 +1,7 @@
 package client_test
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -18,16 +19,21 @@ var _ = Describe("authentication", func() {
 	var (
 		freeboxClient client.Client
 
+		ctx context.Context
+
 		server   *ghttp.Server
 		endpoint = new(string)
 
 		returnedErr = new(error)
 	)
 	BeforeEach(func() {
+		ctx = context.Background()
+
 		server = ghttp.NewServer()
 		*endpoint = server.Addr()
 
 		client.AuthorizeRetryDelay = time.Millisecond * 50
+		client.AuthorizeGrantingTimeout = time.Minute * 5
 
 		freeboxClient = Must(client.New(*endpoint, version)).(client.Client).WithAppID(appID)
 	})
@@ -49,7 +55,7 @@ var _ = Describe("authentication", func() {
 			privateToken = new(string)
 		)
 		JustBeforeEach(func() {
-			*privateToken, *returnedErr = freeboxClient.Authorize(authorizationRequest)
+			*privateToken, *returnedErr = freeboxClient.Authorize(ctx, authorizationRequest)
 		})
 		Context("when the authorization is approved after some time", func() {
 			BeforeEach(func() {
@@ -138,35 +144,35 @@ var _ = Describe("authentication", func() {
 		})
 		Context("when the authorization times out on client side", func() {
 			BeforeEach(func() {
-				client.AuthorizeGrantingTimeout = time.Millisecond * 1
+				client.AuthorizeGrantingTimeout = 0
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/login/authorize", version)),
 						ghttp.VerifyContentType("application/json"),
 						ghttp.VerifyJSON(`{
-						"app_id": "`+appID+`",
-						"app_name": "`+authorizationRequest.Name+`",
-						"app_version": "`+authorizationRequest.Version+`",
-						"device_name": "`+authorizationRequest.Device+`"
-					}`),
+							"app_id": "`+appID+`",
+							"app_name": "`+authorizationRequest.Name+`",
+							"app_version": "`+authorizationRequest.Version+`",
+							"device_name": "`+authorizationRequest.Device+`"
+						}`),
 						ghttp.RespondWith(http.StatusOK, `{
-					    "success": true,
-					    "result": {
-					        "app_token": "`+returnedPrivateToken+`",
-					        "track_id": `+returnedTrackID+`
-					    }
-					}`),
+						    "success": true,
+						    "result": {
+						        "app_token": "`+returnedPrivateToken+`",
+						        "track_id": `+returnedTrackID+`
+						    }
+						}`),
 					),
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/login/authorize/%s", version, returnedTrackID)),
 						ghttp.RespondWith(http.StatusOK, `{
-					    "success": true,
-					    "result": {
-					        "status": "pending",
-					        "challenge": "KWmElA9q9R49DsZUzjVpe0D/3aze2sBf",
-					        "password_salt": "PJpG867vNjvbYY2z67Yy4164kEmmfrOC"
-					    }
-					}`),
+						    "success": true,
+						    "result": {
+						        "status": "pending",
+						        "challenge": "KWmElA9q9R49DsZUzjVpe0D/3aze2sBf",
+						        "password_salt": "PJpG867vNjvbYY2z67Yy4164kEmmfrOC"
+						    }
+						}`),
 					),
 				)
 			})
@@ -286,9 +292,67 @@ var _ = Describe("authentication", func() {
 			BeforeEach(func() {
 				freeboxClient = Must(client.New(*endpoint, version)).(client.Client)
 			})
-			It("should return the private token provided by the server", func() {
+			It("should return the expected error", func() {
 				Expect(*returnedErr).ToNot(BeNil())
 				Expect(*returnedErr).To(Equal(client.ErrAppIDIsNotSet))
+			})
+		})
+		Context("when the context is nil", func() {
+			BeforeEach(func() {
+				ctx = nil
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the context is canceled while waiting for approval", func() {
+			BeforeEach(func() {
+				client.AuthorizeGrantingTimeout = time.Millisecond * 200
+				client.AuthorizeRetryDelay = time.Millisecond * 100
+				var cancel context.CancelFunc
+				ctx, cancel = context.WithCancel(ctx)
+				cancelChannel := make(chan struct{})
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/login/authorize", version)),
+						ghttp.VerifyContentType("application/json"),
+						ghttp.VerifyJSON(`{
+							"app_id": "`+appID+`",
+							"app_name": "`+authorizationRequest.Name+`",
+							"app_version": "`+authorizationRequest.Version+`",
+							"device_name": "`+authorizationRequest.Device+`"
+						}`),
+						ghttp.RespondWith(http.StatusOK, `{
+						    "success": true,
+						    "result": {
+						        "app_token": "`+returnedPrivateToken+`",
+						        "track_id": `+returnedTrackID+`
+						    }
+						}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/login/authorize/%s", version, returnedTrackID)),
+						ghttp.RespondWith(http.StatusOK, `{
+					    "success": true,
+					    "result": {
+						        "status": "pending",
+						        "challenge": "KWmElA9q9R49DsZUzjVpe0D/3aze2sBf",
+						        "password_salt": "PJpG867vNjvbYY2z67Yy4164kEmmfrOC"
+						    }
+						}`),
+						func(w http.ResponseWriter, r *http.Request) {
+							cancelChannel <- struct{}{}
+						},
+					),
+				)
+				go func() {
+					<-cancelChannel
+					time.Sleep(client.AuthorizeRetryDelay / 5)
+					cancel()
+				}()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
 			})
 		})
 	})
@@ -299,7 +363,7 @@ var _ = Describe("authentication", func() {
 				WithPrivateToken(privateToken)
 		})
 		JustBeforeEach(func() {
-			*permissions, *returnedErr = freeboxClient.Login()
+			*permissions, *returnedErr = freeboxClient.Login(context.Background())
 		})
 		Context("default", func() {
 			BeforeEach(func() {
@@ -608,7 +672,7 @@ var _ = Describe("authentication", func() {
 			*sessionToken = setupLoginFlow(server)
 		})
 		JustBeforeEach(func() {
-			*returnedErr = freeboxClient.Logout()
+			*returnedErr = freeboxClient.Logout(context.Background())
 		})
 		Context("default", func() {
 			BeforeEach(func() {

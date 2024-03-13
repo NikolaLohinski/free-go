@@ -11,7 +11,7 @@ func (e Error) Error() string {
 }
 
 const (
-	// Errors.
+	// Errors
 	ErrAppIDIsNotSet              = Error("app id is not set")
 	ErrPrivateTokenIsNotSet       = Error("private token is not set")
 	ErrInterfaceNotFound          = Error("interface not found")
@@ -21,10 +21,10 @@ const (
 )
 
 var (
-	// Login.
+	// Login
 	LoginSessionTTL = time.Minute * 30 // Fixed by the freebox server, but made into a variable for unit testing
 
-	// Authorize.
+	// Authorize
 	AuthorizeGrantingTimeout = time.Minute * 5
 	AuthorizeRetryDelay      = time.Second * 5
 )

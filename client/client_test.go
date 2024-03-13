@@ -1,6 +1,7 @@
 package client_test
 
 import (
+	"context"
 	"errors"
 	"net/http"
 
@@ -44,6 +45,14 @@ var _ = Describe("client", func() {
 			Expect(*returnedErr).To(BeNil())
 		})
 	})
+	Context("when the built endpoint is invalid", func() {
+		BeforeEach(func() {
+			*endpoint = ":{/@)=$£"
+		})
+		It("should return an error", func() {
+			Expect(*returnedErr).ToNot(BeNil())
+		})
+	})
 	Context("when overriding the default http client", func() {
 		httpMock := new(httpClientMock)
 		BeforeEach(func() {
@@ -54,7 +63,7 @@ var _ = Describe("client", func() {
 			}
 		})
 		JustBeforeEach(func() {
-			_, *returnedErr = freeboxClient.WithHTTPClient(httpMock).APIVersion()
+			_, *returnedErr = freeboxClient.WithHTTPClient(httpMock).APIVersion(context.Background())
 		})
 		It("should have called the overridden HTTP client", func() {
 			Expect(*httpMock.request).ToNot(BeNil())

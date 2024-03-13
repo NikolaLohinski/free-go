@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/nikolalohinski/free-go/types"
@@ -10,8 +11,8 @@ const (
 	codePortForwardingNotFound = "noent"
 )
 
-func (c *client) ListPortForwardingRules() ([]types.PortForwardingRule, error) {
-	response, err := c.get("fw/redir/", c.withSession)
+func (c *client) ListPortForwardingRules(ctx context.Context) ([]types.PortForwardingRule, error) {
+	response, err := c.get(ctx, "fw/redir/", c.withSession(ctx))
 	if err != nil {
 		return nil, fmt.Errorf("failed to GET fw/redir/ endpoint: %w", err)
 	}
@@ -26,8 +27,8 @@ func (c *client) ListPortForwardingRules() ([]types.PortForwardingRule, error) {
 	return result, nil
 }
 
-func (c *client) GetPortForwardingRule(identifier int64) (rule types.PortForwardingRule, err error) {
-	response, err := c.get(fmt.Sprintf("fw/redir/%d", identifier), c.withSession)
+func (c *client) GetPortForwardingRule(ctx context.Context, identifier int64) (rule types.PortForwardingRule, err error) {
+	response, err := c.get(ctx, fmt.Sprintf("fw/redir/%d", identifier), c.withSession(ctx))
 	if err != nil {
 		if response != nil && response.ErrorCode == codePortForwardingNotFound {
 			return rule, ErrPortForwardingRuleNotFound
@@ -44,9 +45,10 @@ func (c *client) GetPortForwardingRule(identifier int64) (rule types.PortForward
 }
 
 func (c *client) CreatePortForwardingRule(
+	ctx context.Context,
 	payload types.PortForwardingRulePayload,
 ) (rule types.PortForwardingRule, err error) {
-	response, err := c.post("fw/redir/", payload, c.withSession)
+	response, err := c.post(ctx, "fw/redir/", payload, c.withSession(ctx))
 	if err != nil {
 		return rule, fmt.Errorf("failed to POST to fw/redir/ endpoint: %w", err)
 	}
@@ -58,8 +60,8 @@ func (c *client) CreatePortForwardingRule(
 	return rule, nil
 }
 
-func (c *client) DeletePortForwardingRule(identifier int64) error {
-	response, err := c.delete(fmt.Sprintf("fw/redir/%d", identifier), c.withSession)
+func (c *client) DeletePortForwardingRule(ctx context.Context, identifier int64) error {
+	response, err := c.delete(ctx, fmt.Sprintf("fw/redir/%d", identifier), c.withSession(ctx))
 	if err != nil {
 		if response != nil && response.ErrorCode == codePortForwardingNotFound {
 			return ErrPortForwardingRuleNotFound
@@ -72,10 +74,11 @@ func (c *client) DeletePortForwardingRule(identifier int64) error {
 }
 
 func (c *client) UpdatePortForwardingRule(
+	ctx context.Context,
 	identifier int64,
 	payload types.PortForwardingRulePayload,
 ) (rule types.PortForwardingRule, err error) {
-	response, err := c.put(fmt.Sprintf("fw/redir/%d", identifier), payload, c.withSession)
+	response, err := c.put(ctx, fmt.Sprintf("fw/redir/%d", identifier), payload, c.withSession(ctx))
 	if err != nil {
 		if response != nil && response.ErrorCode == codePortForwardingNotFound {
 			return rule, ErrPortForwardingRuleNotFound

@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -23,8 +24,8 @@ type genericResponse struct {
 
 type HTTPOption = func(*http.Request) error
 
-func (c *client) get(path string, options ...HTTPOption) (response *genericResponse, err error) {
-	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", c.base, path), nil)
+func (c *client) get(ctx context.Context, path string, options ...HTTPOption) (response *genericResponse, err error) {
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("%s/%s", c.base, path), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to forge new request: %w", err)
 	}
@@ -32,8 +33,8 @@ func (c *client) get(path string, options ...HTTPOption) (response *genericRespo
 	return c.do(request, options...)
 }
 
-func (c *client) delete(path string, options ...HTTPOption) (response *genericResponse, err error) {
-	request, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/%s", c.base, path), nil)
+func (c *client) delete(ctx context.Context, path string, options ...HTTPOption) (response *genericResponse, err error) {
+	request, err := http.NewRequestWithContext(ctx, http.MethodDelete, fmt.Sprintf("%s/%s", c.base, path), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to forge new request: %w", err)
 	}
@@ -41,7 +42,7 @@ func (c *client) delete(path string, options ...HTTPOption) (response *genericRe
 	return c.do(request, options...)
 }
 
-func (c *client) put(path string, body interface{}, options ...HTTPOption) (*genericResponse, error) {
+func (c *client) put(ctx context.Context, path string, body interface{}, options ...HTTPOption) (*genericResponse, error) {
 	requestBody := new(bytes.Buffer)
 	if body != nil {
 		if err := json.NewEncoder(requestBody).Encode(body); err != nil {
@@ -49,7 +50,7 @@ func (c *client) put(path string, body interface{}, options ...HTTPOption) (*gen
 		}
 	}
 
-	request, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/%s", c.base, path), requestBody)
+	request, err := http.NewRequestWithContext(ctx, http.MethodPut, fmt.Sprintf("%s/%s", c.base, path), requestBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to forge new request: %w", err)
 	}
@@ -59,7 +60,7 @@ func (c *client) put(path string, body interface{}, options ...HTTPOption) (*gen
 	return c.do(request, options...)
 }
 
-func (c *client) post(path string, body interface{}, options ...HTTPOption) (*genericResponse, error) {
+func (c *client) post(ctx context.Context, path string, body interface{}, options ...HTTPOption) (*genericResponse, error) {
 	requestBody := new(bytes.Buffer)
 	if body != nil {
 		if err := json.NewEncoder(requestBody).Encode(body); err != nil {
@@ -67,7 +68,7 @@ func (c *client) post(path string, body interface{}, options ...HTTPOption) (*ge
 		}
 	}
 
-	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/%s", c.base, path), requestBody)
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("%s/%s", c.base, path), requestBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to forge new request: %w", err)
 	}
@@ -94,7 +95,7 @@ func (c *client) do(request *http.Request, options ...HTTPOption) (response *gen
 		if err == nil {
 			err = closeError
 		} else if closeError != nil {
-			err = fmt.Errorf("%w: %w", closeError, err)
+			err = fmt.Errorf("%s: %w", closeError.Error(), err)
 		}
 	}()
 
@@ -137,20 +138,22 @@ func (c *client) withJSONContentType(req *http.Request) error {
 	return nil
 }
 
-func (c *client) withSession(req *http.Request) error {
-	if c.session == nil {
-		if _, err := c.Login(); err != nil {
-			return fmt.Errorf("failed to login before attempting request: %w", err)
+func (c *client) withSession(ctx context.Context) func(req *http.Request) error {
+	return func(req *http.Request) error {
+		if c.session == nil {
+			if _, err := c.Login(ctx); err != nil {
+				return fmt.Errorf("failed to login before attempting request: %w", err)
+			}
 		}
-	}
 
-	if time.Now().After(c.session.expires) {
-		if _, err := c.Login(); err != nil {
-			return fmt.Errorf("failed to login again after session expired: %w", err)
+		if time.Now().After(c.session.expires) {
+			if _, err := c.Login(ctx); err != nil {
+				return fmt.Errorf("failed to login again after session expired: %w", err)
+			}
 		}
+
+		req.Header.Add(AuthHeader, c.session.token)
+
+		return nil
 	}
-
-	req.Header.Add(AuthHeader, c.session.token)
-
-	return nil
 }

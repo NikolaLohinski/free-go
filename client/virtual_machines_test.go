@@ -1,6 +1,7 @@
 package client_test
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -39,7 +40,7 @@ var _ = Describe("virtual machines", func() {
 	Context("getting virtual machine info", func() {
 		returnedInfo := new(types.VirtualMachinesInfo)
 		JustBeforeEach(func() {
-			*returnedInfo, *returnedErr = freeboxClient.GetVirtualMachineInfo()
+			*returnedInfo, *returnedErr = freeboxClient.GetVirtualMachineInfo(context.Background())
 		})
 		Context("default", func() {
 			BeforeEach(func() {
@@ -121,7 +122,7 @@ var _ = Describe("virtual machines", func() {
 	Context("getting virtual machine distributions", func() {
 		returnedDistros := new([]types.VirtualMachineDistribution)
 		JustBeforeEach(func() {
-			*returnedDistros, *returnedErr = freeboxClient.GetVirtualMachineDistributions()
+			*returnedDistros, *returnedErr = freeboxClient.GetVirtualMachineDistributions(context.Background())
 		})
 		Context("default", func() {
 			BeforeEach(func() {
@@ -194,7 +195,7 @@ var _ = Describe("virtual machines", func() {
 	Context("listing virtual machines", func() {
 		returnedMachines := new([]types.VirtualMachine)
 		JustBeforeEach(func() {
-			*returnedMachines, *returnedErr = freeboxClient.ListVirtualMachines()
+			*returnedMachines, *returnedErr = freeboxClient.ListVirtualMachines(context.Background())
 		})
 		Context("default", func() {
 			BeforeEach(func() {
@@ -296,7 +297,7 @@ var _ = Describe("virtual machines", func() {
 			}
 		})
 		JustBeforeEach(func() {
-			*returnedMachine, *returnedErr = freeboxClient.CreateVirtualMachine(*payload)
+			*returnedMachine, *returnedErr = freeboxClient.CreateVirtualMachine(context.Background(), *payload)
 		})
 		Context("default", func() {
 			BeforeEach(func() {
@@ -389,7 +390,7 @@ var _ = Describe("virtual machines", func() {
 	Context("getting a virtual machine", func() {
 		returnedMachine := new(types.VirtualMachine)
 		JustBeforeEach(func() {
-			*returnedMachine, *returnedErr = freeboxClient.GetVirtualMachine(1234)
+			*returnedMachine, *returnedErr = freeboxClient.GetVirtualMachine(context.Background(), 1234)
 		})
 		Context("default", func() {
 			BeforeEach(func() {
@@ -487,7 +488,7 @@ var _ = Describe("virtual machines", func() {
 	})
 	Context("deleting a virtual machine", func() {
 		JustBeforeEach(func() {
-			*returnedErr = freeboxClient.DeleteVirtualMachine(1234)
+			*returnedErr = freeboxClient.DeleteVirtualMachine(context.Background(), 1234)
 		})
 		Context("default", func() {
 			BeforeEach(func() {

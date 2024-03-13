@@ -3,6 +3,7 @@
 package integration_test
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/nikolalohinski/free-go/client"
@@ -13,10 +14,15 @@ import (
 )
 
 var _ = Describe("port forwarding scenarios", func() {
+	var (
+		ctx context.Context
+	)
 	BeforeEach(func() {
+		ctx = context.Background()
+
 		freeboxClient = freeboxClient.WithAppID(appID).WithPrivateToken(token)
 
-		permissions := Must(freeboxClient.Login()).(types.Permissions)
+		permissions := Must(freeboxClient.Login(ctx)).(types.Permissions)
 		if !permissions.Settings {
 			panic(fmt.Sprintf("the token for the '%s' app does not appear to have the permissions to modify freebox settings", appID))
 		}
@@ -36,7 +42,7 @@ var _ = Describe("port forwarding scenarios", func() {
 				LanPort:      8080,
 				Comment:      "free-go integration tests",
 			}
-			createdRule, err := freeboxClient.CreatePortForwardingRule(payload)
+			createdRule, err := freeboxClient.CreatePortForwardingRule(ctx, payload)
 			Expect(err).To(BeNil())
 			Expect(createdRule).To(MatchFields(IgnoreExtras, Fields{
 				"Valid":                     BeTrue(),
@@ -45,12 +51,12 @@ var _ = Describe("port forwarding scenarios", func() {
 			}))
 
 			// read
-			readRule, err := freeboxClient.GetPortForwardingRule(createdRule.ID)
+			readRule, err := freeboxClient.GetPortForwardingRule(ctx, createdRule.ID)
 			Expect(err).To(BeNil())
 			Expect(readRule).To(Equal(createdRule))
 
 			// update
-			updatedRule, err := freeboxClient.UpdatePortForwardingRule(readRule.ID, types.PortForwardingRulePayload{
+			updatedRule, err := freeboxClient.UpdatePortForwardingRule(ctx, readRule.ID, types.PortForwardingRulePayload{
 				Enabled: new(bool),
 			})
 			Expect(err).To(BeNil())
@@ -61,17 +67,17 @@ var _ = Describe("port forwarding scenarios", func() {
 			}))
 
 			// list
-			rules, err := freeboxClient.ListPortForwardingRules()
+			rules, err := freeboxClient.ListPortForwardingRules(ctx)
 			Expect(err).To(BeNil())
 			Expect(rules).ToNot(BeEmpty())
 			Expect(rules).To(ContainElement(Equal(updatedRule)))
 
 			// delete
-			err = freeboxClient.DeletePortForwardingRule(updatedRule.ID)
+			err = freeboxClient.DeletePortForwardingRule(ctx, updatedRule.ID)
 			Expect(err).To(BeNil())
 
 			// Check rule was deleted
-			_, err = freeboxClient.GetPortForwardingRule(updatedRule.ID)
+			_, err = freeboxClient.GetPortForwardingRule(ctx, updatedRule.ID)
 			Expect(err).To(MatchError(client.ErrPortForwardingRuleNotFound))
 		})
 	})

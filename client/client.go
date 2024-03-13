@@ -1,8 +1,10 @@
 package client
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"regexp"
 	"time"
 
@@ -16,28 +18,30 @@ type Client interface {
 	WithPrivateToken(types.PrivateToken) Client
 	WithHTTPClient(HTTPClient) Client
 	// unauthenticated
-	APIVersion() (types.APIVersion, error)
+	APIVersion(context.Context) (types.APIVersion, error)
 	// authentication
-	Authorize(types.AuthorizationRequest) (types.PrivateToken, error)
-	Login() (types.Permissions, error)
-	Logout() error
+	Authorize(context.Context, types.AuthorizationRequest) (types.PrivateToken, error)
+	Login(context.Context) (types.Permissions, error)
+	Logout(context.Context) error
 	// port forwarding
-	ListPortForwardingRules() ([]types.PortForwardingRule, error)
-	GetPortForwardingRule(identifier int64) (types.PortForwardingRule, error)
-	CreatePortForwardingRule(payload types.PortForwardingRulePayload) (types.PortForwardingRule, error)
-	UpdatePortForwardingRule(identifier int64, payload types.PortForwardingRulePayload) (types.PortForwardingRule, error)
-	DeletePortForwardingRule(identifier int64) error
+	ListPortForwardingRules(context.Context) ([]types.PortForwardingRule, error)
+	GetPortForwardingRule(ctx context.Context, identifier int64) (types.PortForwardingRule, error)
+	CreatePortForwardingRule(ctx context.Context, payload types.PortForwardingRulePayload) (types.PortForwardingRule, error)
+	UpdatePortForwardingRule(ctx context.Context, identifier int64, payload types.PortForwardingRulePayload) (types.PortForwardingRule, error)
+	DeletePortForwardingRule(ctx context.Context, identifier int64) error
 	// lan browser
-	ListLanInterfaceInfo() ([]types.LanInfo, error)
-	GetLanInterface(name string) (result []types.LanInterfaceHost, err error)
-	GetLanInterfaceHost(interfaceName, identifier string) (result types.LanInterfaceHost, err error)
+	ListLanInterfaceInfo(context.Context) ([]types.LanInfo, error)
+	GetLanInterface(ctx context.Context, name string) (result []types.LanInterfaceHost, err error)
+	GetLanInterfaceHost(ctx context.Context, interfaceName, identifier string) (result types.LanInterfaceHost, err error)
 	// virtual machines
-	GetVirtualMachineInfo() (result types.VirtualMachinesInfo, err error)
-	GetVirtualMachineDistributions() (result []types.VirtualMachineDistribution, err error)
-	ListVirtualMachines() (result []types.VirtualMachine, err error)
-	CreateVirtualMachine(payload types.VirtualMachinePayload) (result types.VirtualMachine, err error)
-	GetVirtualMachine(identifier int64) (result types.VirtualMachine, err error)
-	DeleteVirtualMachine(identifier int64) error
+	GetVirtualMachineInfo(context.Context) (result types.VirtualMachinesInfo, err error)
+	GetVirtualMachineDistributions(context.Context) (result []types.VirtualMachineDistribution, err error)
+	ListVirtualMachines(context.Context) (result []types.VirtualMachine, err error)
+	CreateVirtualMachine(ctx context.Context, payload types.VirtualMachinePayload) (result types.VirtualMachine, err error)
+	GetVirtualMachine(ctx context.Context, identifier int64) (result types.VirtualMachine, err error)
+	DeleteVirtualMachine(ctx context.Context, identifier int64) error
+	// websocket
+	ListenEvents(ctx context.Context, events []types.EventDescription) (chan types.Event, error)
 }
 
 type HTTPClient interface {
@@ -51,9 +55,14 @@ func New(endpoint, version string) (Client, error) {
 		endpoint = fmt.Sprintf("http://%s", endpoint)
 	}
 
+	base, err := url.Parse(fmt.Sprintf("%s/api/%s", endpoint, version))
+	if err != nil {
+		return nil, fmt.Errorf("can not build base url from endpoint \"%s\" and version \"%s\"", endpoint, version)
+	}
+
 	return &client{
 		httpClient: http.DefaultClient,
-		base:       fmt.Sprintf("%s/api/%s", endpoint, version),
+		base:       base,
 	}, nil
 }
 
@@ -63,7 +72,7 @@ type client struct {
 	appID        *string
 
 	session *session
-	base    string
+	base    *url.URL
 }
 
 type session struct {

@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/nikolalohinski/free-go/types"
@@ -11,8 +12,8 @@ const (
 	interfaceHostNotFoundCode = "nohost"
 )
 
-func (c *client) ListLanInterfaceInfo() (result []types.LanInfo, err error) {
-	response, err := c.get("lan/browser/interfaces/", c.withSession)
+func (c *client) ListLanInterfaceInfo(ctx context.Context) (result []types.LanInfo, err error) {
+	response, err := c.get(ctx, "lan/browser/interfaces/", c.withSession(ctx))
 	if err != nil {
 		return nil, fmt.Errorf("failed to GET lan/browser/interfaces/ endpoint: %w", err)
 	}
@@ -24,8 +25,8 @@ func (c *client) ListLanInterfaceInfo() (result []types.LanInfo, err error) {
 	return result, nil
 }
 
-func (c *client) GetLanInterface(name string) (result []types.LanInterfaceHost, err error) {
-	response, err := c.get(fmt.Sprintf("lan/browser/%s", name), c.withSession)
+func (c *client) GetLanInterface(ctx context.Context, name string) (result []types.LanInterfaceHost, err error) {
+	response, err := c.get(ctx, fmt.Sprintf("lan/browser/%s", name), c.withSession(ctx))
 	if err != nil {
 		if response != nil && response.ErrorCode == interfaceNotFoundCode {
 			return result, ErrInterfaceNotFound
@@ -41,8 +42,8 @@ func (c *client) GetLanInterface(name string) (result []types.LanInterfaceHost, 
 	return result, nil
 }
 
-func (c *client) GetLanInterfaceHost(interfaceName, identifier string) (result types.LanInterfaceHost, err error) {
-	response, err := c.get(fmt.Sprintf("lan/browser/%s/%s", interfaceName, identifier), c.withSession)
+func (c *client) GetLanInterfaceHost(ctx context.Context, interfaceName, identifier string) (result types.LanInterfaceHost, err error) {
+	response, err := c.get(ctx, fmt.Sprintf("lan/browser/%s/%s", interfaceName, identifier), c.withSession(ctx))
 	if err != nil {
 		if response != nil && response.ErrorCode == interfaceNotFoundCode {
 			return result, ErrInterfaceNotFound

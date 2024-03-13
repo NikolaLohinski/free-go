@@ -1,6 +1,7 @@
 package client_test
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -18,6 +19,8 @@ var _ = Describe("port forwarding", func() {
 	var (
 		freeboxClient client.Client
 
+		ctx context.Context
+
 		server   *ghttp.Server
 		endpoint = new(string)
 
@@ -26,6 +29,8 @@ var _ = Describe("port forwarding", func() {
 		returnedErr = new(error)
 	)
 	BeforeEach(func() {
+		ctx = context.Background()
+
 		server = ghttp.NewServer()
 		*endpoint = server.Addr()
 
@@ -41,7 +46,7 @@ var _ = Describe("port forwarding", func() {
 	Context("listing port forwarding rules", func() {
 		returnedRules := new([]types.PortForwardingRule)
 		JustBeforeEach(func() {
-			*returnedRules, *returnedErr = freeboxClient.ListPortForwardingRules()
+			*returnedRules, *returnedErr = freeboxClient.ListPortForwardingRules(ctx)
 		})
 		Context("default", func() {
 			BeforeEach(func() {
@@ -165,6 +170,14 @@ var _ = Describe("port forwarding", func() {
 				Expect(*returnedErr).ToNot(BeNil())
 			})
 		})
+		Context("when the context is nil", func() {
+			BeforeEach(func() {
+				ctx = nil
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
 	})
 	Context("getting a port forwarding rule", func() {
 		const (
@@ -172,7 +185,7 @@ var _ = Describe("port forwarding", func() {
 		)
 		returnedRule := new(types.PortForwardingRule)
 		JustBeforeEach(func() {
-			*returnedRule, *returnedErr = freeboxClient.GetPortForwardingRule(identifier)
+			*returnedRule, *returnedErr = freeboxClient.GetPortForwardingRule(context.Background(), identifier)
 		})
 		Context("default", func() {
 			BeforeEach(func() {
@@ -316,7 +329,7 @@ var _ = Describe("port forwarding", func() {
 			}
 		})
 		JustBeforeEach(func() {
-			*returnedRule, *returnedErr = freeboxClient.CreatePortForwardingRule(*payload)
+			*returnedRule, *returnedErr = freeboxClient.CreatePortForwardingRule(context.Background(), *payload)
 		})
 		Context("default", func() {
 			BeforeEach(func() {
@@ -414,16 +427,6 @@ var _ = Describe("port forwarding", func() {
 				Expect(*returnedErr).ToNot(BeNil())
 			})
 		})
-		Context("when the endpoint is invalid", func() {
-			BeforeEach(func() {
-				freeboxClient = Must(client.New("$:]}{://}", version)).(client.Client).
-					WithAppID(appID).
-					WithPrivateToken(privateToken)
-			})
-			It("should return an error", func() {
-				Expect(*returnedErr).ToNot(BeNil())
-			})
-		})
 		Context("when the server returns an unexpected payload", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
@@ -447,7 +450,7 @@ var _ = Describe("port forwarding", func() {
 			identifier = int64(5)
 		)
 		JustBeforeEach(func() {
-			*returnedErr = freeboxClient.DeletePortForwardingRule(identifier)
+			*returnedErr = freeboxClient.DeletePortForwardingRule(ctx, identifier)
 		})
 		Context("default", func() {
 			BeforeEach(func() {
@@ -464,16 +467,6 @@ var _ = Describe("port forwarding", func() {
 
 			It("should not return an error", func() {
 				Expect(*returnedErr).To(BeNil())
-			})
-		})
-		Context("when the endpoint is invalid", func() {
-			BeforeEach(func() {
-				freeboxClient = Must(client.New("$:]}{://}", version)).(client.Client).
-					WithAppID(appID).
-					WithPrivateToken(privateToken)
-			})
-			It("should return an error", func() {
-				Expect(*returnedErr).ToNot(BeNil())
 			})
 		})
 		Context("when the port forwarding rule is not found", func() {
@@ -495,10 +488,17 @@ var _ = Describe("port forwarding", func() {
 				Expect(*returnedErr).To(Equal(client.ErrPortForwardingRuleNotFound))
 			})
 		})
-
 		Context("when server fails to respond", func() {
 			BeforeEach(func() {
 				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the context is nil", func() {
+			BeforeEach(func() {
+				ctx = nil
 			})
 			It("should return an error", func() {
 				Expect(*returnedErr).ToNot(BeNil())
@@ -519,7 +519,7 @@ var _ = Describe("port forwarding", func() {
 			}
 		})
 		JustBeforeEach(func() {
-			*returnedRule, *returnedErr = freeboxClient.UpdatePortForwardingRule(identifier, *payload)
+			*returnedRule, *returnedErr = freeboxClient.UpdatePortForwardingRule(ctx, identifier, *payload)
 		})
 		Context("default", func() {
 			BeforeEach(func() {
@@ -603,16 +603,6 @@ var _ = Describe("port forwarding", func() {
 				}))
 			})
 		})
-		Context("when the endpoint is invalid", func() {
-			BeforeEach(func() {
-				freeboxClient = Must(client.New("$:]}{://}", version)).(client.Client).
-					WithAppID(appID).
-					WithPrivateToken(privateToken)
-			})
-			It("should return an error", func() {
-				Expect(*returnedErr).ToNot(BeNil())
-			})
-		})
 		Context("when the port forwarding rule is not found", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
@@ -652,6 +642,14 @@ var _ = Describe("port forwarding", func() {
 						}`),
 					),
 				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the context is nil", func() {
+			BeforeEach(func() {
+				ctx = nil
 			})
 			It("should return an error", func() {
 				Expect(*returnedErr).ToNot(BeNil())

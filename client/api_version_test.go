@@ -1,6 +1,7 @@
 package client_test
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -18,18 +19,22 @@ var _ = Describe("api version", func() {
 	var (
 		server *ghttp.Server
 
+		ctx context.Context
+
 		freeboxClient client.Client
 
 		apiVersion  = new(types.APIVersion)
 		returnedErr = new(error)
 	)
 	BeforeEach(func() {
+		ctx = context.Background()
+
 		server = ghttp.NewServer()
 
 		freeboxClient = Must(client.New(server.Addr(), version)).(client.Client)
 	})
 	JustBeforeEach(func() {
-		*apiVersion, *returnedErr = freeboxClient.APIVersion()
+		*apiVersion, *returnedErr = freeboxClient.APIVersion(ctx)
 	})
 	AfterEach(func() {
 		server.Close()
@@ -70,9 +75,9 @@ var _ = Describe("api version", func() {
 			}))
 		})
 	})
-	Context("when the endpoint is invalid", func() {
+	Context("when the context is invalid", func() {
 		BeforeEach(func() {
-			freeboxClient = Must(client.New(":{/@)=$£", version)).(client.Client)
+			ctx = nil
 		})
 		It("should return an error", func() {
 			Expect(*returnedErr).ToNot(BeNil())

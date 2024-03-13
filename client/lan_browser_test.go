@@ -1,6 +1,7 @@
 package client_test
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -41,7 +42,7 @@ var _ = Describe("lan browser", func() {
 	Context("listing lan metadata", func() {
 		returnedLanInfos := new([]types.LanInfo)
 		JustBeforeEach(func() {
-			*returnedLanInfos, *returnedErr = freeboxClient.ListLanInterfaceInfo()
+			*returnedLanInfos, *returnedErr = freeboxClient.ListLanInterfaceInfo(context.Background())
 		})
 		Context("default", func() {
 			BeforeEach(func() {
@@ -97,16 +98,6 @@ var _ = Describe("lan browser", func() {
 				Expect(*returnedErr).ToNot(BeNil())
 			})
 		})
-		Context("when the endpoint is invalid", func() {
-			BeforeEach(func() {
-				freeboxClient = Must(client.New("$:]}{://}", version)).(client.Client).
-					WithAppID(appID).
-					WithPrivateToken(privateToken)
-			})
-			It("should return an error", func() {
-				Expect(*returnedErr).ToNot(BeNil())
-			})
-		})
 		Context("when reading the body returns an error", func() {
 			BeforeEach(func() {
 				freeboxClient = Must(client.New(*endpoint, version)).(client.Client).
@@ -139,7 +130,7 @@ var _ = Describe("lan browser", func() {
 		Context("when the sessions has expired and trying to login again fails", func() {
 			BeforeEach(func() {
 				client.LoginSessionTTL = 0
-				Must(freeboxClient.Login())
+				Must(freeboxClient.Login(context.Background()))
 				server.Close()
 			})
 			AfterEach(func() {
@@ -175,7 +166,7 @@ var _ = Describe("lan browser", func() {
 		)
 		returnedLanInterfaceHosts := new([]types.LanInterfaceHost)
 		JustBeforeEach(func() {
-			*returnedLanInterfaceHosts, *returnedErr = freeboxClient.GetLanInterface(interfaceName)
+			*returnedLanInterfaceHosts, *returnedErr = freeboxClient.GetLanInterface(context.Background(), interfaceName)
 		})
 		Context("default", func() {
 			BeforeEach(func() {
@@ -328,7 +319,7 @@ var _ = Describe("lan browser", func() {
 		)
 		returnedLanInterfaceHost := new(types.LanInterfaceHost)
 		JustBeforeEach(func() {
-			*returnedLanInterfaceHost, *returnedErr = freeboxClient.GetLanInterfaceHost(interfaceName, hostIdentifier)
+			*returnedLanInterfaceHost, *returnedErr = freeboxClient.GetLanInterfaceHost(context.Background(), interfaceName, hostIdentifier)
 		})
 		Context("default", func() {
 			BeforeEach(func() {
