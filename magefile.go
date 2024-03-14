@@ -8,14 +8,10 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"reflect"
-	"runtime"
-	"strings"
 
 	// mage:import
 	"github.com/nikolalohinski/free-go/spellbook"
 
-	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 )
 
@@ -36,18 +32,11 @@ func init() {
 		panic(err)
 	}
 
-	if len(os.Args) == 1 {
-		defaultTargeName := strings.ToLower(strings.TrimPrefix(runtime.FuncForPC(reflect.ValueOf(Default).Pointer()).Name(), "main."))
-		fmt.Println("┌ mage", defaultTargeName)
-
+	if len(os.Args) == 2 && os.Args[1] == "install" {
 		return
 	}
 
-	if os.Args[1] == "install" {
-		return
-	}
-
-	fmt.Println("┌ mage", strings.Join(os.Args[1:], " "))
+	fmt.Println("🧙‍ \033[1;94mI solemnly swear that I am up to no good\033[0m")
 }
 
 // Fetch and installs tooling for development
@@ -57,7 +46,8 @@ func Install() error {
 
 // Validate code base
 func Verify() {
-	mg.SerialDeps(
+	spellbook.Combine(
+		spellbook.MagicalContext,
 		spellbook.Go.Tidy,
 		spellbook.Go.Format,
 		spellbook.Go.Lint,

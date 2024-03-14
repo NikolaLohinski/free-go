@@ -14,9 +14,7 @@ import (
 )
 
 var _ = Describe("port forwarding scenarios", func() {
-	var (
-		ctx context.Context
-	)
+	var ctx context.Context
 	BeforeEach(func() {
 		ctx = context.Background()
 

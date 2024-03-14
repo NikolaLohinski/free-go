@@ -293,5 +293,4 @@ var _ = Describe("events", func() {
 			Expect(*returnedErr).ToNot(BeNil())
 		})
 	})
-
 })

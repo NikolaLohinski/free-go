@@ -1,6 +1,7 @@
 package spellbook
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -14,43 +15,39 @@ import (
 type Go mg.Namespace
 
 // Runs ginkgo for unit tests
-func (Go) Test() error {
-	Step("Running unit tests")
-	return RunSub("ginkgo", "./...")
+func (Go) Test(ctx context.Context) error {
+	return Run(Invoke(ctx, "Running unit tests"), "ginkgo", "./...")
 }
 
 // Runs ginkgo for integration test
-func (Go) Integration() error {
-	Step("Running integration tests")
-	return RunSub("ginkgo", "-tags=integration", "./integration/...")
+func (Go) Integration(ctx context.Context) error {
+	return Run(Invoke(ctx, "Running integration tests"), "ginkgo", "-tags=integration", "./integration/...")
 }
 
-// Clean dependencies and imports
-func (Go) Tidy() error {
-	Step("Cleaning dependencies and imports in code files")
-	return sh.RunV("go", "mod", "tidy", "-v")
+// Cleans dependencies and imports
+func (Go) Tidy(ctx context.Context) error {
+	return Run(Invoke(ctx, "Cleaning dependencies and imports in code files"), "go", "mod", "tidy", "-v")
 }
 
-// Run linter on code
-func (Go) Lint() error {
-	Step("Running golang-ci linter on code base")
-	return RunSub("golangci-lint", "run", "--verbose", "--fix")
+// Runs a linter on the source code
+func (Go) Lint(ctx context.Context) error {
+	return Run(Invoke(ctx, "Running golang-ci linter on code base"), "golangci-lint", "run", "--verbose", "--fix")
 }
 
-// Run formatting tools on code base
-func (Go) Format() error {
-	Step("Running gofumpt formatter on code base")
+// Runs formatting tools on the code base
+func (Go) Format(ctx context.Context) error {
+	ctx = Invoke(ctx, "Running gofumpt formatter on code base")
 	args := append([]string{"-w"}, getGoFiles()...)
-	return sh.RunV("gofumpt", args...)
+	return Run(ctx, "gofumpt", args...)
 }
 
-// Build and open coverage report
-func (Go) Cover() error {
-	Step("Generating coverage report")
-	if err := RunSub("go", "test", "-v", "-coverprofile", "cover.out", "./..."); err != nil {
+// Builds and opens a coverage report
+func (Go) Cover(ctx context.Context) error {
+	ctx = Invoke(ctx, "Generating coverage report")
+	if err := Run(ctx, "go", "test", "-v", "-coverprofile", "cover.out", "./..."); err != nil {
 		panic(err)
 	}
-	if err := sh.RunV("go", "tool", "cover", "-html", "cover.out", "-o", "cover.html"); err != nil {
+	if err := sh.Run("go", "tool", "cover", "-html", "cover.out", "-o", "cover.html"); err != nil {
 		panic(err)
 	}
 	var cmd string

@@ -20,6 +20,7 @@ package main
 
 import (
     "fmt"
+    "context"
 
     "github.com/nikolalohinski/free-go/client"
 )
@@ -32,6 +33,8 @@ func main() {
         privateToken = "..." // how to define an app and generate a private token
     )
 
+    ctx := context.Background()
+
     freebox, err := client.New(endpoint, version).
         WithAppID(appID).
         WithPrivateToken(privateToken)
@@ -39,14 +42,14 @@ func main() {
         panic(err)
     }
 
-    permissions, err := freebox.Login()
+    permissions, err := freebox.Login(ctx)
     if err != nil {
         panic(err)
     }
 
     fmt.Println(permissions)
 
-    vms, err := freebox.ListVirtualMachines()
+    vms, err := freebox.ListVirtualMachines(ctx)
     if err != nil {
         panic(err)
     }
@@ -54,6 +57,8 @@ func main() {
     fmt.Println(vms)
 }
 ```
+
+For details on how to use this client, please refer to the `Client` interface in [`client/client.go`](./client/client.go).
 
 ## Supported and planned endpoints
 
@@ -121,8 +126,8 @@ func main() {
   - [ ] Create a contact number
   - [ ] Delete a contact number
   - [ ] Update a contact number
-- [ ] [Websocket API](https://dev.freebox.fr/sdk/os/) : `/ws/*`
-  - [ ] WebSocket event API 
+- [x] [Websocket API](https://dev.freebox.fr/sdk/os/) : `/ws/*`
+  - [x] WebSocket event API
 
 ## Development
 
