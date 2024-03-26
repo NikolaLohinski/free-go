@@ -128,6 +128,13 @@ For details on how to use this client, please refer to the `Client` interface in
   - [ ] Update a contact number
 - [x] [Websocket API](https://dev.freebox.fr/sdk/os/) : `/ws/*`
   - [x] WebSocket event API
+- [ ] [Download API](https://dev.freebox.fr/sdk/os/download/) : `/downloads/*`
+  - [ ] Get a download task
+  - [ ] List download tasks
+  - [ ] Delete a download task
+  - [ ] Update a download task
+  - [ ] Get a download log
+  - [ ] Add a new download task
 
 ## Development
 
