@@ -63,6 +63,19 @@ func (c *client) CreateVirtualMachine(ctx context.Context, payload types.Virtual
 	return result, nil
 }
 
+func (c *client) UpdateVirtualMachine(ctx context.Context, identifier int64, payload types.VirtualMachinePayload) (result types.VirtualMachine, err error) {
+	response, err := c.put(ctx, fmt.Sprintf("vm/%d", identifier), payload, c.withSession(ctx))
+	if err != nil {
+		return result, fmt.Errorf("failed to PUT to vm/%d endpoint: %w", identifier, err)
+	}
+
+	if err = c.fromGenericResponse(response, &result); err != nil {
+		return result, fmt.Errorf("failed to get vm from generic response: %w", err)
+	}
+
+	return result, nil
+}
+
 func (c *client) GetVirtualMachine(ctx context.Context, identifier int64) (result types.VirtualMachine, err error) {
 	response, err := c.get(ctx, fmt.Sprintf("vm/%d", identifier), c.withSession(ctx))
 	if err != nil {
