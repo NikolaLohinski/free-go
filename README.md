@@ -103,31 +103,9 @@ For details on how to use this client, please refer to the `Client` interface in
   - [ ] Resize a virtual disk
   - [ ] Get a virtual disk task
   - [ ] Delete a virtual disk task
-- [ ] [Air media](https://dev.freebox.fr/sdk/os/airmedia/) : `/airmedia/*`
-  - [ ] Get the current AirMedia configuration
-  - [ ] Update the current AirMedia configuration
-  - [ ] Get the list of available AirMedia receivers
-  - [ ] Sending a new request to an AirMedia receiver
-- [ ] [Call](https://dev.freebox.fr/sdk/os/call/) : `/call/*`
-  - [ ] List every calls
-  - [ ] Delete every calls
-  - [ ] Mark every calls as read
-  - [ ] Access a given call entry
-  - [ ] Delete a call
-  - [ ] Update a call entry
-- [ ] [Contacts](https://dev.freebox.fr/sdk/os/contacts/) : `/contact/*`
-  - [ ] Get a list of contacts
-  - [ ] Access a given contact entry
-  - [ ] Create a contact
-  - [ ] Delete a contact
-  - [ ] Update a contact entry
-  - [ ] Get the list of numbers for a given contact
-  - [ ] Access a given contact number
-  - [ ] Create a contact number
-  - [ ] Delete a contact number
-  - [ ] Update a contact number
-- [x] [Websocket API](https://dev.freebox.fr/sdk/os/) : `/ws/*`
+- [ ] [Websocket API](https://dev.freebox.fr/sdk/os/) : `/ws/*`
   - [x] WebSocket event API
+  - [ ] WebSocket file Upload API
 - [ ] [Download API](https://dev.freebox.fr/sdk/os/download/) : `/downloads/*`
   - [ ] Get a download task
   - [ ] List download tasks
@@ -135,6 +113,21 @@ For details on how to use this client, please refer to the `Client` interface in
   - [ ] Update a download task
   - [ ] Get a download log
   - [ ] Add a new download task
+- [ ] [Filesystem API](https://dev.freebox.fr/sdk/os/fs/) : `/fs/*`
+  - [ ] Get file information
+  - [ ] Download a file
+  - [ ] Remove files
+  - [ ] List files
+  - [ ] Move files
+  - [ ] Copy files
+  - [ ] Concatenate files
+  - [ ] Create an archive
+  - [ ] Extract a file
+  - [ ] Repair a file
+  - [ ] Hash a file
+  - [ ] Get a hash value
+  - [ ] Create a directory
+  - [ ] Rename a file/folder
 
 ## Development
 
