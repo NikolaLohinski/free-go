@@ -114,7 +114,7 @@ For details on how to use this client, please refer to the `Client` interface in
   - [ ] Get a download log
   - [ ] Add a new download task
 - [ ] [Filesystem API](https://dev.freebox.fr/sdk/os/fs/) : `/fs/*`
-  - [ ] Get file information
+  - [x] Get file information
   - [ ] Download a file
   - [ ] Remove files
   - [ ] List files

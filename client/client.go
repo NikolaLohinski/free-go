@@ -43,6 +43,8 @@ type Client interface {
 	DeleteVirtualMachine(ctx context.Context, identifier int64) error
 	// websocket
 	ListenEvents(ctx context.Context, events []types.EventDescription) (chan types.Event, error)
+	// filesystem
+	GetFileInfo(ctx context.Context, path string) (types.FileInfo, error)
 }
 
 type HTTPClient interface {
