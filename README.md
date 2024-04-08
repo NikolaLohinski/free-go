@@ -116,7 +116,7 @@ For details on how to use this client, please refer to the `Client` interface in
 - [ ] [Filesystem API](https://dev.freebox.fr/sdk/os/fs/) : `/fs/*`
   - [x] Get file information
   - [ ] Download a file
-  - [ ] Remove files
+  - [x] Remove files
   - [ ] List files
   - [ ] Move files
   - [ ] Copy files

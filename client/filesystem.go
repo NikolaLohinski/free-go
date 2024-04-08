@@ -32,3 +32,21 @@ func (c *client) GetFileInfo(ctx context.Context, path string) (types.FileInfo, 
 
 	return result, nil
 }
+
+func (c *client) RemoveFiles(ctx context.Context, paths []string) (task types.FileSystemTask, err error) {
+	files := make([]types.Base64Path, len(paths))
+	for i, p := range paths {
+		files[i] = types.Base64Path(p)
+	}
+
+	response, err := c.post(ctx, "fs/rm/", map[string]interface{}{"files": files}, c.withSession(ctx))
+	if err != nil {
+		return task, fmt.Errorf("failed to POST to fs/rm/ endpoint: %w", err)
+	}
+
+	if err = c.fromGenericResponse(response, &task); err != nil {
+		return task, fmt.Errorf("failed to get a filesystem task from a generic response: %w", err)
+	}
+
+	return task, nil
+}

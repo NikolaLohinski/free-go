@@ -24,11 +24,11 @@ func TestClient(t *testing.T) {
 	RunSpecs(t, "unit-tests")
 }
 
-func Must(r interface{}, err error) interface{} {
+func Must[T interface{}](returned T, err error) T {
 	if err != nil {
 		panic(err)
 	}
-	return r
+	return returned
 }
 
 func verifyAuth(sessionToken string) http.HandlerFunc {

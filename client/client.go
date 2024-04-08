@@ -45,6 +45,7 @@ type Client interface {
 	ListenEvents(ctx context.Context, events []types.EventDescription) (chan types.Event, error)
 	// filesystem
 	GetFileInfo(ctx context.Context, path string) (types.FileInfo, error)
+	RemoveFiles(ctx context.Context, paths []string) (types.FileSystemTask, error)
 }
 
 type HTTPClient interface {
