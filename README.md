@@ -28,9 +28,9 @@ import (
 func main() {
     var (
         endpoint     = "mafreebox.freebox.fr"
-        version      = "v10" 
-        appID        = "..." // See https://dev.freebox.fr/sdk/os/login/ to learn
-        privateToken = "..." // how to define an app and generate a private token
+        version      = "latest" // Or pin a specific version such as v10.
+        appID        = "..."    // See https://dev.freebox.fr/sdk/os/login/ to learn
+        privateToken = "..."    // how to define an app and generate a private token
     )
 
     ctx := context.Background()
