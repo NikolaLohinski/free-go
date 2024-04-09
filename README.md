@@ -108,7 +108,7 @@ For details on how to use this client, please refer to the `Client` interface in
   - [ ] WebSocket file Upload API
 - [ ] [Download API](https://dev.freebox.fr/sdk/os/download/) : `/downloads/*`
   - [ ] Get a download task
-  - [ ] List download tasks
+  - [x] List download tasks
   - [ ] Delete a download task
   - [ ] Update a download task
   - [ ] Get a download log

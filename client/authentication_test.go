@@ -35,7 +35,7 @@ var _ = Describe("authentication", func() {
 		client.AuthorizeRetryDelay = time.Millisecond * 50
 		client.AuthorizeGrantingTimeout = time.Minute * 5
 
-		freeboxClient = Must(client.New(*endpoint, version)).(client.Client).WithAppID(appID)
+		freeboxClient = Must(client.New(*endpoint, version)).WithAppID(appID)
 	})
 
 	AfterEach(func() {
@@ -290,7 +290,7 @@ var _ = Describe("authentication", func() {
 		})
 		Context("when appID is not set", func() {
 			BeforeEach(func() {
-				freeboxClient = Must(client.New(*endpoint, version)).(client.Client)
+				freeboxClient = Must(client.New(*endpoint, version))
 			})
 			It("should return the expected error", func() {
 				Expect(*returnedErr).ToNot(BeNil())
@@ -642,7 +642,7 @@ var _ = Describe("authentication", func() {
 		})
 		Context("when app id is not set", func() {
 			BeforeEach(func() {
-				freeboxClient = Must(client.New(*endpoint, version)).(client.Client).
+				freeboxClient = Must(client.New(*endpoint, version)).
 					WithPrivateToken(privateToken)
 			})
 
@@ -653,7 +653,7 @@ var _ = Describe("authentication", func() {
 		})
 		Context("when private token is not set", func() {
 			BeforeEach(func() {
-				freeboxClient = Must(client.New(*endpoint, version)).(client.Client).
+				freeboxClient = Must(client.New(*endpoint, version)).
 					WithAppID(appID)
 			})
 

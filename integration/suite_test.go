@@ -36,7 +36,7 @@ func init() {
 		panic("FREEBOX_TOKEN environment variable must be set")
 	}
 
-	freeboxClient = Must(client.New(endpoint, version)).(client.Client)
+	freeboxClient = Must(client.New(endpoint, version))
 }
 
 func TestClient(t *testing.T) {
@@ -44,7 +44,7 @@ func TestClient(t *testing.T) {
 	RunSpecs(t, "integration")
 }
 
-func Must(r interface{}, err error) interface{} {
+func Must[T interface{}](r T, err error) T {
 	if err != nil {
 		panic(err)
 	}

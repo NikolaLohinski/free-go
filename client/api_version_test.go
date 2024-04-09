@@ -31,7 +31,7 @@ var _ = Describe("api version", func() {
 
 		server = ghttp.NewServer()
 
-		freeboxClient = Must(client.New(server.Addr(), version)).(client.Client)
+		freeboxClient = Must(client.New(server.Addr(), version))
 	})
 	JustBeforeEach(func() {
 		*apiVersion, *returnedErr = freeboxClient.APIVersion(ctx)
@@ -85,7 +85,7 @@ var _ = Describe("api version", func() {
 	})
 	Context("when reading the body returns an error", func() {
 		BeforeEach(func() {
-			freeboxClient = Must(client.New(server.Addr(), version)).(client.Client).WithHTTPClient(&mockHTTPClient{
+			freeboxClient = Must(client.New(server.Addr(), version)).WithHTTPClient(&mockHTTPClient{
 				returnedBody: errorReader{},
 			})
 		})
@@ -95,7 +95,7 @@ var _ = Describe("api version", func() {
 	})
 	Context("when closing the body returns an error", func() {
 		BeforeEach(func() {
-			freeboxClient = Must(client.New(server.Addr(), version)).(client.Client).WithHTTPClient(&mockHTTPClient{
+			freeboxClient = Must(client.New(server.Addr(), version)).WithHTTPClient(&mockHTTPClient{
 				returnedBody: errorCloser{
 					strings.NewReader(`
 						"box_model_name": "Freebox v0",

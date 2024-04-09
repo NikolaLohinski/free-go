@@ -34,7 +34,7 @@ var _ = Describe("port forwarding", func() {
 		server = ghttp.NewServer()
 		*endpoint = server.Addr()
 
-		freeboxClient = Must(client.New(*endpoint, version)).(client.Client).
+		freeboxClient = Must(client.New(*endpoint, version)).
 			WithAppID(appID).
 			WithPrivateToken(privateToken)
 

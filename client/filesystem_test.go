@@ -29,7 +29,7 @@ var _ = Describe("filesystem", func() {
 		server = ghttp.NewServer()
 		*endpoint = server.Addr()
 
-		freeboxClient = Must(client.New(*endpoint, version)).(client.Client).
+		freeboxClient = Must(client.New(*endpoint, version)).
 			WithAppID(appID).
 			WithPrivateToken(privateToken)
 

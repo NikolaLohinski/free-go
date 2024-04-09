@@ -30,7 +30,7 @@ var _ = Describe("lan browser", func() {
 		server = ghttp.NewServer()
 		*endpoint = server.Addr()
 
-		freeboxClient = Must(client.New(*endpoint, version)).(client.Client).
+		freeboxClient = Must(client.New(*endpoint, version)).
 			WithAppID(appID).
 			WithPrivateToken(privateToken)
 
@@ -100,7 +100,7 @@ var _ = Describe("lan browser", func() {
 		})
 		Context("when reading the body returns an error", func() {
 			BeforeEach(func() {
-				freeboxClient = Must(client.New(*endpoint, version)).(client.Client).
+				freeboxClient = Must(client.New(*endpoint, version)).
 					WithAppID(appID).
 					WithPrivateToken(privateToken).
 					WithHTTPClient(mockHTTPClient{
@@ -113,7 +113,7 @@ var _ = Describe("lan browser", func() {
 		})
 		Context("when closing the body returns an error while an error was already there", func() {
 			BeforeEach(func() {
-				freeboxClient = Must(client.New(*endpoint, version)).(client.Client).
+				freeboxClient = Must(client.New(*endpoint, version)).
 					WithAppID(appID).
 					WithPrivateToken(privateToken).
 					WithHTTPClient(mockHTTPClient{

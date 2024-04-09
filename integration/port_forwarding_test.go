@@ -20,7 +20,7 @@ var _ = Describe("port forwarding scenarios", func() {
 
 		freeboxClient = freeboxClient.WithAppID(appID).WithPrivateToken(token)
 
-		permissions := Must(freeboxClient.Login(ctx)).(types.Permissions)
+		permissions := Must(freeboxClient.Login(ctx))
 		if !permissions.Settings {
 			panic(fmt.Sprintf("the token for the '%s' app does not appear to have the permissions to modify freebox settings", appID))
 		}

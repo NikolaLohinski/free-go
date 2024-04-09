@@ -46,6 +46,8 @@ type Client interface {
 	// filesystem
 	GetFileInfo(ctx context.Context, path string) (types.FileInfo, error)
 	RemoveFiles(ctx context.Context, paths []string) (types.FileSystemTask, error)
+	// downloads
+	ListDownloadTasks(ctx context.Context) ([]types.DownloadTask, error)
 }
 
 type HTTPClient interface {
