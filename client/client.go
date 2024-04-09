@@ -48,6 +48,7 @@ type Client interface {
 	RemoveFiles(ctx context.Context, paths []string) (types.FileSystemTask, error)
 	// downloads
 	ListDownloadTasks(ctx context.Context) ([]types.DownloadTask, error)
+	GetDownloadTask(ctx context.Context, identifier int64) (types.DownloadTask, error)
 }
 
 type HTTPClient interface {

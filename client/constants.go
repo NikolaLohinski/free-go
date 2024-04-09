@@ -19,6 +19,7 @@ const (
 	ErrPortForwardingRuleNotFound = Error("port forwarding rule not found")
 	ErrVirtualMachineNotFound     = Error("virtual machine not found")
 	ErrPathNotFound               = Error("path not found")
+	ErrTaskNotFound               = Error("task not found")
 )
 
 var (
