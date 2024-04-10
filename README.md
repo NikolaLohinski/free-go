@@ -128,6 +128,10 @@ For details on how to use this client, please refer to the `Client` interface in
   - [ ] Get a hash value
   - [ ] Create a directory
   - [ ] Rename a file/folder
+  - [ ] List every task
+  - [ ] List a task
+  - [ ] Delete a task
+  - [ ] Update a task
 
 ## Development
 
