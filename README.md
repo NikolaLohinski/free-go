@@ -112,7 +112,7 @@ For details on how to use this client, please refer to the `Client` interface in
   - [ ] Delete a download task
   - [ ] Update a download task
   - [ ] Get a download log
-  - [ ] Add a new download task
+  - [x] Add a new download task
 - [ ] [Filesystem API](https://dev.freebox.fr/sdk/os/fs/) : `/fs/*`
   - [x] Get file information
   - [ ] Download a file

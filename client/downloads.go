@@ -2,7 +2,11 @@ package client
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
+	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/nikolalohinski/free-go/types"
 )
@@ -38,4 +42,83 @@ func (c *client) GetDownloadTask(ctx context.Context, identifier int64) (result 
 	}
 
 	return result, nil
+}
+
+// /!\ NOTE: for this API the request arguments must be encoded using
+// “application/x-www-form-urlencoded” instead of “application/json”
+func (c *client) AddDownloadTask(ctx context.Context, downloadRequest types.DownloadRequest) (int64, error) {
+	form := url.Values{}
+
+	if len(downloadRequest.DownloadURLs) == 1 {
+		form.Set("download_url", downloadRequest.DownloadURLs[0])
+	} else {
+		form.Set("download_url_list", strings.Join(downloadRequest.DownloadURLs, "\n"))
+	}
+
+	if downloadRequest.DownloadDirectory != "" {
+		form.Set("download_dir", base64.StdEncoding.EncodeToString([]byte(downloadRequest.DownloadDirectory)))
+	}
+
+	if downloadRequest.Filename != "" {
+		if len(downloadRequest.DownloadURLs) > 1 {
+			return 0, fmt.Errorf("can not set filename with more than one download URL")
+		}
+		if downloadRequest.Recursive {
+			return 0, fmt.Errorf("can not set filename with a recursive download")
+		}
+		form.Set("filename", downloadRequest.Filename)
+	}
+
+	if downloadRequest.Hash != "" {
+		if len(downloadRequest.DownloadURLs) > 1 {
+			return 0, fmt.Errorf("can not set hash with more than one download URL")
+		}
+		if downloadRequest.Recursive {
+			return 0, fmt.Errorf("can not set hash with a recursive download")
+		}
+		form.Set("hash", downloadRequest.Hash)
+	}
+
+	if downloadRequest.Recursive {
+		form.Set("recursive", "true")
+	}
+
+	if downloadRequest.Username != "" {
+		form.Set("username", downloadRequest.Username)
+	}
+
+	if downloadRequest.Password != "" {
+		form.Set("password", downloadRequest.Password)
+	}
+
+	if downloadRequest.ArchivePassword != "" {
+		form.Set("archive_password", downloadRequest.ArchivePassword)
+	}
+
+	if len(downloadRequest.Cookies) > 0 {
+		arguments := []string{}
+		for name, value := range downloadRequest.Cookies {
+			arguments = append(arguments, fmt.Sprintf("%s=%s", name, value))
+		}
+		form.Set("cookies", strings.Join(arguments, "; "))
+	}
+
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("%s/downloads/add", c.base), strings.NewReader(form.Encode()))
+	if err != nil {
+		return 0, fmt.Errorf("failed to forge new request: %w", err)
+	}
+
+	response, err := c.do(request, c.withSession(ctx), c.withWWWFormURLEncodedContentType)
+	if err != nil {
+		return 0, fmt.Errorf("failed to POST downloads/add endpoint: %w", err)
+	}
+
+	var responseBody struct {
+		ID int64 `json:"id"`
+	}
+	if err = c.fromGenericResponse(response, &responseBody); err != nil {
+		return 0, fmt.Errorf("failed to get an ID from generic response: %w", err)
+	}
+
+	return responseBody.ID, nil
 }

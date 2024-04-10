@@ -49,6 +49,7 @@ type Client interface {
 	// downloads
 	ListDownloadTasks(ctx context.Context) ([]types.DownloadTask, error)
 	GetDownloadTask(ctx context.Context, identifier int64) (types.DownloadTask, error)
+	AddDownloadTask(ctx context.Context, request types.DownloadRequest) (identifier int64, err error)
 }
 
 type HTTPClient interface {

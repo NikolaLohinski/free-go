@@ -138,6 +138,12 @@ func (c *client) withJSONContentType(req *http.Request) error {
 	return nil
 }
 
+func (c *client) withWWWFormURLEncodedContentType(req *http.Request) error {
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	return nil
+}
+
 func (c *client) withSession(ctx context.Context) func(req *http.Request) error {
 	return func(req *http.Request) error {
 		if c.session == nil {

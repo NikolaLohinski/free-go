@@ -298,4 +298,206 @@ var _ = Describe("downloads", func() {
 			})
 		})
 	})
+	Context("add a download task", func() {
+		var (
+			ctx             = new(context.Context)
+			downloadRequest = new(types.DownloadRequest)
+
+			returnedID = new(int64)
+
+			setupServer = func(handlers ...http.HandlerFunc) {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						append(handlers,
+							ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/downloads/add", version)),
+							ghttp.VerifyMimeType("application/x-www-form-urlencoded"),
+							verifyAuth(*sessionToken),
+							ghttp.RespondWith(http.StatusOK, `{
+						    "success": true,
+						    "result": {
+						        "id": 1234
+						    }
+						}`),
+						)...,
+					),
+				)
+			}
+		)
+		BeforeEach(func() {
+			*ctx = context.Background()
+			*downloadRequest = types.DownloadRequest{
+				DownloadURLs: []string{"http://localhost:8080/file"},
+			}
+		})
+
+		JustBeforeEach(func() {
+			*returnedID, *returnedErr = freeboxClient.AddDownloadTask(*ctx, *downloadRequest)
+		})
+		Context("when a single URL is passed", func() {
+			BeforeEach(func() {
+				setupServer(ghttp.VerifyFormKV("download_url", "http://localhost:8080/file"))
+			})
+			It("should return the correct task ID", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(*returnedID).To(Equal(int64(1234)))
+			})
+		})
+		Context("when there are multiple URLs", func() {
+			BeforeEach(func() {
+				downloadRequest.DownloadURLs = append(downloadRequest.DownloadURLs, "ftp://localhost/other-file")
+				setupServer(ghttp.VerifyFormKV("download_url_list", "http://localhost:8080/file\nftp://localhost/other-file"))
+			})
+			It("should return the correct task ID", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(*returnedID).To(Equal(int64(1234)))
+			})
+		})
+		Context("when a directory is set", func() {
+			BeforeEach(func() {
+				downloadRequest.DownloadDirectory = "/Freebox/Téléchargements"
+				setupServer(ghttp.VerifyFormKV("download_dir", "L0ZyZWVib3gvVMOpbMOpY2hhcmdlbWVudHM="))
+			})
+			It("should return the correct task ID", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(*returnedID).To(Equal(int64(1234)))
+			})
+		})
+		Context("when a filename is set", func() {
+			BeforeEach(func() {
+				downloadRequest.Filename = "foo.bar"
+				setupServer(ghttp.VerifyFormKV("filename", "foo.bar"))
+			})
+			It("should return the correct task ID", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(*returnedID).To(Equal(int64(1234)))
+			})
+			Context("when recursive is set", func() {
+				BeforeEach(func() {
+					downloadRequest.Recursive = true
+				})
+				It("should return an error", func() {
+					Expect(*returnedErr).ToNot(BeNil())
+				})
+			})
+			Context("when multiple URLs are passed", func() {
+				BeforeEach(func() {
+					downloadRequest.DownloadURLs = append(downloadRequest.DownloadURLs, "foo")
+				})
+				It("should return an error", func() {
+					Expect(*returnedErr).ToNot(BeNil())
+				})
+			})
+		})
+		Context("when a hash is set", func() {
+			BeforeEach(func() {
+				downloadRequest.Hash = "sha256:f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2"
+				setupServer(ghttp.VerifyFormKV("hash", "sha256:f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2"))
+			})
+			It("should return the correct task ID", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(*returnedID).To(Equal(int64(1234)))
+			})
+			Context("when recursive is set", func() {
+				BeforeEach(func() {
+					downloadRequest.Recursive = true
+				})
+				It("should return an error", func() {
+					Expect(*returnedErr).ToNot(BeNil())
+				})
+			})
+			Context("when multiple URLs are passed", func() {
+				BeforeEach(func() {
+					downloadRequest.DownloadURLs = append(downloadRequest.DownloadURLs, "foo")
+				})
+				It("should return an error", func() {
+					Expect(*returnedErr).ToNot(BeNil())
+				})
+			})
+		})
+		Context("when recursive is set", func() {
+			BeforeEach(func() {
+				downloadRequest.Recursive = true
+				setupServer(ghttp.VerifyFormKV("recursive", "true"))
+			})
+			It("should return the correct task ID", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(*returnedID).To(Equal(int64(1234)))
+			})
+		})
+		Context("when username is set", func() {
+			BeforeEach(func() {
+				downloadRequest.Username = "foo"
+				setupServer(ghttp.VerifyFormKV("username", "foo"))
+			})
+			It("should return the correct task ID", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(*returnedID).To(Equal(int64(1234)))
+			})
+		})
+		Context("when password is set", func() {
+			BeforeEach(func() {
+				downloadRequest.Password = "bar"
+				setupServer(ghttp.VerifyFormKV("password", "bar"))
+			})
+			It("should return the correct task ID", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(*returnedID).To(Equal(int64(1234)))
+			})
+		})
+		Context("when archive_password is set", func() {
+			BeforeEach(func() {
+				downloadRequest.ArchivePassword = "zip"
+				setupServer(ghttp.VerifyFormKV("archive_password", "zip"))
+			})
+			It("should return the correct task ID", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(*returnedID).To(Equal(int64(1234)))
+			})
+		})
+		Context("when cookies is set", func() {
+			BeforeEach(func() {
+				downloadRequest.Cookies = map[string]string{
+					"cookie1": "foo",
+					"cookie2": "bar",
+				}
+				setupServer(ghttp.VerifyFormKV("cookies", "cookie1=foo; cookie2=bar"))
+			})
+			It("should return the correct task ID", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(*returnedID).To(Equal(int64(1234)))
+			})
+		})
+		Context("when the context is nil", func() {
+			BeforeEach(func() {
+				*ctx = nil
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the server returns an unexpected payload", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/downloads/add", version)),
+						ghttp.RespondWith(http.StatusOK, `{
+						    "success": true,
+						    "result": []
+						}`),
+					),
+				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+	})
 })
