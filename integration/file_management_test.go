@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/nikolalohinski/free-go/client"
 	"github.com/nikolalohinski/free-go/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -39,14 +40,14 @@ var _ = Describe("file management scenarios", func() {
 			})
 			Expect(err).To(BeNil())
 
-			// Watch task
+			// watch download task
 			task := new(types.DownloadTask)
 			Eventually(func() types.DownloadTask {
 				*task, err = freeboxClient.GetDownloadTask(ctx, identifier)
 				Expect(err).To(BeNil())
 
 				return *task
-			}, "5s").Should(MatchFields(IgnoreExtras, Fields{
+			}, "2s").Should(MatchFields(IgnoreExtras, Fields{
 				"Status": BeEquivalentTo(types.DownloadTaskStatusDone),
 			}))
 
@@ -57,12 +58,27 @@ var _ = Describe("file management scenarios", func() {
 				"Type": Equal(types.FileTypeFile),
 			}))
 
-			// delete
+			// remove file
 			removeTask, err := freeboxClient.RemoveFiles(ctx, []string{string(info.Path)})
 			Expect(err).To(BeNil())
 			Expect(removeTask).To(MatchFields(IgnoreExtras, Fields{
 				"Type": Equal(types.FileTaskTypeRemove),
 			}))
+
+			// watch remove task
+			Eventually(func() types.FileSystemTask {
+				removeTask, err = freeboxClient.GetFileSystemTask(ctx, removeTask.ID)
+				Expect(err).To(BeNil())
+
+				return removeTask
+			}, "2s").Should(MatchFields(IgnoreExtras, Fields{
+				"State": BeEquivalentTo(types.FileTaskStateDone),
+			}))
+
+			// confirm file is removed
+			_, err = freeboxClient.GetFileInfo(ctx, string(task.DownloadDirectory)+"/"+filename)
+			Expect(err).ToNot(BeNil())
+			Expect(err).To(Equal(client.ErrPathNotFound))
 		})
 	})
 })

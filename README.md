@@ -129,7 +129,7 @@ For details on how to use this client, please refer to the `Client` interface in
   - [ ] Create a directory
   - [ ] Rename a file/folder
   - [ ] List every task
-  - [ ] List a task
+  - [x] Get a task
   - [ ] Delete a task
   - [ ] Update a task
 
