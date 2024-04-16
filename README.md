@@ -91,9 +91,9 @@ For details on how to use this client, please refer to the `Client` interface in
   - [x] Add a VM
   - [x] Delete a VM
   - [x] Update a VM
-  - [ ] Start a VM
+  - [x] Start a VM
   - [ ] Send a powerbutton signal to a VM
-  - [ ] Stop a VM
+  - [x] Stop a VM
   - [ ] Reset a VM
   - [ ] Watch for VM status changes
   - [ ] VM virtual console

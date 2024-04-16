@@ -41,6 +41,8 @@ type Client interface {
 	GetVirtualMachine(ctx context.Context, identifier int64) (result types.VirtualMachine, err error)
 	UpdateVirtualMachine(ctx context.Context, identifier int64, payload types.VirtualMachinePayload) (result types.VirtualMachine, err error)
 	DeleteVirtualMachine(ctx context.Context, identifier int64) error
+	StartVirtualMachine(ctx context.Context, identifier int64) error
+	StopVirtualMachine(ctx context.Context, identifier int64) error
 	// websocket
 	ListenEvents(ctx context.Context, events []types.EventDescription) (chan types.Event, error)
 	// filesystem
