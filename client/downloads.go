@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"sort"
 	"strings"
 
 	"github.com/nikolalohinski/free-go/types"
@@ -100,6 +101,7 @@ func (c *client) AddDownloadTask(ctx context.Context, downloadRequest types.Down
 		for name, value := range downloadRequest.Cookies {
 			arguments = append(arguments, fmt.Sprintf("%s=%s", name, value))
 		}
+		sort.Strings(arguments)
 		form.Set("cookies", strings.Join(arguments, "; "))
 	}
 
