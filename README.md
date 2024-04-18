@@ -95,7 +95,6 @@ For details on how to use this client, please refer to the `Client` interface in
   - [ ] Send a powerbutton signal to a VM
   - [x] Stop a VM
   - [ ] Reset a VM
-  - [ ] Watch for VM status changes
   - [ ] VM virtual console
   - [ ] VM virtual screen
   - [ ] Get information on a virtual disk
