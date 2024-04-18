@@ -370,6 +370,15 @@ var _ = Describe("virtual machines", func() {
 				Expect(*returnedErr).ToNot(BeNil())
 			})
 		})
+		Context("when the name in the payload is too long", func() {
+			BeforeEach(func() {
+				payload.Name = "this is way more than 30 characters and should fail"
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+				Expect(*returnedErr).To(Equal(client.ErrVirtualMachineNameTooLong))
+			})
+		})
 		Context("when the server returns an unexpected payload", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(

@@ -51,6 +51,9 @@ func (c *client) ListVirtualMachines(ctx context.Context) (result []types.Virtua
 }
 
 func (c *client) CreateVirtualMachine(ctx context.Context, payload types.VirtualMachinePayload) (result types.VirtualMachine, err error) {
+	if len(payload.Name) > 30 {
+		return result, ErrVirtualMachineNameTooLong
+	}
 	response, err := c.post(ctx, "vm/", payload, c.withSession(ctx))
 	if err != nil {
 		return result, fmt.Errorf("failed to POST to vm/ endpoint: %w", err)

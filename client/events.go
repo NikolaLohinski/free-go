@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/websocket"
 	"github.com/nikolalohinski/free-go/types"
@@ -41,11 +42,14 @@ func (c *client) ListenEvents(ctx context.Context, events []types.EventDescripti
 
 	url := *c.base
 	url.Scheme = "ws"
-	url.Path = fmt.Sprintf("%s/ws/events", url.Path)
+	if strings.ToLower(c.base.Scheme) == "https" {
+		url.Scheme = "wss"
+	}
+	url.Path = fmt.Sprintf("%s/ws/event", url.Path)
 
-	ws, _, err := websocket.DefaultDialer.Dial(url.String(), header)
+	ws, dialResponse, err := websocket.DefaultDialer.Dial(url.String(), header)
 	if err != nil {
-		return nil, fmt.Errorf("failed to dial websocket: %w", err)
+		return nil, fmt.Errorf("dialing websocket returned a status %s: %w", dialResponse.Status, err)
 	}
 
 	registerActionPayload := registerAction{

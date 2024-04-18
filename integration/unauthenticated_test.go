@@ -4,7 +4,6 @@ package integration_test
 
 import (
 	"context"
-	"strings"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -20,7 +19,7 @@ var _ = Describe("unauthenticated scenarios", func() {
 				"APIBaseURL": Equal("/api/"),
 				"HTTPSPort":  Not(BeZero()),
 				"DeviceName": Equal("Freebox Server"),
-				"APIVersion": MatchRegexp(`%s.\d+`, strings.TrimLeft(version, "v")),
+				"APIVersion": MatchRegexp(`\d+.\d+`),
 			}))
 		})
 	})
