@@ -17,20 +17,26 @@ import (
 )
 
 var _ = Describe("virtual machines", Ordered, func() {
-	const diskImagePath = "Freebox/Téléchargements/free-go.integration.tests.qcow2"
-	var ctx context.Context
+	const (
+		rootDirectoryName = "free-go"
+		rootDirectory     = rootFS + "/" + rootDirectoryName
+		diskImagePath     = rootDirectory + "/" + "free-go.integration.tests.qcow2"
+	)
+	var (
+		ctx context.Context
+	)
 	BeforeAll(func() {
 		ctx = context.Background()
 
 		freeboxClient = freeboxClient.WithAppID(appID).WithPrivateToken(token)
-
 		permissions := Must(freeboxClient.Login(ctx))
-		if !permissions.Settings {
-			panic(fmt.Sprintf("the token for the '%s' app does not appear to have the permissions to modify freebox settings", appID))
-		}
+		Expect(permissions.Settings).To(BeTrue(), fmt.Sprintf("the token for the '%s' app does not appear to have the permissions to modify freebox settings", appID))
+
+		_, err := freeboxClient.CreateDirectory(ctx, rootFS, rootDirectoryName)
+		Expect(err).To(Or(BeNil(), Equal(client.ErrDestinationConflict)))
 
 		// Check that the image exists and if not pre-download it
-		_, err := freeboxClient.GetFileInfo(ctx, diskImagePath)
+		_, err = freeboxClient.GetFileInfo(ctx, diskImagePath)
 		if err == nil {
 			return
 		}
@@ -43,9 +49,7 @@ var _ = Describe("virtual machines", Ordered, func() {
 				DownloadDirectory: path.Dir(diskImagePath),
 				Filename:          path.Base(diskImagePath),
 			})
-			if err != nil {
-				panic("failed to add a download task")
-			}
+			Expect(err).To(BeNil())
 			Eventually(func() types.DownloadTask {
 				downloadTask, err := freeboxClient.GetDownloadTask(ctx, taskID)
 				Expect(err).To(BeNil())
@@ -55,7 +59,7 @@ var _ = Describe("virtual machines", Ordered, func() {
 				"Status": BeEquivalentTo(types.DownloadTaskStatusDone),
 			}))
 		} else {
-			panic("failed to get file info")
+			Expect(err).To(BeNil())
 		}
 	})
 	Context("full lifecycle for a virtual machine", func() {

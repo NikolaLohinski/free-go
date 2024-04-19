@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	pathNotFoundCode = "path_not_found"
+	pathNotFoundCode        = "path_not_found"
+	destinationConflictCode = "destination_conflict"
 )
 
 func (c *client) GetFileInfo(ctx context.Context, path string) (types.FileInfo, error) {
@@ -62,4 +63,24 @@ func (c *client) GetFileSystemTask(ctx context.Context, identifier int64) (task 
 	}
 
 	return task, nil
+}
+
+func (c *client) CreateDirectory(ctx context.Context, parent, name string) (string, error) {
+	response, err := c.post(ctx, "fs/mkdir/", map[string]interface{}{
+		"parent":  types.Base64Path(parent),
+		"dirname": name,
+	}, c.withSession(ctx))
+	if err != nil {
+		if response != nil && response.ErrorCode == destinationConflictCode {
+			return "", ErrDestinationConflict
+		}
+		return "", fmt.Errorf("failed to POST to fs/mkdir/ endpoint: %w", err)
+	}
+
+	var result types.Base64Path
+	if err = c.fromGenericResponse(response, &result); err != nil {
+		return "", fmt.Errorf("failed to get a base64 string from a generic response: %w", err)
+	}
+
+	return string(result), nil
 }

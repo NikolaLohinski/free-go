@@ -14,17 +14,31 @@ import (
 	. "github.com/onsi/gomega/gstruct"
 )
 
-var _ = Describe("file management scenarios", func() {
-	var ctx context.Context
-	BeforeEach(func() {
+var _ = Describe("file management scenarios", Ordered, func() {
+	var (
+		ctx context.Context
+
+		rootDirectory = new(string)
+	)
+	BeforeAll(func() {
 		ctx = context.Background()
 
 		freeboxClient = freeboxClient.WithAppID(appID).WithPrivateToken(token)
 
 		permissions := Must(freeboxClient.Login(ctx))
-		if !permissions.Settings {
-			panic(fmt.Sprintf("the token for the '%s' app does not appear to have the permissions to modify freebox settings", appID))
-		}
+		Expect(permissions.Settings).To(BeTrue(), fmt.Sprintf("the token for the '%s' app does not appear to have the permissions to modify freebox settings", appID))
+
+		*rootDirectory = Must(freeboxClient.CreateDirectory(ctx, rootFS, fmt.Sprintf("free-go.integration.tests.%s", uuid.New().String())))
+	})
+	AfterAll(func() {
+		task := Must(freeboxClient.RemoveFiles(ctx, []string{*rootDirectory}))
+
+		Eventually(func() interface{} {
+			task, err := freeboxClient.GetFileSystemTask(ctx, task.ID)
+			Expect(err).To(BeNil())
+
+			return task.State
+		}, "30s").Should(Equal(types.FileTaskStateDone))
 	})
 
 	Context("full lifecycle of a file download", func() {
@@ -36,7 +50,7 @@ var _ = Describe("file management scenarios", func() {
 					"https://raw.githubusercontent.com/NikolaLohinski/free-go/main/free-go.svg",
 				},
 				Filename:          filename,
-				DownloadDirectory: "Freebox/Téléchargements",
+				DownloadDirectory: *rootDirectory,
 			})
 			Expect(err).To(BeNil())
 

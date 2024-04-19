@@ -21,6 +21,7 @@ const (
 	ErrVirtualMachineNameTooLong  = Error("virtual machine name must be less than 30 characters")
 	ErrPathNotFound               = Error("path not found")
 	ErrTaskNotFound               = Error("task not found")
+	ErrDestinationConflict        = Error("file or folder already exists")
 )
 
 var (

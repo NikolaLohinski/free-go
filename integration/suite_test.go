@@ -9,6 +9,10 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+const (
+	rootFS = "Freebox"
+)
+
 var (
 	version  string
 	endpoint string

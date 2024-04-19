@@ -338,4 +338,82 @@ var _ = Describe("filesystem", func() {
 			})
 		})
 	})
+	Context("creating a directory", func() {
+		var (
+			parent       = "path/to/parent"
+			name         = "folder"
+			returnedPath = new(string)
+		)
+		JustBeforeEach(func() {
+			*returnedPath, *returnedErr = freeboxClient.CreateDirectory(context.Background(), parent, name)
+		})
+		Context("default", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/fs/mkdir/", version)),
+						ghttp.VerifyJSON(`{
+							"parent": "cGF0aC90by9wYXJlbnQ=",
+							"dirname": "folder"
+						}`),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": "cGF0aC90by9wYXJlbnQvZm9sZGVy"
+						}`),
+					),
+				)
+			})
+			It("should return the task", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(*returnedPath).To(Equal("path/to/parent/folder"))
+			})
+		})
+		Context("when the folder already exists", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/fs/mkdir/", version)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{
+							"msg": "Erreur lors de la création du dossier: Le fichier existe déjà",
+							"success": false,
+							"error_code": "destination_conflict"
+						}`),
+					),
+				)
+			})
+			It("should return the correct error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+				Expect(*returnedErr).To(Equal(client.ErrDestinationConflict))
+			})
+		})
+		Context("when server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the server returns an unexpected payload", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/fs/mkdir/", version)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": [
+								"foo"
+							]
+						}`),
+					),
+				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+	})
 })

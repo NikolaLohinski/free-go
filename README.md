@@ -125,7 +125,7 @@ For details on how to use this client, please refer to the `Client` interface in
   - [ ] Repair a file
   - [ ] Hash a file
   - [ ] Get a hash value
-  - [ ] Create a directory
+  - [x] Create a directory
   - [ ] Rename a file/folder
   - [ ] List every task
   - [x] Get a task
