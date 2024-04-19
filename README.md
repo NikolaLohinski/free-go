@@ -92,7 +92,7 @@ For details on how to use this client, please refer to the `Client` interface in
   - [x] Delete a VM
   - [x] Update a VM
   - [x] Start a VM
-  - [ ] Send a powerbutton signal to a VM
+  - [x] Send a powerbutton signal to a VM
   - [x] Stop a VM
   - [ ] Reset a VM
   - [ ] VM virtual console

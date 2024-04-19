@@ -117,12 +117,22 @@ func (c *client) StartVirtualMachine(ctx context.Context, identifier int64) erro
 	return nil
 }
 
-func (c *client) StopVirtualMachine(ctx context.Context, identifier int64) error {
+func (c *client) KillVirtualMachine(ctx context.Context, identifier int64) error {
 	if response, err := c.post(ctx, fmt.Sprintf("vm/%d/stop", identifier), nil, c.withSession(ctx)); err != nil {
 		if response != nil && response.ErrorCode == codeVirtualMachineNotFound {
 			return ErrVirtualMachineNotFound
 		}
 		return fmt.Errorf("failed to POST to vm/%d/stop endpoint: %w", identifier, err)
+	}
+	return nil
+}
+
+func (c *client) StopVirtualMachine(ctx context.Context, identifier int64) error {
+	if response, err := c.post(ctx, fmt.Sprintf("vm/%d/powerbutton", identifier), nil, c.withSession(ctx)); err != nil {
+		if response != nil && response.ErrorCode == codeVirtualMachineNotFound {
+			return ErrVirtualMachineNotFound
+		}
+		return fmt.Errorf("failed to POST to vm/%d/powerbutton endpoint: %w", identifier, err)
 	}
 	return nil
 }

@@ -682,9 +682,9 @@ var _ = Describe("virtual machines", func() {
 			})
 		})
 	})
-	Context("stopping a virtual machine", func() {
+	Context("killing a virtual machine", func() {
 		JustBeforeEach(func() {
-			*returnedErr = freeboxClient.StopVirtualMachine(context.Background(), 1234)
+			*returnedErr = freeboxClient.KillVirtualMachine(context.Background(), 1234)
 		})
 		Context("default", func() {
 			BeforeEach(func() {
@@ -728,4 +728,51 @@ var _ = Describe("virtual machines", func() {
 			})
 		})
 	})
+	Context("stopping a virtual machine", func() {
+		JustBeforeEach(func() {
+			*returnedErr = freeboxClient.StopVirtualMachine(context.Background(), 1234)
+		})
+		Context("default", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/vm/1234/powerbutton", version)),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true
+						}`),
+					),
+				)
+			})
+			It("should not return an error", func() {
+				Expect(*returnedErr).To(BeNil())
+			})
+		})
+		Context("when the virtual machine does not exist", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/vm/1234/powerbutton", version)),
+						ghttp.RespondWith(http.StatusOK, `{
+						    "msg": "Impossible de supprimer cette VM : La VM n’existe pas",
+						    "success": false,
+						    "error_code": "no_such_vm"
+						}`),
+					),
+				)
+			})
+			It("should return the correct virtual machine", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+				Expect(*returnedErr).To(Equal(client.ErrVirtualMachineNotFound))
+			})
+		})
+		Context("when server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+	})
+
 })

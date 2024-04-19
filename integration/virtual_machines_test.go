@@ -120,7 +120,7 @@ var _ = Describe("virtual machines", Ordered, func() {
 			}()
 
 			// stop the virtual machine
-			Expect(freeboxClient.StopVirtualMachine(ctx, virtualMachine.ID)).To(BeNil())
+			Expect(freeboxClient.KillVirtualMachine(ctx, virtualMachine.ID)).To(BeNil())
 
 			// wait for the virtual machine to be stopped
 			Eventually(func() bool { return isRunning }, "30s").Should(BeFalse())
