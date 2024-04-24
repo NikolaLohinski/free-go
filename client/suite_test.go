@@ -21,7 +21,7 @@ const (
 
 func TestClient(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "unit-tests")
+	RunSpecs(t, "client")
 }
 
 func Must[T interface{}](returned T, err error) T {

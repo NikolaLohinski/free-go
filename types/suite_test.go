@@ -9,7 +9,7 @@ import (
 
 func TestTypes(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "type-tests")
+	RunSpecs(t, "types")
 }
 
 func Must(r interface{}, err error) interface{} {

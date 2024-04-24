@@ -16,7 +16,7 @@ type Go mg.Namespace
 
 // Runs ginkgo for unit tests
 func (Go) Test(ctx context.Context) error {
-	return Run(Invoke(ctx, "Running unit tests"), "ginkgo", "./...")
+	return Run(Invoke(ctx, "Running unit tests"), "ginkgo", "--skip-package", "integration", "./...")
 }
 
 // Runs ginkgo for integration test
