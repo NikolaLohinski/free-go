@@ -29,8 +29,8 @@ func main() {
     var (
         endpoint     = "mafreebox.freebox.fr"
         version      = "latest" // Or pin a specific version such as v10.
-        appID        = "..."    // See https://dev.freebox.fr/sdk/os/login/ to learn
-        privateToken = "..."    // how to define an app and generate a private token
+        appID        = "..."    // See https://dev.freebox.fr/sdk/os/login/ and/or
+        privateToken = "..."    // head to the next section of the documentation
     )
 
     ctx := context.Background()
@@ -59,6 +59,10 @@ func main() {
 ```
 
 For details on how to use this client, please refer to the `Client` interface in [`client/client.go`](./client/client.go).
+
+## Generating credentials
+
+At the time of this writing, generating credentials can only be done via the Freebox API. Please see [the documentation of this `terraform` provider](https://nikolalohinski.github.io/terraform-provider-freebox/provider.html#generating-credentials) which leverages `free-go` to provide a simple CLI to interact with the API and generate tokens.
 
 ## Supported and planned endpoints
 
