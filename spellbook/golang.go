@@ -16,12 +16,12 @@ type Go mg.Namespace
 
 // Runs ginkgo for unit tests
 func (Go) Test(ctx context.Context) error {
-	return Run(Invoke(ctx, "Running unit tests"), "ginkgo", "--skip-package", "integration", "./...")
+	return Run(Invoke(ctx, "Running unit tests"), "ginkgo", "-p", "--skip-package", "integration", "./...")
 }
 
 // Runs ginkgo for integration test
 func (Go) Integration(ctx context.Context) error {
-	return Run(Invoke(ctx, "Running integration tests"), "ginkgo", "-tags=integration", "./integration/...")
+	return Run(Invoke(ctx, "Running integration tests"), "ginkgo", ",-p", "-tags=integration", "./integration/...")
 }
 
 // Cleans dependencies and imports
