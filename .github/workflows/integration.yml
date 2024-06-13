@@ -1,0 +1,32 @@
+name: integration
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Run integration tests with mage
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21
+      - name: Install Mage
+        uses: magefile/mage-action@v3
+        with:
+          install-only: true
+      - name: Install tooling
+        run: mage install
+      - name: Run tests
+        run: mage go:integration
+        env:
+          FREEBOX_ENDPOINT: ${{ secrets.FREEBOX_ENDPOINT }}
+          FREEBOX_VERSION: ${{ secrets.FREEBOX_VERSION }}
+          FREEBOX_APP_ID: ${{ secrets.FREEBOX_APP_ID }}
+          FREEBOX_TOKEN: ${{ secrets.FREEBOX_TOKEN }}
+          FREEBOX_ROOT: ${{ secrets.FREEBOX_ROOT }}
+
