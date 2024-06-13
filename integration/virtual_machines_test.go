@@ -17,13 +17,10 @@ import (
 )
 
 var _ = Describe("virtual machines", Ordered, func() {
-	const (
-		rootDirectoryName = "free-go"
-		rootDirectory     = rootFS + "/" + rootDirectoryName
-		diskImagePath     = rootDirectory + "/" + "free-go.integration.tests.qcow2"
-	)
 	var (
-		ctx context.Context
+		rootDirectory = root + "/Logiciels"
+		diskImagePath = rootDirectory + "/" + "free-go-debian-11-aarch64.qcow2"
+		ctx           context.Context
 	)
 	BeforeAll(func() {
 		ctx = context.Background()
@@ -32,7 +29,7 @@ var _ = Describe("virtual machines", Ordered, func() {
 		permissions := Must(freeboxClient.Login(ctx))
 		Expect(permissions.Settings).To(BeTrue(), fmt.Sprintf("the token for the '%s' app does not appear to have the permissions to modify freebox settings", appID))
 
-		_, err := freeboxClient.CreateDirectory(ctx, rootFS, rootDirectoryName)
+		_, err := freeboxClient.CreateDirectory(ctx, root, "Logiciels")
 		Expect(err).To(Or(BeNil(), Equal(client.ErrDestinationConflict)))
 
 		// Check that the image exists and if not pre-download it

@@ -11,35 +11,37 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-const (
-	rootFS = "Freebox"
-)
-
 var (
 	version  string
 	endpoint string
 	token    string
 	appID    string
+	root     string
 
 	freeboxClient client.Client
 )
 
 func init() {
-	endpoint = os.Getenv("FREEBOX_ENDPOINT")
-	if endpoint == "" {
+	var ok bool
+	endpoint, ok = os.LookupEnv("FREEBOX_ENDPOINT")
+	if !ok {
 		panic("FREEBOX_ENDPOINT environment variable must be set")
 	}
-	version = os.Getenv("FREEBOX_VERSION")
-	if version == "" {
+	version, ok = os.LookupEnv("FREEBOX_VERSION")
+	if !ok {
 		panic("FREEBOX_VERSION environment variable must be set")
 	}
-	appID = os.Getenv("FREEBOX_APP_ID")
-	if appID == "" {
+	appID, ok = os.LookupEnv("FREEBOX_APP_ID")
+	if !ok {
 		panic("FREEBOX_APP_ID environment variable must be set")
 	}
-	token = os.Getenv("FREEBOX_TOKEN")
-	if token == "" {
+	token, ok = os.LookupEnv("FREEBOX_TOKEN")
+	if !ok {
 		panic("FREEBOX_TOKEN environment variable must be set")
+	}
+	root, ok = os.LookupEnv("FREEBOX_ROOT")
+	if !ok {
+		root = "Freebox"
 	}
 
 	freeboxClient = Must(client.New(endpoint, version))

@@ -18,7 +18,7 @@ var _ = Describe("file management scenarios", Ordered, func() {
 	var (
 		ctx context.Context
 
-		rootDirectory = new(string)
+		workingDirectory = new(string)
 	)
 	BeforeAll(func() {
 		ctx = context.Background()
@@ -28,10 +28,13 @@ var _ = Describe("file management scenarios", Ordered, func() {
 		permissions := Must(freeboxClient.Login(ctx))
 		Expect(permissions.Settings).To(BeTrue(), fmt.Sprintf("the token for the '%s' app does not appear to have the permissions to modify freebox settings", appID))
 
-		*rootDirectory = Must(freeboxClient.CreateDirectory(ctx, rootFS, fmt.Sprintf("free-go.integration.tests.%s", uuid.New().String())))
+		_, err := freeboxClient.CreateDirectory(ctx, root, "Logiciels")
+		Expect(err).To(Or(BeNil(), Equal(client.ErrDestinationConflict)))
+
+		*workingDirectory = Must(freeboxClient.CreateDirectory(ctx, root+"/Logiciels", fmt.Sprintf("free-go.integration.tests.%s", uuid.New().String())))
 	})
 	AfterAll(func() {
-		task := Must(freeboxClient.RemoveFiles(ctx, []string{*rootDirectory}))
+		task := Must(freeboxClient.RemoveFiles(ctx, []string{*workingDirectory}))
 
 		Eventually(func() interface{} {
 			task, err := freeboxClient.GetFileSystemTask(ctx, task.ID)
@@ -50,7 +53,7 @@ var _ = Describe("file management scenarios", Ordered, func() {
 					"https://raw.githubusercontent.com/NikolaLohinski/free-go/main/free-go.svg",
 				},
 				Filename:          filename,
-				DownloadDirectory: *rootDirectory,
+				DownloadDirectory: *workingDirectory,
 			})
 			Expect(err).To(BeNil())
 
