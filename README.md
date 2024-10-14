@@ -113,7 +113,7 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [x] Get a download task
   - [x] List download tasks
   - [x] Delete a download task
-  - [ ] Update a download task
+  - [x] Update a download task
   - [ ] Get a download log
   - [x] Add a new download task
 - [ ] [Filesystem API](https://dev.freebox.fr/sdk/os/fs/) : `/fs/*`

@@ -150,3 +150,16 @@ func (c *client) EraseDownloadTask(ctx context.Context, identifier int64) error 
 
 	return nil
 }
+
+// UpdateDownloadTask updates a download task by its identifier.
+func (c *client) UpdateDownloadTask(ctx context.Context, identifier int64, downloadRequest types.DownloadTaskUpdate) error {
+	resp, err := c.put(ctx, fmt.Sprintf("downloads/%d", identifier), downloadRequest, c.withSession(ctx))
+	if err != nil {
+		if resp != nil && resp.ErrorCode == codeTaskNotFound {
+			return ErrTaskNotFound
+		}
+		return fmt.Errorf("failed to PUT downloads/%d endpoint: %w", identifier, err)
+	}
+
+	return nil
+}

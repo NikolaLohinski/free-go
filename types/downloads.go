@@ -69,3 +69,8 @@ type DownloadRequest struct {
 	ArchivePassword   string            // The password required to extract downloaded content (only relevant for nzb)
 	Cookies           map[string]string // The http cookies (to be able to pass session cookies along with url). This is the content of the HTTP Cookie header, for example: cookie1=value1; cookie2=value2
 }
+
+type DownloadTaskUpdate struct {
+	Status downloadTaskStatus `json:"status,omitempty"` // The new status
+	IOPriority downloadTaskIOPriority `json:"io_priority,omitempty"` // The new IO priority
+}
