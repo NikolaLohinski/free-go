@@ -500,4 +500,52 @@ var _ = Describe("downloads", func() {
 			})
 		})
 	})
+	Context("delete a download task", func() {
+		var (
+			taskID = int64(1234)
+
+			setupServer = func(handlers ...http.HandlerFunc) {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						append(handlers,
+							ghttp.VerifyRequest(http.MethodDelete, fmt.Sprintf("/api/%s/downloads/%d", version, taskID)),
+							verifyAuth(*sessionToken),
+							ghttp.RespondWith(http.StatusOK, `{"success": true}`),
+						)...,
+					),
+				)
+			}
+		)
+		BeforeEach(func() {
+			setupServer()
+		})
+
+		It("Should work", func(ctx SpecContext) {
+			Expect(freeboxClient.DeleteDownloadTask(ctx, taskID)).To(Succeed())
+		})
+	})
+	Context("erase a download task", func() {
+		var (
+			taskID = int64(1234)
+
+			setupServer = func(handlers ...http.HandlerFunc) {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						append(handlers,
+							ghttp.VerifyRequest(http.MethodDelete, fmt.Sprintf("/api/%s/downloads/%d/erase", version, taskID)),
+							verifyAuth(*sessionToken),
+							ghttp.RespondWith(http.StatusOK, `{"success": true}`),
+						)...,
+					),
+				)
+			}
+		)
+		BeforeEach(func() {
+			setupServer()
+		})
+
+		It("Should work", func(ctx SpecContext) {
+			Expect(freeboxClient.EraseDownloadTask(ctx, taskID)).To(Succeed())
+		})
+	})
 })
