@@ -124,3 +124,29 @@ func (c *client) AddDownloadTask(ctx context.Context, downloadRequest types.Down
 
 	return responseBody.ID, nil
 }
+
+// DeleteDownloadTask deletes a download task by its identifier.
+func (c *client) DeleteDownloadTask(ctx context.Context, identifier int64) error {
+	response, err := c.delete(ctx, fmt.Sprintf("downloads/%d", identifier), c.withSession(ctx))
+	if err != nil {
+		if response != nil && response.ErrorCode == codeTaskNotFound {
+			return ErrTaskNotFound
+		}
+		return fmt.Errorf("failed to DELETE downloads/%d endpoint: %w", identifier, err)
+	}
+
+	return nil
+}
+
+// EraseDownloadTask erases a download task and the downloaded files.
+func (c *client) EraseDownloadTask(ctx context.Context, identifier int64) error {
+	response, err := c.delete(ctx, fmt.Sprintf("downloads/%d/erase", identifier), c.withSession(ctx))
+	if err != nil {
+		if response != nil && response.ErrorCode == codeTaskNotFound {
+			return ErrTaskNotFound
+		}
+		return fmt.Errorf("failed to DELETE downloads/%d endpoint: %w", identifier, err)
+	}
+
+	return nil
+}
