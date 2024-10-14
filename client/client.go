@@ -57,6 +57,7 @@ type Client interface {
 	AddDownloadTask(ctx context.Context, request types.DownloadRequest) (identifier int64, err error)
 	DeleteDownloadTask(ctx context.Context, identifier int64) error
 	EraseDownloadTask(ctx context.Context, identifier int64) error
+	UpdateDownloadTask(ctx context.Context, identifier int64, payload types.DownloadTaskUpdate) error
 }
 
 type HTTPClient interface {

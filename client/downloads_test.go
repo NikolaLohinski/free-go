@@ -548,4 +548,68 @@ var _ = Describe("downloads", func() {
 			Expect(freeboxClient.EraseDownloadTask(ctx, taskID)).To(Succeed())
 		})
 	})
+	Context("update a download task", func() {
+		var (
+			payload = new(types.DownloadTaskUpdate)
+
+			taskID = int64(1234)
+
+			setupServer = func(handlers ...http.HandlerFunc) {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						append(handlers,
+							ghttp.VerifyRequest(http.MethodPut, fmt.Sprintf("/api/%s/downloads/%d", version, taskID)),
+							ghttp.VerifyMimeType("application/json"),
+							verifyAuth(*sessionToken),
+							ghttp.RespondWith(http.StatusOK, `{
+						    "success": true,
+						    "result": {
+						        "id": 1234
+						    }
+						}`),
+						)...,
+					),
+				)
+			}
+		)
+		BeforeEach(func() {
+			*payload = types.DownloadTaskUpdate{}
+		})
+
+		Context("when fields are not set", func() {
+			BeforeEach(func() {
+				setupServer(ghttp.VerifyJSON("{}"))
+			})
+			It("Should omit the fields", func(ctx SpecContext) {
+				Expect(freeboxClient.UpdateDownloadTask(ctx, taskID, *payload)).To(Succeed())
+			})
+		})
+		Context("when status is set", func() {
+			BeforeEach(func() {
+				payload.Status = types.DownloadTaskStatusStopped
+				setupServer(ghttp.VerifyJSON(`{"status":"stopped"}`))
+			})
+			It("should work", func(ctx SpecContext) {
+				Expect(freeboxClient.UpdateDownloadTask(ctx, taskID, *payload)).To(Succeed())
+			})
+		})
+		Context("when priority is low", func() {
+			BeforeEach(func() {
+				payload.IOPriority = types.DownloadTaskIOPriorityLow
+				setupServer(ghttp.VerifyJSON(`{"io_priority":"low"}`))
+			})
+			It("should work", func(ctx SpecContext) {
+				Expect(freeboxClient.UpdateDownloadTask(ctx, taskID, *payload)).To(Succeed())
+			})
+		})
+		Context("when priority is normal", func() {
+			BeforeEach(func() {
+				payload.IOPriority = types.DownloadTaskIOPriorityNormal
+				setupServer(ghttp.VerifyJSON(`{"io_priority":"normal"}`))
+			})
+			It("should work", func(ctx SpecContext) {
+				Expect(freeboxClient.UpdateDownloadTask(ctx, taskID, *payload)).To(Succeed())
+			})
+		})
+	})
 })
