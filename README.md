@@ -101,11 +101,11 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [ ] Reset a VM
   - [ ] VM virtual console
   - [ ] VM virtual screen
-  - [ ] Get information on a virtual disk
-  - [ ] Create a virtual disk
-  - [ ] Resize a virtual disk
-  - [ ] Get a virtual disk task
-  - [ ] Delete a virtual disk task
+  - [x] Get information on a virtual disk
+  - [x] Create a virtual disk
+  - [x] Resize a virtual disk
+  - [x] Get a virtual disk task
+  - [x] Delete a virtual disk task
 - [ ] [Websocket API](https://dev.freebox.fr/sdk/os/) : `/ws/*`
   - [x] WebSocket event API
   - [ ] WebSocket file Upload API
