@@ -51,6 +51,8 @@ type Client interface {
 	RemoveFiles(ctx context.Context, paths []string) (types.FileSystemTask, error)
 	GetFileSystemTask(ctx context.Context, identifier int64) (types.FileSystemTask, error)
 	CreateDirectory(ctx context.Context, parent, name string) (path string, err error)
+	HashFileTask(ctx context.Context, payload types.HashPayload) (task types.FileSystemTask, err error)
+	GetHashResult(ctx context.Context, identifier int64) (result string, err error)
 	// downloads
 	ListDownloadTasks(ctx context.Context) ([]types.DownloadTask, error)
 	GetDownloadTask(ctx context.Context, identifier int64) (types.DownloadTask, error)
