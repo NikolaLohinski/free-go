@@ -26,6 +26,16 @@ const (
 	DownloadTaskStatusDownloading = "downloading"
 )
 
+type downloadTaskError string
+
+const (
+	DownloadTaskErrorNone             downloadTaskError = "none"          // No error
+	DownloadTaskErrorHashDownloadDisk downloadTaskError = "hash_download" // Error downloading the hash file
+	DownloadTaskError4XX              downloadTaskError = "http_4xx"      // Error 4xx
+	DownloadTaskErrorNotFound         downloadTaskError = "not_found"     // Error 404
+	// TODO: Add more error codes
+)
+
 type downloadTaskIOPriority string
 
 const (
@@ -48,7 +58,7 @@ type DownloadTask struct {
 	ReceiveRate        int64                  `json:"rx_rate"`          // current receive rate (in byte/s)
 	TransmitPercentage int                    `json:"tx_pct"`           // transmit percentage (without protocol overhead). To improve precision the value as been scaled by 100 so that a tx_pct of 123 means 1.23%
 	ReceivedPercentage int                    `json:"rx_pct"`           // received percentage (without protocol overhead). To improve precision the value as been scaled by 100 so that a tx_pct of 123 means 1.23%
-	Error              string                 `json:"error"`            // an error code
+	Error              downloadTaskError      `json:"error"`            // an error code
 	CreatedTimestamp   Timestamp              `json:"created_ts"`       // timestamp of the download creation time
 	ETASeconds         int64                  `json:"eta"`              // estimated remaining download time (in seconds)
 	DownloadDirectory  Base64Path             `json:"download_dir"`     // directory where the file(s) will be saved (base64 encoded)
@@ -71,6 +81,6 @@ type DownloadRequest struct {
 }
 
 type DownloadTaskUpdate struct {
-	Status downloadTaskStatus `json:"status,omitempty"` // The new status
+	Status     downloadTaskStatus     `json:"status,omitempty"`      // The new status
 	IOPriority downloadTaskIOPriority `json:"io_priority,omitempty"` // The new IO priority
 }
