@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"io"
+	"mime"
+	"net/http"
 
 	"github.com/nikolalohinski/free-go/types"
 )
@@ -109,4 +112,54 @@ func (c *client) GetHashResult(ctx context.Context, identifier int64) (result st
 	}
 
 	return result, nil
+}
+
+func (c *client) GetFile(ctx context.Context, path string) (result types.File, err error) {
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("%s/dl/%s", c.base, base64.StdEncoding.EncodeToString([]byte(path))), nil)
+	if err != nil {
+		return result, fmt.Errorf("failed to forge new request: %w", err)
+	}
+
+	if err := c.withSession(ctx)(request); err != nil {
+		return result, fmt.Errorf("failed to apply option to request: %w", err)
+	}
+
+	httpResponse, err := c.httpClient.Do(request)
+	if err != nil {
+		return result, fmt.Errorf("failed to perform request: %w", err)
+	}
+
+	body, err := io.ReadAll(httpResponse.Body)
+	if err != nil {
+		return result, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return result, fmt.Errorf("failed with status '%d': server returned '%s'", httpResponse.StatusCode, string(body))
+	}
+
+	mediatype := ""
+	if contentType := httpResponse.Header.Get("Content-Type"); contentType != "" {
+		mediatype, _, err = mime.ParseMediaType(contentType)
+		if err != nil {
+			return result, fmt.Errorf("failed to parse media type: %w", err)
+		}
+	}
+
+	var filename string
+
+	if contentDisposition := httpResponse.Header.Get("Content-Disposition"); contentDisposition != "" {
+		_, params, err := mime.ParseMediaType(contentDisposition)
+		if err != nil {
+			return result, fmt.Errorf("failed to parse media type: %w", err)
+		}
+
+		filename, _ = params["filename"]
+	}
+
+	return types.File{
+		ContentType: mediatype,
+		FileName:    filename,
+		Content:     body,
+	}, nil
 }

@@ -338,6 +338,94 @@ var _ = Describe("filesystem", func() {
 			})
 		})
 	})
+	Context("get a file", func() {
+		var (
+			path       = "path/to/file"
+			returnedFile = new(types.File)
+		)
+		JustBeforeEach(func(ctx SpecContext) {
+			*returnedFile, *returnedErr = freeboxClient.GetFile(ctx, path)
+		})
+		Context("default", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/dl/cGF0aC90by9maWxl", version)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `the-content`, http.Header{
+							"Content-Type": []string{"application/octet-stream"},
+							"Content-Disposition": []string{`attachment; filename="file"`},
+						}),
+					),
+				)
+			})
+			It("should return the task", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(returnedFile.ContentType).To(Equal("application/octet-stream"))
+				Expect(returnedFile.FileName).To(Equal("file"))
+				Expect(returnedFile.Content).To(Equal([]byte("the-content")))
+			})
+		})
+		Context("when the server does not mention content disposition", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/dl/cGF0aC90by9maWxl", version)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `content`, http.Header{
+							"Content-Type": []string{"application/octet-stream"},
+						}),
+					),
+				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(returnedFile.ContentType).To(Equal("application/octet-stream"))
+				Expect(returnedFile.FileName).To(BeEmpty())
+			})
+		})
+		Context("when the server does not mention content type", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/dl/cGF0aC90by9maWxl", version)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `content`, http.Header{
+							"Content-Type":        []string{},
+							"Content-Disposition": []string{`attachment; filename="file"`},
+						}),
+					),
+				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(returnedFile.ContentType).To(BeEmpty())
+				Expect(returnedFile.FileName).To(Equal("file"))
+			})
+		})
+		Context("when server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the server returns an unexpected payload", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/dl/cGF0aC90by9maWxl", version)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusBadRequest, `bad request`),
+					),
+				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+	})
 	Context("creating a directory", func() {
 		var (
 			parent       = "path/to/parent"
