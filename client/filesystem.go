@@ -84,3 +84,29 @@ func (c *client) CreateDirectory(ctx context.Context, parent, name string) (stri
 
 	return string(result), nil
 }
+
+func (c *client) AddHashFileTask(ctx context.Context, payload types.HashPayload) (task types.FileSystemTask, err error) {
+	response, err := c.post(ctx, "fs/hash/", payload, c.withSession(ctx))
+	if err != nil {
+		return task, fmt.Errorf("failed to POST to fs/hash/ endpoint: %w", err)
+	}
+
+	if err = c.fromGenericResponse(response, &task); err != nil {
+		return task, fmt.Errorf("failed to get a filesystem task from a generic response: %w", err)
+	}
+
+	return task, nil
+}
+
+func (c *client) GetHashResult(ctx context.Context, identifier int64) (result string, err error) {
+	response, err := c.get(ctx, fmt.Sprintf("fs/tasks/%d/hash/", identifier), c.withSession(ctx))
+	if err != nil {
+		return result, fmt.Errorf("failed to GET fs/tasks/%d/hash endpoint: %w", identifier, err)
+	}
+
+	if err = c.fromGenericResponse(response, &result); err != nil {
+		return result, fmt.Errorf("failed to get a hash result from a generic response: %w", err)
+	}
+
+	return result, nil
+}
