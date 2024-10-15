@@ -85,7 +85,7 @@ func (c *client) CreateDirectory(ctx context.Context, parent, name string) (stri
 	return string(result), nil
 }
 
-func (c *client) HashFileTask(ctx context.Context, payload types.HashPayload) (task types.FileSystemTask, err error) {
+func (c *client) AddHashFileTask(ctx context.Context, payload types.HashPayload) (task types.FileSystemTask, err error) {
 	response, err := c.post(ctx, "fs/hash/", payload, c.withSession(ctx))
 	if err != nil {
 		return task, fmt.Errorf("failed to POST to fs/hash/ endpoint: %w", err)
@@ -99,7 +99,7 @@ func (c *client) HashFileTask(ctx context.Context, payload types.HashPayload) (t
 }
 
 func (c *client) GetHashResult(ctx context.Context, identifier int64) (result string, err error) {
-	response, err := c.get(ctx, fmt.Sprintf("fs/tasks/%d/hash", identifier), c.withSession(ctx))
+	response, err := c.get(ctx, fmt.Sprintf("fs/tasks/%d/hash/", identifier), c.withSession(ctx))
 	if err != nil {
 		return result, fmt.Errorf("failed to GET fs/tasks/%d/hash endpoint: %w", identifier, err)
 	}
