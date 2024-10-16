@@ -1,5 +1,9 @@
 package types
 
+import (
+	"io"
+)
+
 type fileType string
 
 const (
@@ -121,5 +125,5 @@ type HashResult struct {
 type File struct {
 	ContentType string
 	FileName 	string
-	Content     []byte
+	Content     io.Reader
 }

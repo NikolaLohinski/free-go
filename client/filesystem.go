@@ -1,8 +1,10 @@
 package client
 
 import (
+	"bufio"
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"mime"
@@ -129,13 +131,16 @@ func (c *client) GetFile(ctx context.Context, path string) (result types.File, e
 		return result, fmt.Errorf("failed to perform request: %w", err)
 	}
 
-	body, err := io.ReadAll(httpResponse.Body)
-	if err != nil {
-		return result, fmt.Errorf("failed to read response body: %w", err)
-	}
-
 	if httpResponse.StatusCode != http.StatusOK {
-		return result, fmt.Errorf("failed with status '%d': server returned '%s'", httpResponse.StatusCode, string(body))
+		content, err := io.ReadAll(httpResponse.Body)
+		if err != nil {
+			return result, errors.Join(
+				fmt.Errorf("failed with status '%d'", httpResponse.StatusCode),
+				fmt.Errorf("failed to read response body: %w", err),
+			)
+		}
+
+		return result, fmt.Errorf("failed with status '%d': server returned '%s'", httpResponse.StatusCode, content)
 	}
 
 	mediatype := ""
@@ -160,6 +165,6 @@ func (c *client) GetFile(ctx context.Context, path string) (result types.File, e
 	return types.File{
 		ContentType: mediatype,
 		FileName:    filename,
-		Content:     body,
+		Content:     bufio.NewReader(httpResponse.Body),
 	}, nil
 }

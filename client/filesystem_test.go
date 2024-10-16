@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -363,7 +364,7 @@ var _ = Describe("filesystem", func() {
 				Expect(*returnedErr).To(BeNil())
 				Expect(returnedFile.ContentType).To(Equal("application/octet-stream"))
 				Expect(returnedFile.FileName).To(Equal("file"))
-				Expect(returnedFile.Content).To(Equal([]byte("the-content")))
+				Expect(io.ReadAll(returnedFile.Content)).To(BeEquivalentTo([]byte("the-content")))
 			})
 		})
 		Context("when the server does not mention content disposition", func() {
