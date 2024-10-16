@@ -13,8 +13,10 @@ const (
 )
 
 // GetVirtualDiskInfo gets a disk info.
-func (c *client) GetVirtualDiskInfo(ctx context.Context, payload types.GetVirtualDiskPayload) (result types.VirtualDiskInfo, err error) {
-	response, err := c.post(ctx, "vm/disk/info/", payload, c.withSession(ctx))
+func (c *client) GetVirtualDiskInfo(ctx context.Context, path string) (result types.VirtualDiskInfo, err error) {
+	response, err := c.post(ctx, "vm/disk/info/", &types.GetVirtualDiskPayload{
+		DiskPath: types.Base64Path(path),
+	}, c.withSession(ctx))
 	if err != nil {
 		return result, fmt.Errorf("failed to GET vm/disk/info endpoint: %w", err)
 	}

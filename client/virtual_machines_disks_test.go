@@ -113,9 +113,7 @@ var _ = Describe("virtual machines disks", func() {
 	Context("getting virtual disk info", func() {
 		returnedInfo := new(types.VirtualDiskInfo)
 		JustBeforeEach(func() {
-			*returnedInfo, *returnedErr = freeboxClient.GetVirtualDiskInfo(context.Background(), types.GetVirtualDiskPayload{
-				DiskPath: "/Freebox/disk-path",
-			})
+			*returnedInfo, *returnedErr = freeboxClient.GetVirtualDiskInfo(context.Background(), "/Freebox/disk-path")
 		})
 		Context("default", func() {
 			BeforeEach(func() {
