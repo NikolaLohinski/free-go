@@ -127,8 +127,8 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [ ] Create an archive
   - [ ] Extract a file
   - [ ] Repair a file
-  - [ ] Hash a file
-  - [ ] Get a hash value
+  - [x] Hash a file
+  - [x] Get a hash value
   - [x] Create a directory
   - [ ] Rename a file/folder
   - [ ] List every task
