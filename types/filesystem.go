@@ -1,5 +1,9 @@
 package types
 
+import (
+	"io"
+)
+
 type fileType string
 
 const (
@@ -116,4 +120,10 @@ type HashPayload struct {
 
 type HashResult struct {
 	Hash string `json:"hash"`
+}
+
+type File struct {
+	ContentType string
+	FileName 	string
+	Content     io.Reader
 }
