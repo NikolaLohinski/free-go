@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -338,6 +339,94 @@ var _ = Describe("filesystem", func() {
 			})
 		})
 	})
+	Context("get a file", func() {
+		var (
+			path       = "path/to/file"
+			returnedFile = new(types.File)
+		)
+		JustBeforeEach(func(ctx SpecContext) {
+			*returnedFile, *returnedErr = freeboxClient.GetFile(ctx, path)
+		})
+		Context("default", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/dl/cGF0aC90by9maWxl", version)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `the-content`, http.Header{
+							"Content-Type": []string{"application/octet-stream"},
+							"Content-Disposition": []string{`attachment; filename="file"`},
+						}),
+					),
+				)
+			})
+			It("should return the task", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(returnedFile.ContentType).To(Equal("application/octet-stream"))
+				Expect(returnedFile.FileName).To(Equal("file"))
+				Expect(io.ReadAll(returnedFile.Content)).To(BeEquivalentTo([]byte("the-content")))
+			})
+		})
+		Context("when the server does not mention content disposition", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/dl/cGF0aC90by9maWxl", version)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `content`, http.Header{
+							"Content-Type": []string{"application/octet-stream"},
+						}),
+					),
+				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(returnedFile.ContentType).To(Equal("application/octet-stream"))
+				Expect(returnedFile.FileName).To(BeEmpty())
+			})
+		})
+		Context("when the server does not mention content type", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/dl/cGF0aC90by9maWxl", version)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `content`, http.Header{
+							"Content-Type":        []string{},
+							"Content-Disposition": []string{`attachment; filename="file"`},
+						}),
+					),
+				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(returnedFile.ContentType).To(BeEmpty())
+				Expect(returnedFile.FileName).To(Equal("file"))
+			})
+		})
+		Context("when server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the server returns an unexpected payload", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/dl/cGF0aC90by9maWxl", version)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusBadRequest, `bad request`),
+					),
+				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+	})
 	Context("creating a directory", func() {
 		var (
 			parent       = "path/to/parent"
@@ -401,6 +490,129 @@ var _ = Describe("filesystem", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/fs/mkdir/", version)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": [
+								"foo"
+							]
+						}`),
+					),
+				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+	})
+	Context("hash a file", func() {
+		const path = "path/to/file"
+
+		var (
+			returnedTask = new(types.FileSystemTask)
+			returnedErr  = new(error)
+		)
+
+		JustBeforeEach(func(ctx context.Context) {
+			*returnedTask, *returnedErr = freeboxClient.AddHashFileTask(ctx, types.HashPayload{
+				HashType: types.HashTypeSHA256,
+				Path:    path,
+			})
+		})
+		Context("default", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/fs/hash/", version)),
+						ghttp.VerifyJSON(`{
+							"hash_type": "sha256",
+							"src": "cGF0aC90by9maWxl"
+						}`),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": {
+								"id": 1234
+							}
+						}`),
+					),
+				)
+			})
+			It("should return the task", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(*&returnedTask.ID).To(BeEquivalentTo(1234))
+			})
+		})
+		Context("when server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the server returns an unexpected payload", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/fs/hash/", version)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": [
+								"foo"
+							]
+						}`),
+					),
+				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+	})
+	Context("get a hash result", func() {
+		const path = "path/to/file"
+
+		var (
+			hashResult  = new(string)
+			returnedErr = new(error)
+		)
+
+		JustBeforeEach(func(ctx context.Context) {
+			*hashResult, *returnedErr = freeboxClient.GetHashResult(ctx, 1234)
+		})
+		Context("default", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fs/tasks/1234/hash/", version)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": "the-hash-result"
+						}`),
+					),
+				)
+			})
+			It("should return the task", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(*hashResult).To(BeEquivalentTo("the-hash-result"))
+			})
+		})
+		Context("when server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the server returns an unexpected payload", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fs/tasks/1234/hash/", version)),
 						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,

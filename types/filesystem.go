@@ -1,5 +1,9 @@
 package types
 
+import (
+	"io"
+)
+
 type fileType string
 
 const (
@@ -98,4 +102,28 @@ type FileSystemTask struct {
 	ProgressPercent               int           `json:"progress"`
 	Sources                       []string      `json:"src"`
 	Destination                   string        `json:"dst"`
+}
+
+type HashType string
+
+const (
+	HashTypeMD5    HashType = "md5"
+	HashTypeSHA1   HashType = "sha1"
+	HashTypeSHA256 HashType = "sha256"
+	HashTypeSHA512 HashType = "sha512"
+)
+
+type HashPayload struct {
+	HashType HashType   `json:"hash_type"`
+	Path     Base64Path `json:"src"`
+}
+
+type HashResult struct {
+	Hash string `json:"hash"`
+}
+
+type File struct {
+	ContentType string
+	FileName 	string
+	Content     io.Reader
 }

@@ -101,11 +101,11 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [ ] Reset a VM
   - [ ] VM virtual console
   - [ ] VM virtual screen
-  - [ ] Get information on a virtual disk
-  - [ ] Create a virtual disk
-  - [ ] Resize a virtual disk
-  - [ ] Get a virtual disk task
-  - [ ] Delete a virtual disk task
+  - [x] Get information on a virtual disk
+  - [x] Create a virtual disk
+  - [x] Resize a virtual disk
+  - [x] Get a virtual disk task
+  - [x] Delete a virtual disk task
 - [ ] [Websocket API](https://dev.freebox.fr/sdk/os/) : `/ws/*`
   - [x] WebSocket event API
   - [ ] WebSocket file Upload API
@@ -118,7 +118,7 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [x] Add a new download task
 - [ ] [Filesystem API](https://dev.freebox.fr/sdk/os/fs/) : `/fs/*`
   - [x] Get file information
-  - [ ] Download a file
+  - [x] Download a file
   - [x] Remove files
   - [ ] List files
   - [ ] Move files
@@ -127,8 +127,8 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [ ] Create an archive
   - [ ] Extract a file
   - [ ] Repair a file
-  - [ ] Hash a file
-  - [ ] Get a hash value
+  - [x] Hash a file
+  - [x] Get a hash value
   - [x] Create a directory
   - [ ] Rename a file/folder
   - [ ] List every task

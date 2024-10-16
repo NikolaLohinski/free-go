@@ -44,6 +44,11 @@ type Client interface {
 	StartVirtualMachine(ctx context.Context, identifier int64) error
 	KillVirtualMachine(ctx context.Context, identifier int64) error
 	StopVirtualMachine(ctx context.Context, identifier int64) error
+	// virtual machines disks
+	GetVirtualDiskInfo(ctx context.Context, path string) (result types.VirtualDiskInfo, err error)
+	CreateVirtualDisk(ctx context.Context, payload types.VirtualDisksCreatePayload) (result int64, err error)
+	ResizeVirtualDisk(ctx context.Context, payload types.VirtualDisksResizePayload) (result int64, err error)
+	DeleteVirtualDiskTask(ctx context.Context, identifier int64) error
 	// websocket
 	ListenEvents(ctx context.Context, events []types.EventDescription) (chan types.Event, error)
 	// filesystem
@@ -51,6 +56,9 @@ type Client interface {
 	RemoveFiles(ctx context.Context, paths []string) (types.FileSystemTask, error)
 	GetFileSystemTask(ctx context.Context, identifier int64) (types.FileSystemTask, error)
 	CreateDirectory(ctx context.Context, parent, name string) (path string, err error)
+	AddHashFileTask(ctx context.Context, payload types.HashPayload) (task types.FileSystemTask, err error)
+	GetHashResult(ctx context.Context, identifier int64) (result string, err error)
+	GetFile(ctx context.Context, path string) (result types.File, err error)
 	// downloads
 	ListDownloadTasks(ctx context.Context) ([]types.DownloadTask, error)
 	GetDownloadTask(ctx context.Context, identifier int64) (types.DownloadTask, error)
