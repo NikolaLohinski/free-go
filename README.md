@@ -133,7 +133,7 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [ ] Rename a file/folder
   - [ ] List every task
   - [x] Get a task
-  - [ ] Delete a task
+  - [x] Delete a task
   - [ ] Update a task
 
 ## Development

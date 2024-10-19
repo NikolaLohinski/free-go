@@ -70,6 +70,18 @@ func (c *client) GetFileSystemTask(ctx context.Context, identifier int64) (task 
 	return task, nil
 }
 
+func (c *client) DeleteFileSystemTask(ctx context.Context, identifier int64) error {
+	response, err := c.delete(ctx, fmt.Sprintf("fs/tasks/%d", identifier), c.withSession(ctx))
+	if err != nil {
+		if response != nil && response.ErrorCode == codeTaskNotFound {
+			return ErrTaskNotFound
+		}
+		return fmt.Errorf("failed to DELETE fs/tasks/%d endpoint: %w", identifier, err)
+	}
+
+	return nil
+}
+
 func (c *client) CreateDirectory(ctx context.Context, parent, name string) (string, error) {
 	response, err := c.post(ctx, "fs/mkdir/", map[string]interface{}{
 		"parent":  types.Base64Path(parent),
