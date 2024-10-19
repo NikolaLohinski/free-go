@@ -134,7 +134,7 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [ ] List every task
   - [x] Get a task
   - [x] Delete a task
-  - [ ] Update a task
+  - [x] Update a task
 
 ## Development
 

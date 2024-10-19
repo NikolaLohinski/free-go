@@ -57,6 +57,19 @@ func (c *client) RemoveFiles(ctx context.Context, paths []string) (task types.Fi
 	return task, nil
 }
 
+func (c *client) UpdateFileSystemTask(ctx context.Context, identifier int64, payload types.FileSytemTaskUpdate) (task types.FileSystemTask, err error) {
+	response, err := c.put(ctx, fmt.Sprintf("fs/tasks/%d", identifier), payload, c.withSession(ctx))
+	if err != nil {
+		return task, fmt.Errorf("failed to GET fs/tasks/%d endpoint: %w", identifier, err)
+	}
+
+	if err = c.fromGenericResponse(response, &task); err != nil {
+		return task, fmt.Errorf("failed to get a filesystem task from a generic response: %w", err)
+	}
+
+	return task, nil
+}
+
 func (c *client) GetFileSystemTask(ctx context.Context, identifier int64) (task types.FileSystemTask, err error) {
 	response, err := c.get(ctx, fmt.Sprintf("fs/tasks/%d", identifier), c.withSession(ctx))
 	if err != nil {

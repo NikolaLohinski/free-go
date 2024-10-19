@@ -239,6 +239,108 @@ var _ = Describe("filesystem", func() {
 			})
 		})
 	})
+	Context("updating filesystem task", func() {
+		const identifier int64 = 42
+		returnedTask := new(types.FileSystemTask)
+		JustBeforeEach(func(ctx SpecContext) {
+			*returnedTask, *returnedErr = freeboxClient.UpdateFileSystemTask(ctx, identifier, types.FileSytemTaskUpdate{
+				State: types.FileTaskStatePaused,
+			})
+		})
+		Context("default", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodPut, fmt.Sprintf("/api/%s/fs/tasks/%d", version, identifier)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": {
+								"curr_bytes_done": 0,
+								"total_bytes": 0,
+								"nfiles_done": 1,
+								"started_ts": 1712862825,
+								"duration": 0,
+								"done_ts": 1712862825,
+								"src": [
+									"Freebox/Other/free-go.svg"
+								],
+								"curr_bytes": 0,
+								"type": "rm",
+								"to": "",
+								"id": 6,
+								"nfiles": 1,
+								"created_ts": 1712862825,
+								"state": "done",
+								"total_bytes_done": 0,
+								"rate": 0,
+								"from": "Freebox/Other/free-go.svg",
+								"dst": "",
+								"eta": 0,
+								"error": "none",
+								"progress": 100
+							}
+						}`),
+					),
+				)
+			})
+			It("should return the correct file info", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(*returnedTask).To(Equal(types.FileSystemTask{
+					ID:                            6,
+					Type:                          types.FileTaskTypeRemove,
+					State:                         types.FileTaskStateDone,
+					Error:                         types.FileTaskErrorNone,
+					CurrentBytesDone:              0,
+					TotalBytes:                    0,
+					NumberFilesDone:               1,
+					StartedTimestamp:              1712862825,
+					DurationSeconds:               0,
+					DoneTimestamp:                 1712862825,
+					CurrentBytes:                  0,
+					To:                            "",
+					NumberFiles:                   1,
+					CreatedTimestamp:              1712862825,
+					TotalBytesDone:                0,
+					From:                          "Freebox/Other/free-go.svg",
+					ProcessingRate:                0,
+					EstimatedTimeRemainingSeconds: 0,
+					ProgressPercent:               100,
+					Sources: []string{
+						"Freebox/Other/free-go.svg",
+					},
+					Destination: "",
+				}))
+			})
+		})
+		Context("when server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the server returns an unexpected payload", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodPut, fmt.Sprintf("/api/%s/fs/tasks/%d", version, identifier)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": [
+								"foo"
+							]
+						}`),
+					),
+				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+	})
 	Context("getting filesystem task", func() {
 		const identifier int64 = 42
 		returnedTask := new(types.FileSystemTask)

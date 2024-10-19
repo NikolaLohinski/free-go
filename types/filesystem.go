@@ -127,3 +127,7 @@ type File struct {
 	FileName 	string
 	Content     io.Reader
 }
+
+type FileSytemTaskUpdate struct {
+	State fileTaskState `json:"state"`
+}

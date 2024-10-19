@@ -54,6 +54,7 @@ type Client interface {
 	// filesystem
 	GetFileInfo(ctx context.Context, path string) (types.FileInfo, error)
 	RemoveFiles(ctx context.Context, paths []string) (types.FileSystemTask, error)
+	UpdateFileSystemTask(ctx context.Context, identifier int64, payload types.FileSytemTaskUpdate) (types.FileSystemTask, error)
 	GetFileSystemTask(ctx context.Context, identifier int64) (types.FileSystemTask, error)
 	DeleteFileSystemTask(ctx context.Context, identifier int64) error
 	CreateDirectory(ctx context.Context, parent, name string) (path string, err error)
