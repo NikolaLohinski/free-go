@@ -339,6 +339,52 @@ var _ = Describe("filesystem", func() {
 			})
 		})
 	})
+	Context("deleting filesystem task", func() {
+		const identifier int64 = 42
+		JustBeforeEach(func(ctx SpecContext) {
+			*returnedErr = freeboxClient.DeleteFileSystemTask(ctx, identifier)
+		})
+		Context("default", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodDelete, fmt.Sprintf("/api/%s/fs/tasks/%d", version, identifier)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true
+						}`),
+					),
+				)
+			})
+			It("should return the correct file info", func() {
+				Expect(*returnedErr).To(BeNil())
+			})
+		})
+		Context("when server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the server returns an unexpected payload", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodDelete, fmt.Sprintf("/api/%s/fs/tasks/%d", version, identifier)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": false
+						}`),
+					),
+				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+	})
 	Context("get a file", func() {
 		var (
 			path       = "path/to/file"
