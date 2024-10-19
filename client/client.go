@@ -46,6 +46,7 @@ type Client interface {
 	StopVirtualMachine(ctx context.Context, identifier int64) error
 	// virtual machines disks
 	GetVirtualDiskInfo(ctx context.Context, path string) (result types.VirtualDiskInfo, err error)
+	GetVirtualDiskTask(ctx context.Context, identifier int64) (result types.VirtualMachineDiskTask, err error)
 	CreateVirtualDisk(ctx context.Context, payload types.VirtualDisksCreatePayload) (result int64, err error)
 	ResizeVirtualDisk(ctx context.Context, payload types.VirtualDisksResizePayload) (result int64, err error)
 	DeleteVirtualDiskTask(ctx context.Context, identifier int64) error
