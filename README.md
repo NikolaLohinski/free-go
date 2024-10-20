@@ -69,7 +69,7 @@ At the time of this writing, generating credentials can only be done via the Fre
 - [x] [Authentication](https://dev.freebox.fr/sdk/os/login/) : `/login/*`
   - [x] Request authorization
   - [x] Track authorization progress (as part of the `Request authorization` process)
-  - [x] Getting the challenge value 
+  - [x] Getting the challenge value
   - [x] Opening a session
   - [x] Closing the current session
 - [x] [Discovery over HTTP](https://dev.freebox.fr/sdk/os/) : `/api_version`
