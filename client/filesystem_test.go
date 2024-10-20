@@ -441,6 +441,156 @@ var _ = Describe("filesystem", func() {
 			})
 		})
 	})
+	Context("listing filesystem task", func() {
+		returnedTasks := new([]types.FileSystemTask)
+		JustBeforeEach(func(ctx SpecContext) {
+			*returnedTasks, *returnedErr = freeboxClient.ListFileSystemTasks(ctx)
+		})
+		Context("default", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fs/tasks/", version)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": [
+								{
+									"curr_bytes_done": 0,
+									"total_bytes": 0,
+									"nfiles_done": 0,
+									"started_ts": 1355834253,
+									"duration": 3,
+									"done_ts": 0,
+									"curr_bytes": 0,
+									"type": "extract",
+									"to": "oxygennosvg/128x128/mimetypes/application_x_nzb.png",
+									"id": 12,
+									"nfiles": 0,
+									"created_ts": 1355834253,
+									"state": "paused",
+									"total_bytes_done": 0,
+									"from": "/Disque dur/tests/oxygennosvg.tar.gz",
+									"rate": 0,
+									"eta": 0,
+									"error": "none",
+									"progress": 0,
+									"src": [
+										"/Disque dur/tests/oxygennosvg.tar.gz"
+									],
+									"dst": "/Disque dur/tests/oxygennosvg"
+								},
+								{
+									"id": 11,
+									"curr_bytes_done": 0,
+									"total_bytes": 0,
+									"nfiles_done": 0,
+									"started_ts": 1355834187,
+									"duration": 0,
+									"done_ts": 1355834187,
+									"curr_bytes": 0,
+									"type": "rm",
+									"to": "",
+									"nfiles": 0,
+									"created_ts": 1355834187,
+									"state": "done",
+									"total_bytes_done": 0,
+									"from": "/Disque dur/test/testiso.1.iso",
+									"rate": 0,
+									"eta": 0,
+									"error": "none",
+									"progress": 100,
+									"src": [
+										"/Disque dur/test/testiso.1.iso"
+									]
+								}
+							]
+						}`),
+					),
+				)
+			})
+			It("should return the correct file info", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(*returnedTasks).To(ConsistOf(
+					Equal(types.FileSystemTask{
+						ID: 12,
+						Type: "extract",
+						State: "paused",
+						Error: "none",
+						CurrentBytesDone: 0,
+						TotalBytes: 0,
+						NumberFilesDone: 0,
+						StartedTimestamp: 1355834253,
+						DurationSeconds: 3,
+						DoneTimestamp: 0,
+						CurrentBytes: 0,
+						To: "oxygennosvg/128x128/mimetypes/application_x_nzb.png",
+						NumberFiles: 0,
+						CreatedTimestamp: 1355834253,
+						TotalBytesDone: 0,
+						From: "/Disque dur/tests/oxygennosvg.tar.gz",
+						ProcessingRate: 0,
+						EstimatedTimeRemainingSeconds: 0,
+						ProgressPercent: 0,
+						Sources: []string{
+							"/Disque dur/tests/oxygennosvg.tar.gz",
+						},
+						Destination: "/Disque dur/tests/oxygennosvg",
+					}),
+					Equal(types.FileSystemTask{
+						ID: 11,
+						Type: "rm",
+						State: "done",
+						Error: "none",
+						CurrentBytesDone: 0,
+						TotalBytes: 0,
+						NumberFilesDone: 0,
+						StartedTimestamp: 1355834187,
+						DurationSeconds: 0,
+						DoneTimestamp: 1355834187,
+						CurrentBytes: 0,
+						To: "",
+						NumberFiles: 0,
+						CreatedTimestamp: 1355834187,
+						TotalBytesDone: 0,
+						From: "/Disque dur/test/testiso.1.iso",
+						ProcessingRate: 0,
+						EstimatedTimeRemainingSeconds: 0,
+						ProgressPercent: 100,
+						Sources: []string{
+							"/Disque dur/test/testiso.1.iso",
+						},
+						Destination: "",
+					}),
+				))
+			})
+		})
+		Context("when server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the server returns an unexpected payload", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fs/tasks/", version)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": "a string"
+						}`),
+					),
+				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+	})
 	Context("deleting filesystem task", func() {
 		const identifier int64 = 42
 		JustBeforeEach(func(ctx SpecContext) {

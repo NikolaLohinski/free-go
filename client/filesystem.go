@@ -70,6 +70,19 @@ func (c *client) UpdateFileSystemTask(ctx context.Context, identifier int64, pay
 	return task, nil
 }
 
+func (c *client) ListFileSystemTasks(ctx context.Context) (task []types.FileSystemTask, err error) {
+	response, err := c.get(ctx, fmt.Sprintf("fs/tasks/"), c.withSession(ctx))
+	if err != nil {
+		return task, fmt.Errorf("failed to GET fs/tasks/ endpoint: %w", err)
+	}
+
+	if err = c.fromGenericResponse(response, &task); err != nil {
+		return task, fmt.Errorf("failed to get a list of filesystem tasks from a generic response: %w", err)
+	}
+
+	return task, nil
+}
+
 func (c *client) GetFileSystemTask(ctx context.Context, identifier int64) (task types.FileSystemTask, err error) {
 	response, err := c.get(ctx, fmt.Sprintf("fs/tasks/%d", identifier), c.withSession(ctx))
 	if err != nil {

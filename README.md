@@ -131,7 +131,7 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [x] Get a hash value
   - [x] Create a directory
   - [ ] Rename a file/folder
-  - [ ] List every task
+  - [x] List every task
   - [x] Get a task
   - [x] Delete a task
   - [x] Update a task
