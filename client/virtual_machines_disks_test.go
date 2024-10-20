@@ -233,6 +233,63 @@ var _ = Describe("virtual machines disks", func() {
 			})
 		})
 	})
+	Context("getting a virtual disk task", func() {
+		const identifier int64 = 42
+		var returnedTask = new(types.VirtualMachineDiskTask)
+		JustBeforeEach(func(ctx SpecContext) {
+			*returnedTask, *returnedErr = freeboxClient.GetVirtualDiskTask(ctx, identifier)
+		})
+		Context("default", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/vm/disk/task/%d", version, identifier)),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": {
+								"id": 42,
+								"type": "resize",
+								"done": false
+							}
+						}`),
+					),
+				)
+			})
+			It("should return the correct virtual machine", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect((*returnedTask)).To(Equal(types.VirtualMachineDiskTask{
+					ID: 42,
+					Type: "resize",
+					Done: false,
+					Error: false,
+				}))
+			})
+		})
+		Context("when server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the server returns an unexpected payload", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/vm/disk/task/%d", version, identifier)),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": []
+						}`),
+					),
+				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+	})
 	Context("deleting a virtual disk task", func() {
 		var (
 			identifier = new(int64)

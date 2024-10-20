@@ -49,6 +49,20 @@ func (c *client) CreateVirtualDisk(ctx context.Context, payload types.VirtualDis
 	return responseBody.ID, nil
 }
 
+// GetVirtualDiskTask gets a disk task.
+func (c *client) GetVirtualDiskTask(ctx context.Context, identifier int64) (result types.VirtualMachineDiskTask, err error) {
+	response, err := c.get(ctx, fmt.Sprintf("vm/disk/task/%d", identifier), c.withSession(ctx))
+	if err != nil {
+		return result, fmt.Errorf("failed to GET vm/disk/task/%d endpoint: %w", identifier, err)
+	}
+
+	if err = c.fromGenericResponse(response, &result); err != nil {
+		return result, fmt.Errorf("failed to get a disk task from generic response: %w", err)
+	}
+
+	return result, nil
+}
+
 // ResizeVirtualDisk resizes a existing disk.
 func (c *client) ResizeVirtualDisk(ctx context.Context, payload types.VirtualDisksResizePayload) (result int64, err error) {
 	if payload.NewSize < 0 {
