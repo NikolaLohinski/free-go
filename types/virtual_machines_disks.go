@@ -7,6 +7,12 @@ const (
 	DiskTaskTypeResize virtualMachineDiskTaskType = "resize"
 )
 
+const (
+	EventSourceVMDisk eventSource = "vm" // Disk events are sourced from the VM
+
+	EventDiskTaskDone eventName = "disk_task_done"
+)
+
 type VirtualDiskInfo struct {
 	Type        diskType `json:"type"`
 	ActualSize  int64    `json:"actual_size"`  // Space used by virtual image on disk. This is how much filesystem space is consumed on the box.

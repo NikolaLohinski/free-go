@@ -5,6 +5,13 @@ type LanInfo struct {
 	HostCount int    `json:"host_count"`
 }
 
+const (
+	EventSourceLANHost eventSource = "lan_host"
+
+	EventHostL3AddrReachable   eventName = "l3addr_reachable"
+	EventHostL3AddrUnreachable eventName = "l3addr_unreachable"
+)
+
 type hostType = string
 
 const (
