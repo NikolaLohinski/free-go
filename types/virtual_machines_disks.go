@@ -7,10 +7,27 @@ const (
 	DiskTaskTypeResize virtualMachineDiskTaskType = "resize"
 )
 
+
 const (
 	EventSourceVMDisk eventSource = "vm" // Disk events are sourced from the VM
-
 	EventDiskTaskDone eventName = "disk_task_done"
+)
+
+type diskError = string
+
+const (
+	DiskErrorNotFound     diskError = "file_not_found"  // File not found
+	DiskTaskErrorNotFound diskError = "task_notfound"   // Task not found
+)
+
+type diskTaskError string
+
+const (
+	// Undocumented and reverse engineered error codes
+	DiskTaskErrorNone     diskTaskError = "none"       // No error
+	DiskTaskErrorTooSmall diskTaskError = "too_small"  // Disk is too small
+	DiskTaskErrorExists   diskTaskError = "exists"     // Disk already exists
+	DiskTaskErrorInternal diskTaskError = "internal"   // Internal error (e.g. empty path on creation)
 )
 
 type VirtualDiskInfo struct {

@@ -7,3 +7,9 @@ type AuthorizationRequest struct {
 	Version string
 	Device  string
 }
+
+type ErrorCode string
+
+const (
+	AuthorizationErrorCode ErrorCode = "auth_required" // "Vous devez vous connecter pour accéder à cette fonction"
+)

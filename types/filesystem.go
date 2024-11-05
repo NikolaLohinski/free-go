@@ -34,6 +34,9 @@ const (
 	FileTaskTypeArchive     fileTaskType = "archive" // Creates an archive
 	FileTaskTypeExtract     fileTaskType = "extract" // Extract an archive
 	FileTaskTypeRepair      fileTaskType = "repair"  // Check and repair files
+
+	// Undocumented and reverse engineered task types
+	FileTaskTypeHash fileTaskType = "hash" // Hash a file
 )
 
 type fileTaskState string
@@ -78,6 +81,8 @@ const (
 	FileTaskErrorSymlinkFailed       fileTaskError = "symlink_failed"        //  Failed to create a symbolic link
 	FileTaskErrorCopyIntoItself      fileTaskError = "copy_into_itself"      //  Attempted to copy a directory to a subdirectory of itself
 	FileTaskErrorTruncateFailed      fileTaskError = "truncate_failed"       //  Failed to truncate file
+	FileTaskErrorUnknownHashType     fileTaskError = "unknown_hash_type"     //  Invalid hash type
+	FileTaskErrorInvalidID           fileTaskError = "invalid_id"            //  Invalid ID
 )
 
 type FileSystemTask struct {
@@ -131,3 +136,12 @@ type File struct {
 type FileSytemTaskUpdate struct {
 	State fileTaskState `json:"state"`
 }
+
+type FileMoveMode string
+
+const (
+	FileMoveModeOverwrite FileMoveMode = "overwrite" // Overwrite the destination file
+	FileMoveModeSkip      FileMoveMode = "skip"      // Keep the destination file
+	FileMoveModeBoth      FileMoveMode = "both"      // Keep both files (rename the file adding a suffix)
+	FileMoveModeRecent    FileMoveMode = "recent"    // Only overwrite if newer than destination file
+)

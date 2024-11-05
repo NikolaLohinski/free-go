@@ -76,6 +76,10 @@ func (c *client) ListFileSystemTasks(ctx context.Context) (task []types.FileSyst
 		return task, fmt.Errorf("failed to GET fs/tasks/ endpoint: %w", err)
 	}
 
+	if response.Result == nil {
+		return
+	}
+
 	if err = c.fromGenericResponse(response, &task); err != nil {
 		return task, fmt.Errorf("failed to get a list of filesystem tasks from a generic response: %w", err)
 	}
@@ -106,6 +110,32 @@ func (c *client) DeleteFileSystemTask(ctx context.Context, identifier int64) err
 	}
 
 	return nil
+}
+
+// MoveFiles moves files from source to destination.
+func (c *client) MoveFiles(ctx context.Context, source []string, destination string, mode types.FileMoveMode) (result types.FileSystemTask, err error) {
+	files := make([]types.Base64Path, len(source))
+	for i, p := range source {
+		files[i] = types.Base64Path(p)
+	}
+
+	response, err := c.post(ctx, "fs/mv/", map[string]interface{}{
+		"files":  files,
+		"dst":    types.Base64Path(destination),
+		"mode":   mode,
+	}, c.withSession(ctx))
+	if err != nil {
+		if response != nil && response.ErrorCode == destinationConflictCode {
+			return result, ErrDestinationConflict
+		}
+		return result, fmt.Errorf("failed to POST to fs/mkdir/ endpoint: %w", err)
+	}
+
+	if err = c.fromGenericResponse(response, &result); err != nil {
+		return result, fmt.Errorf("failed to get a base64 string from a generic response: %w", err)
+	}
+
+	return result, nil
 }
 
 func (c *client) CreateDirectory(ctx context.Context, parent, name string) (string, error) {
