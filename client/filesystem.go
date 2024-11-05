@@ -76,6 +76,10 @@ func (c *client) ListFileSystemTasks(ctx context.Context) (task []types.FileSyst
 		return task, fmt.Errorf("failed to GET fs/tasks/ endpoint: %w", err)
 	}
 
+	if response.Result == nil {
+		return
+	}
+
 	if err = c.fromGenericResponse(response, &task); err != nil {
 		return task, fmt.Errorf("failed to get a list of filesystem tasks from a generic response: %w", err)
 	}
