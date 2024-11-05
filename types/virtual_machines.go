@@ -26,8 +26,8 @@ type VirtualMachineDistribution struct {
 type diskType = string
 
 const (
-	RawDisk   diskType = "raw"
-	QCow2Disk diskType = "qcow2"
+	RawDisk   diskType = "raw"   // Raw disk data.
+	QCow2Disk diskType = "qcow2" //Qcow2 image type. Usually qcow version 3. Note: not all features are supported. In particular, reference to other images is disabled.
 )
 
 type os = string

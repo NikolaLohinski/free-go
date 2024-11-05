@@ -7,6 +7,23 @@ const (
 	DiskTaskTypeResize virtualMachineDiskTaskType = "resize"
 )
 
+type diskError = string
+
+const (
+	DiskErrorNotFound     diskError = "file_not_found"  // File not found
+	DiskTaskErrorNotFound diskError = "task_notfound"   // Task not found
+)
+
+type diskTaskError string
+
+const (
+	// Undocumented and reverse engineered error codes
+	DiskTaskErrorNone     diskTaskError = "none"       // No error
+	DiskTaskErrorTooSmall diskTaskError = "too_small"  // Disk is too small
+	DiskTaskErrorExists   diskTaskError = "exists"     // Disk already exists
+	DiskTaskErrorInternal diskTaskError = "internal"   // Internal error (e.g. empty path on creation)
+)
+
 type VirtualDiskInfo struct {
 	Type        diskType `json:"type"`
 	ActualSize  int64    `json:"actual_size"`  // Space used by virtual image on disk. This is how much filesystem space is consumed on the box.
