@@ -23,6 +23,12 @@ type VirtualMachineDistribution struct {
 	Name string `json:"name"`
 }
 
+const (
+	EventSourceVM eventSource = "vm"
+
+	EventStateChanged eventName = "state_changed"
+)
+
 type diskType = string
 
 const (

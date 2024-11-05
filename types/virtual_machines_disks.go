@@ -7,6 +7,12 @@ const (
 	DiskTaskTypeResize virtualMachineDiskTaskType = "resize"
 )
 
+
+const (
+	EventSourceVMDisk eventSource = "vm" // Disk events are sourced from the VM
+	EventDiskTaskDone eventName = "disk_task_done"
+)
+
 type diskError = string
 
 const (

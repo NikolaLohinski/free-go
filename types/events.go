@@ -3,8 +3,8 @@ package types
 import "encoding/json"
 
 type EventDescription struct {
-	Source string
-	Name   string
+	Source eventSource
+	Name   eventName
 }
 
 type Event struct {
@@ -15,7 +15,10 @@ type Event struct {
 type EventNotification struct {
 	Action  string          `json:"action"`
 	Success bool            `json:"success"`
-	Source  string          `json:"source"`
-	Event   string          `json:"event"`
+	Source  eventSource     `json:"source"`
+	Event   eventName       `json:"event"`
 	Result  json.RawMessage `json:"result"`
 }
+
+type eventSource string
+type eventName   string
