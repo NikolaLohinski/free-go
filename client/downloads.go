@@ -22,6 +22,10 @@ func (c *client) ListDownloadTasks(ctx context.Context) (result []types.Download
 		return nil, fmt.Errorf("failed to GET downloads/ endpoint: %w", err)
 	}
 
+	if response.Result == nil {
+		return
+	}
+
 	if err = c.fromGenericResponse(response, &result); err != nil {
 		return nil, fmt.Errorf("failed to get download tasks from generic response: %w", err)
 	}
