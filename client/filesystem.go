@@ -90,6 +90,13 @@ func (c *client) ListFileSystemTasks(ctx context.Context) (task []types.FileSyst
 func (c *client) GetFileSystemTask(ctx context.Context, identifier int64) (task types.FileSystemTask, err error) {
 	response, err := c.get(ctx, fmt.Sprintf("fs/tasks/%d", identifier), c.withSession(ctx))
 	if err != nil {
+		if response != nil {
+			// The invalid_id code is returned when the task ID is not found
+			if response.ErrorCode == codeTaskNotFound || response.ErrorCode == string(types.FileTaskErrorInvalidID) {
+				return task, ErrTaskNotFound
+			}
+		}
+
 		return task, fmt.Errorf("failed to GET fs/tasks/%d endpoint: %w", identifier, err)
 	}
 
