@@ -23,13 +23,13 @@ var _ = Describe("APIError", func() {
 			})
 
 			It("should return a string without code", func() {
-				Expect(err.Error()).To(Equal(`task failed with code "": message`))
+				Expect(err.Error()).To(Equal(`failed with error code "": message`))
 			})
 		})
 
 		Context("when Message is empty", func() {
 			It("should return a string without code and message", func() {
-				Expect(err.Error()).To(Equal(`task failed with code ""`))
+				Expect(err.Error()).To(Equal(`failed with error code ""`))
 			})
 		})
 	})
@@ -41,7 +41,7 @@ var _ = Describe("APIError", func() {
 
 		Context("when Message is empty", func() {
 			It("should return a string without message", func() {
-				Expect(err.Error()).To(Equal(`task failed with code "code"`))
+				Expect(err.Error()).To(Equal(`failed with error code "code"`))
 			})
 		})
 
@@ -51,7 +51,7 @@ var _ = Describe("APIError", func() {
 			})
 
 			It("should return a string without message", func() {
-				Expect(err.Error()).To(Equal(`task failed with code "code": message`))
+				Expect(err.Error()).To(Equal(`failed with error code "code": message`))
 			})
 
 			Describe("errors.IS", func() {

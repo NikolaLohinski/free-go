@@ -489,7 +489,7 @@ var _ = Describe("authentication", func() {
 				})
 				It("should return an error", func() {
 					Expect(*returnedErr).ToNot(BeNil())
-					Expect((*returnedErr).Error()).To(MatchRegexp("failed with error code 'bad_request': some error"))
+					Expect((*returnedErr).Error()).To(MatchRegexp(`failed with error code "bad_request": some error`))
 				})
 			})
 			Context("because the returned body is an invalid JSON object", func() {
@@ -568,7 +568,7 @@ var _ = Describe("authentication", func() {
 				})
 				It("should return an error", func() {
 					Expect(*returnedErr).ToNot(BeNil())
-					Expect((*returnedErr).Error()).To(MatchRegexp("failed with error code 'invalid_token': Erreur d'authentification de l'application"))
+					Expect((*returnedErr).Error()).To(MatchRegexp(`failed with error code "invalid_token": Erreur d'authentification de l'application`))
 				})
 			})
 			Context("because the returned body is an invalid JSON object", func() {

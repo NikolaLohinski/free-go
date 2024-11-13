@@ -175,10 +175,10 @@ type APIError struct {
 
 func (e *APIError) Error() string {
 	if e.Message != "" {
-		return fmt.Sprintf("task failed with code %q: %s", e.Code, e.Message)
+		return fmt.Sprintf("failed with error code %q: %s", e.Code, e.Message)
 	}
 
-	return fmt.Sprintf("task failed with code %q", e.Code)
+	return fmt.Sprintf("failed with error code %q", e.Code)
 }
 
 func (e *APIError) Is(target error) bool {
