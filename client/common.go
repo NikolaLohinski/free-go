@@ -126,7 +126,10 @@ func (c *client) fromHTTPResponse(httpResponse *http.Response) (*genericResponse
 	}
 
 	if !response.Success {
-		return response, fmt.Errorf("failed with error code '%s': %s", response.ErrorCode, response.Message)
+		return response, &APIError{
+			Code: response.ErrorCode,
+			Message: response.Message,
+		}
 	}
 
 	return response, nil
@@ -162,4 +165,24 @@ func (c *client) withSession(ctx context.Context) func(req *http.Request) error 
 
 		return nil
 	}
+}
+
+// APIError represents a structured Freebox API error.
+type APIError struct {
+	Code    string
+	Message string
+}
+
+func (e *APIError) Error() string {
+	if e.Message != "" {
+		return fmt.Sprintf("task failed with code %q: %s", e.Code, e.Message)
+	}
+
+	return fmt.Sprintf("task failed with code %q", e.Code)
+}
+
+func (e *APIError) Is(target error) bool {
+	t, ok := target.(*APIError)
+
+	return ok && t.Code == e.Code
 }
