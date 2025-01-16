@@ -145,3 +145,12 @@ const (
 	FileMoveModeBoth      FileMoveMode = "both"      // Keep both files (rename the file adding a suffix)
 	FileMoveModeRecent    FileMoveMode = "recent"    // Only overwrite if newer than destination file
 )
+
+type FileCopyMode string
+
+const (
+	FileCopyModeOverwrite FileCopyMode = "overwrite" // Overwrite the destination file
+	FileCopyModeSkip      FileCopyMode = "skip"      // Keep the destination file
+	FileCopyModeBoth      FileCopyMode = "both"      // Keep both files (rename the file adding a suffix)
+	FileCopyModeRecent    FileCopyMode = "recent"    // Only overwrite if newer than destination file
+)

@@ -122,7 +122,7 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [x] Remove files
   - [ ] List files
   - [x] Move files
-  - [ ] Copy files
+  - [x] Copy files
   - [ ] Concatenate files
   - [ ] Create an archive
   - [ ] Extract a file

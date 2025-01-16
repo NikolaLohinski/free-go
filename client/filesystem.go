@@ -145,6 +145,28 @@ func (c *client) MoveFiles(ctx context.Context, source []string, destination str
 	return result, nil
 }
 
+func (c *client) CopyFiles(ctx context.Context, sources []string, destination string, mode types.FileCopyMode) (task types.FileSystemTask, err error) {
+	files := make([]types.Base64Path, len(sources))
+	for i, p := range sources {
+		files[i] = types.Base64Path(p)
+	}
+
+	response, err := c.post(ctx, "fs/cp/", map[string]interface{}{
+		"files": files,
+		"dst":   types.Base64Path(destination),
+		"mode":  mode,
+	}, c.withSession(ctx))
+	if err != nil {
+		return task, fmt.Errorf("failed to POST to fs/cp/ endpoint: %w", err)
+	}
+
+	if err = c.fromGenericResponse(response, &task); err != nil {
+		return task, fmt.Errorf("failed to get a filesystem task from a generic response: %w", err)
+	}
+
+	return task, nil
+}
+
 func (c *client) CreateDirectory(ctx context.Context, parent, name string) (string, error) {
 	response, err := c.post(ctx, "fs/mkdir/", map[string]interface{}{
 		"parent":  types.Base64Path(parent),
