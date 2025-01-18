@@ -869,6 +869,77 @@ var _ = Describe("filesystem", func() {
 			})
 		})
 	})
+	Context("copy files", func() {
+		const (
+			path1 = "path/to/file1"
+			path2 = "path/to/file2"
+			dest = "path/to/dest"
+		)
+
+		var (
+			returnedTask = new(types.FileSystemTask)
+			returnedErr  = new(error)
+		)
+
+		JustBeforeEach(func(ctx context.Context) {
+			*returnedTask, *returnedErr = freeboxClient.CopyFiles(ctx, []string{path1, path2}, dest, types.FileCopyModeSkip)
+		})
+		Context("default", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/fs/cp/", version)),
+						ghttp.VerifyJSON(`{
+							"dst": "cGF0aC90by9kZXN0",
+							"files": [
+								"cGF0aC90by9maWxlMQ==",
+								"cGF0aC90by9maWxlMg=="
+							],
+							"mode": "skip"
+						}`),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": {
+								"id": 1234
+							}
+						}`),
+					),
+				)
+			})
+			It("should return the task", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(*&returnedTask.ID).To(BeEquivalentTo(1234))
+			})
+		})
+		Context("when server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+		Context("when the server returns an unexpected payload", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/fs/cp/", version)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": [
+								"foo"
+							]
+						}`),
+					),
+				)
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+	})
 	Context("move files", func() {
 		const (
 			path1 = "path/to/file1"
