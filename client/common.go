@@ -127,7 +127,7 @@ func (c *client) fromHTTPResponse(httpResponse *http.Response) (*genericResponse
 
 	if !response.Success {
 		return response, &APIError{
-			Code: response.ErrorCode,
+			Code:    response.ErrorCode,
 			Message: response.Message,
 		}
 	}

@@ -129,7 +129,7 @@ type HashResult struct {
 
 type File struct {
 	ContentType string
-	FileName 	string
+	FileName    string
 	Content     io.Reader
 }
 

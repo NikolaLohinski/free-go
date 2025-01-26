@@ -127,9 +127,9 @@ func (c *client) MoveFiles(ctx context.Context, source []string, destination str
 	}
 
 	response, err := c.post(ctx, "fs/mv/", map[string]interface{}{
-		"files":  files,
-		"dst":    types.Base64Path(destination),
-		"mode":   mode,
+		"files": files,
+		"dst":   types.Base64Path(destination),
+		"mode":  mode,
 	}, c.withSession(ctx))
 	if err != nil {
 		if response != nil && response.ErrorCode == destinationConflictCode {

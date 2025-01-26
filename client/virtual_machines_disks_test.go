@@ -39,14 +39,14 @@ var _ = Describe("virtual machines disks", func() {
 	})
 	Context("creating a virtual disk", func() {
 		var (
-			payload         = new(types.VirtualDisksCreatePayload)
+			payload    = new(types.VirtualDisksCreatePayload)
 			returnedID = new(int64)
 		)
 		BeforeEach(func() {
 			*payload = types.VirtualDisksCreatePayload{
 				DiskType: types.QCow2Disk,
 				DiskPath: "/Freebox/disk-path",
-				Size: 	  1000000000,
+				Size:     1000000000,
 			}
 		})
 		JustBeforeEach(func() {
@@ -137,7 +137,7 @@ var _ = Describe("virtual machines disks", func() {
 			It("should return the correct virtual machine info", func() {
 				Expect(*returnedErr).To(BeNil())
 				Expect((*returnedInfo)).To(Equal(types.VirtualDiskInfo{
-					Type: 	     types.QCow2Disk,
+					Type:        types.QCow2Disk,
 					ActualSize:  2000000000,
 					VirtualSize: 5000000000,
 				},
@@ -171,13 +171,13 @@ var _ = Describe("virtual machines disks", func() {
 	})
 	Context("resizing a virtual disk", func() {
 		var (
-			payload         = new(types.VirtualDisksResizePayload)
+			payload                = new(types.VirtualDisksResizePayload)
 			returnedTaskIdentifier = new(int64)
 		)
 		BeforeEach(func() {
 			*payload = types.VirtualDisksResizePayload{
-				DiskPath: "/Freebox/disk-path",
-				NewSize: 2000000000,
+				DiskPath:    "/Freebox/disk-path",
+				NewSize:     2000000000,
 				ShrinkAllow: false,
 			}
 		})
@@ -235,7 +235,7 @@ var _ = Describe("virtual machines disks", func() {
 	})
 	Context("getting a virtual disk task", func() {
 		const identifier int64 = 42
-		var returnedTask = new(types.VirtualMachineDiskTask)
+		returnedTask := new(types.VirtualMachineDiskTask)
 		JustBeforeEach(func(ctx SpecContext) {
 			*returnedTask, *returnedErr = freeboxClient.GetVirtualDiskTask(ctx, identifier)
 		})
@@ -258,9 +258,9 @@ var _ = Describe("virtual machines disks", func() {
 			It("should return the correct virtual machine", func() {
 				Expect(*returnedErr).To(BeNil())
 				Expect((*returnedTask)).To(Equal(types.VirtualMachineDiskTask{
-					ID: 42,
-					Type: "resize",
-					Done: false,
+					ID:    42,
+					Type:  "resize",
+					Done:  false,
 					Error: false,
 				}))
 			})
@@ -291,9 +291,7 @@ var _ = Describe("virtual machines disks", func() {
 		})
 	})
 	Context("deleting a virtual disk task", func() {
-		var (
-			identifier = new(int64)
-		)
+		identifier := new(int64)
 		BeforeEach(func() {
 			*identifier = 1234
 		})

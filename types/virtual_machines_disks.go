@@ -7,27 +7,27 @@ const (
 	DiskTaskTypeResize virtualMachineDiskTaskType = "resize"
 )
 
-
 const (
 	EventSourceVMDisk eventSource = "vm" // Disk events are sourced from the VM
-	EventDiskTaskDone eventName = "disk_task_done"
+	EventDiskTaskDone eventName   = "disk_task_done"
 )
 
 type diskError = string
 
 const (
-	DiskErrorNotFound     diskError = "file_not_found"  // File not found
-	DiskTaskErrorNotFound diskError = "task_notfound"   // Task not found
+	DiskErrorNotFound     diskError = "file_not_found" // File not found
+	DiskTaskErrorNotFound diskError = "task_notfound"  // Task not found
+	DiskErrorInfo         diskError = "info"           // Unable to retrieve disk info
 )
 
 type diskTaskError string
 
 const (
 	// Undocumented and reverse engineered error codes
-	DiskTaskErrorNone     diskTaskError = "none"       // No error
-	DiskTaskErrorTooSmall diskTaskError = "too_small"  // Disk is too small
-	DiskTaskErrorExists   diskTaskError = "exists"     // Disk already exists
-	DiskTaskErrorInternal diskTaskError = "internal"   // Internal error (e.g. empty path on creation)
+	DiskTaskErrorNone     diskTaskError = "none"      // No error
+	DiskTaskErrorTooSmall diskTaskError = "too_small" // Disk is too small
+	DiskTaskErrorExists   diskTaskError = "exists"    // Disk already exists
+	DiskTaskErrorInternal diskTaskError = "internal"  // Internal error (e.g. empty path on creation)
 )
 
 type VirtualDiskInfo struct {
@@ -43,9 +43,9 @@ type VirtualDisksCreatePayload struct {
 }
 
 type VirtualDisksResizePayload struct {
-	DiskPath     Base64Path `json:"disk_path"`    // Base64 encoded
-	NewSize      int64      `json:"size"`         // New size of virtual disk in bytes
-	ShrinkAllow  bool       `json:"shrink_allow"` // Whether shrinking the disk is allowed. Setting to true means this operation can be destructive.
+	DiskPath    Base64Path `json:"disk_path"`    // Base64 encoded
+	NewSize     int64      `json:"size"`         // New size of virtual disk in bytes
+	ShrinkAllow bool       `json:"shrink_allow"` // Whether shrinking the disk is allowed. Setting to true means this operation can be destructive.
 }
 
 type VirtualMachineDiskTask struct {

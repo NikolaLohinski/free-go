@@ -774,5 +774,4 @@ var _ = Describe("virtual machines", func() {
 			})
 		})
 	})
-
 })

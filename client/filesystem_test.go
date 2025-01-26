@@ -513,50 +513,50 @@ var _ = Describe("filesystem", func() {
 				Expect(*returnedErr).To(BeNil())
 				Expect(*returnedTasks).To(ConsistOf(
 					Equal(types.FileSystemTask{
-						ID: 12,
-						Type: "extract",
-						State: "paused",
-						Error: "none",
-						CurrentBytesDone: 0,
-						TotalBytes: 0,
-						NumberFilesDone: 0,
-						StartedTimestamp: 1355834253,
-						DurationSeconds: 3,
-						DoneTimestamp: 0,
-						CurrentBytes: 0,
-						To: "oxygennosvg/128x128/mimetypes/application_x_nzb.png",
-						NumberFiles: 0,
-						CreatedTimestamp: 1355834253,
-						TotalBytesDone: 0,
-						From: "/Disque dur/tests/oxygennosvg.tar.gz",
-						ProcessingRate: 0,
+						ID:                            12,
+						Type:                          "extract",
+						State:                         "paused",
+						Error:                         "none",
+						CurrentBytesDone:              0,
+						TotalBytes:                    0,
+						NumberFilesDone:               0,
+						StartedTimestamp:              1355834253,
+						DurationSeconds:               3,
+						DoneTimestamp:                 0,
+						CurrentBytes:                  0,
+						To:                            "oxygennosvg/128x128/mimetypes/application_x_nzb.png",
+						NumberFiles:                   0,
+						CreatedTimestamp:              1355834253,
+						TotalBytesDone:                0,
+						From:                          "/Disque dur/tests/oxygennosvg.tar.gz",
+						ProcessingRate:                0,
 						EstimatedTimeRemainingSeconds: 0,
-						ProgressPercent: 0,
+						ProgressPercent:               0,
 						Sources: []string{
 							"/Disque dur/tests/oxygennosvg.tar.gz",
 						},
 						Destination: "/Disque dur/tests/oxygennosvg",
 					}),
 					Equal(types.FileSystemTask{
-						ID: 11,
-						Type: "rm",
-						State: "done",
-						Error: "none",
-						CurrentBytesDone: 0,
-						TotalBytes: 0,
-						NumberFilesDone: 0,
-						StartedTimestamp: 1355834187,
-						DurationSeconds: 0,
-						DoneTimestamp: 1355834187,
-						CurrentBytes: 0,
-						To: "",
-						NumberFiles: 0,
-						CreatedTimestamp: 1355834187,
-						TotalBytesDone: 0,
-						From: "/Disque dur/test/testiso.1.iso",
-						ProcessingRate: 0,
+						ID:                            11,
+						Type:                          "rm",
+						State:                         "done",
+						Error:                         "none",
+						CurrentBytesDone:              0,
+						TotalBytes:                    0,
+						NumberFilesDone:               0,
+						StartedTimestamp:              1355834187,
+						DurationSeconds:               0,
+						DoneTimestamp:                 1355834187,
+						CurrentBytes:                  0,
+						To:                            "",
+						NumberFiles:                   0,
+						CreatedTimestamp:              1355834187,
+						TotalBytesDone:                0,
+						From:                          "/Disque dur/test/testiso.1.iso",
+						ProcessingRate:                0,
 						EstimatedTimeRemainingSeconds: 0,
-						ProgressPercent: 100,
+						ProgressPercent:               100,
 						Sources: []string{
 							"/Disque dur/test/testiso.1.iso",
 						},
@@ -639,7 +639,7 @@ var _ = Describe("filesystem", func() {
 	})
 	Context("get a file", func() {
 		var (
-			path       = "path/to/file"
+			path         = "path/to/file"
 			returnedFile = new(types.File)
 		)
 		JustBeforeEach(func(ctx SpecContext) {
@@ -652,7 +652,7 @@ var _ = Describe("filesystem", func() {
 						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/dl/cGF0aC90by9maWxl", version)),
 						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `the-content`, http.Header{
-							"Content-Type": []string{"application/octet-stream"},
+							"Content-Type":        []string{"application/octet-stream"},
 							"Content-Disposition": []string{`attachment; filename="file"`},
 						}),
 					),
@@ -814,7 +814,7 @@ var _ = Describe("filesystem", func() {
 		JustBeforeEach(func(ctx context.Context) {
 			*returnedTask, *returnedErr = freeboxClient.AddHashFileTask(ctx, types.HashPayload{
 				HashType: types.HashTypeSHA256,
-				Path:    path,
+				Path:     path,
 			})
 		})
 		Context("default", func() {
@@ -873,7 +873,7 @@ var _ = Describe("filesystem", func() {
 		const (
 			path1 = "path/to/file1"
 			path2 = "path/to/file2"
-			dest = "path/to/dest"
+			dest  = "path/to/dest"
 		)
 
 		var (
@@ -944,7 +944,7 @@ var _ = Describe("filesystem", func() {
 		const (
 			path1 = "path/to/file1"
 			path2 = "path/to/file2"
-			dest = "path/to/dest"
+			dest  = "path/to/dest"
 		)
 
 		var (

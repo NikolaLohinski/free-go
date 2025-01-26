@@ -20,5 +20,7 @@ type EventNotification struct {
 	Result  json.RawMessage `json:"result"`
 }
 
-type eventSource string
-type eventName   string
+type (
+	eventSource string
+	eventName   string
+)
