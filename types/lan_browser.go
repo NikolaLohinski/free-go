@@ -66,12 +66,13 @@ type HostName struct {
 type l2IdentType = string
 
 const (
-	DHCP    l2IdentType = "dhcp"
-	NetBios l2IdentType = "netbios"
-	MDNS    l2IdentType = "mdns"
-	MDNSSRV l2IdentType = "mdns_srv"
-	UPNP    l2IdentType = "upnp"
-	WSD     l2IdentType = "wsd"
+	DHCP       l2IdentType = "dhcp"
+	NetBios    l2IdentType = "netbios"
+	MDNS       l2IdentType = "mdns"
+	MDNSSRV    l2IdentType = "mdns_srv"
+	UPNP       l2IdentType = "upnp"
+	WSD        l2IdentType = "wsd"
+	MacAddress l2IdentType = "mac_address"
 )
 
 type L2Ident struct {

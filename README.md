@@ -84,11 +84,11 @@ At the time of this writing, generating credentials can only be done via the Fre
 - [ ] [DHCP](https://dev.freebox.fr/sdk/os/dhcp/#dhcp) : `/dhcp/*`
   - [ ] Get the current DHCP configuration
   - [ ] Update the current DHCP configuration
-  - [ ] List the DHCP static leases
-  - [ ] Get a given DHCP static lease
-  - [ ] Update DHCP static lease
-  - [ ] Delete a DHCP static lease
-  - [ ] Add a DHCP static lease
+  - [x] List the DHCP static leases
+  - [x] Get a given DHCP static lease
+  - [x] Update DHCP static lease
+  - [x] Delete a DHCP static lease
+  - [x] Add a DHCP static lease
   - [ ] Get the list of DHCP dynamic leases
 - [x] [Port forwarding](https://dev.freebox.fr/sdk/os/nat/#port-forwarding): `/fw/redir/*`
   - [x] Getting the list of port forwarding

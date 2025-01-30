@@ -29,6 +29,12 @@ type Client interface {
 	CreatePortForwardingRule(ctx context.Context, payload types.PortForwardingRulePayload) (types.PortForwardingRule, error)
 	UpdatePortForwardingRule(ctx context.Context, identifier int64, payload types.PortForwardingRulePayload) (types.PortForwardingRule, error)
 	DeletePortForwardingRule(ctx context.Context, identifier int64) error
+	// dhcp
+	ListDHCPStaticLease(context.Context) ([]types.DHCPStaticLeaseInfo, error)
+	GetDHCPStaticLease(ctx context.Context, identifier string) (types.DHCPStaticLeaseInfo, error)
+	UpdateDHCPStaticLease(ctx context.Context, identifier string, payload types.DHCPStaticLeasePayload) (types.LanInterfaceHost, error)
+	CreateDHCPStaticLease(ctx context.Context, payload types.DHCPStaticLeasePayload) (types.LanInterfaceHost, error)
+	DeleteDHCPStaticLease(ctx context.Context, identifier string) error
 	// lan browser
 	ListLanInterfaceInfo(context.Context) ([]types.LanInfo, error)
 	GetLanInterface(ctx context.Context, name string) (result []types.LanInterfaceHost, err error)
