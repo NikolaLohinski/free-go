@@ -87,6 +87,10 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [x] Updating a port forwarding
   - [x] Add a port forwarding
   - [x] Delete a port forwarding
+- [ ] [Incoming port configuration](https://dev.freebox.fr/sdk/os/nat/#incoming-port-configuration) : `/fw/incoming/*`
+  - [ ] Getting the list of incoming ports
+  - [ ] Getting a specific incoming port
+  - [ ] Updating an incoming port
 - [ ] [Virtual machines](http://mafreebox.freebox.fr/#Fbx.os.app.help.app) (UNSTABLE) : `/vm/*`
   - [x] Get VM System Info
   - [x] Get Installable VM distributions
