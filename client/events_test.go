@@ -99,7 +99,9 @@ var _ = Describe("events", func() {
 		})
 		It("should send the expected events through the returned channel", func() {
 			Expect(*returnedErr).To(BeNil())
-			Expect(<-*returnedChannel).To(Equal(types.Event{
+			var event types.Event
+			Eventually(*returnedChannel).Should(Receive(&event))
+			Expect(event).To(Equal(types.Event{
 				Notification: types.EventNotification{
 					Action:  "notification",
 					Success: true,
@@ -190,7 +192,9 @@ var _ = Describe("events", func() {
 		})
 		It("should return an error", func() {
 			Expect(*returnedErr).To(BeNil())
-			Expect(<-*returnedChannel).To(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
+			var event types.Event
+			Eventually(*returnedChannel).Should(Receive(&event))
+			Expect(event).To(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
 				"Error": Not(BeNil()),
 			}))
 		})
