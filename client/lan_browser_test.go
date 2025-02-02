@@ -28,6 +28,8 @@ var _ = Describe("lan browser", func() {
 	)
 	BeforeEach(func() {
 		server = ghttp.NewServer()
+		DeferCleanup(server.Close)
+
 		*endpoint = server.Addr()
 
 		freeboxClient = Must(client.New(*endpoint, version)).
@@ -35,9 +37,6 @@ var _ = Describe("lan browser", func() {
 			WithPrivateToken(privateToken)
 
 		*sessionToken = setupLoginFlow(server)
-	})
-	AfterEach(func() {
-		server.Close()
 	})
 	Context("listing lan metadata", func() {
 		returnedLanInfos := new([]types.LanInfo)
@@ -129,12 +128,13 @@ var _ = Describe("lan browser", func() {
 		})
 		Context("when the sessions has expired and trying to login again fails", func() {
 			BeforeEach(func() {
+				DeferCleanup(func(previous time.Duration) {
+					client.LoginSessionTTL = previous
+				}, client.LoginSessionTTL)
 				client.LoginSessionTTL = 0
+
 				Must(freeboxClient.Login(context.Background()))
 				server.Close()
-			})
-			AfterEach(func() {
-				client.LoginSessionTTL = 30 * time.Minute
 			})
 			It("should return an error", func() {
 				Expect(*returnedErr).ToNot(BeNil())

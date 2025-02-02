@@ -26,6 +26,8 @@ var _ = Describe("virtual machines", func() {
 	)
 	BeforeEach(func() {
 		server = ghttp.NewServer()
+		DeferCleanup(server.Close)
+
 		*endpoint = server.Addr()
 
 		freeboxClient = Must(client.New(*endpoint, version)).
@@ -33,9 +35,6 @@ var _ = Describe("virtual machines", func() {
 			WithPrivateToken(privateToken)
 
 		*sessionToken = setupLoginFlow(server)
-	})
-	AfterEach(func() {
-		server.Close()
 	})
 	Context("getting virtual machine info", func() {
 		returnedInfo := new(types.VirtualMachinesInfo)

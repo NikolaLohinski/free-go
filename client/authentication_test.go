@@ -30,6 +30,8 @@ var _ = Describe("authentication", func() {
 		ctx = context.Background()
 
 		server = ghttp.NewServer()
+		DeferCleanup(server.Close)
+
 		*endpoint = server.Addr()
 
 		client.AuthorizeRetryDelay = time.Millisecond * 50
@@ -38,9 +40,6 @@ var _ = Describe("authentication", func() {
 		freeboxClient = Must(client.New(*endpoint, version)).WithAppID(appID)
 	})
 
-	AfterEach(func() {
-		server.Close()
-	})
 	Context("authorize", func() {
 		const (
 			returnedTrackID      = "123"

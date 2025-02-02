@@ -35,6 +35,8 @@ var _ = Describe("events", func() {
 	BeforeEach(func() {
 		ctx, cancelContext = context.WithCancel(context.Background())
 		server = ghttp.NewServer()
+		DeferCleanup(server.Close)
+
 		*endpoint = server.Addr()
 
 		*returnedChannel = make(chan types.Event)
@@ -44,9 +46,6 @@ var _ = Describe("events", func() {
 			WithPrivateToken(privateToken)
 
 		*sessionToken = setupLoginFlow(server)
-	})
-	AfterEach(func() {
-		server.Close()
 	})
 	JustBeforeEach(func() {
 		*returnedChannel, *returnedErr = freeboxClient.ListenEvents(ctx, *events)

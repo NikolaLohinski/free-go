@@ -30,14 +30,12 @@ var _ = Describe("api version", func() {
 		ctx = context.Background()
 
 		server = ghttp.NewServer()
+		DeferCleanup(server.Close)
 
 		freeboxClient = Must(client.New(server.Addr(), version))
 	})
 	JustBeforeEach(func() {
 		*apiVersion, *returnedErr = freeboxClient.APIVersion(ctx)
-	})
-	AfterEach(func() {
-		server.Close()
 	})
 	Context("default", func() {
 		BeforeEach(func() {

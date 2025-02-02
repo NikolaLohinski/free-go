@@ -32,10 +32,9 @@ var _ = Describe("client", func() {
 	)
 	BeforeEach(func() {
 		server = ghttp.NewServer()
+		DeferCleanup(server.Close)
+
 		*endpoint = server.Addr()
-	})
-	AfterEach(func() {
-		server.Close()
 	})
 	JustBeforeEach(func() {
 		freeboxClient, *returnedErr = client.New(*endpoint, version)

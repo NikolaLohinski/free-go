@@ -32,6 +32,8 @@ var _ = Describe("port forwarding", func() {
 		ctx = context.Background()
 
 		server = ghttp.NewServer()
+		DeferCleanup(server.Close)
+
 		*endpoint = server.Addr()
 
 		freeboxClient = Must(client.New(*endpoint, version)).
@@ -39,9 +41,6 @@ var _ = Describe("port forwarding", func() {
 			WithPrivateToken(privateToken)
 
 		*sessionToken = setupLoginFlow(server)
-	})
-	AfterEach(func() {
-		server.Close()
 	})
 	Context("listing port forwarding rules", func() {
 		returnedRules := new([]types.PortForwardingRule)
