@@ -40,11 +40,13 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 		return nil, fmt.Errorf("dialing websocket returned a status %s: %w", dialResponse.Status, err)
 	}
 
-	go func() {
+	ctx, cancel := context.WithCancel(ctx)
+
+	go func(ctx context.Context) {
 		<-ctx.Done()
 
 		_ = ws.Close()
-	}()
+	}(ctx)
 
 	requestID := newRequestID()
 
@@ -56,6 +58,8 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 		Filename:  input.Filename,
 		Force:     input.Force,
 	}); err != nil {
+		cancel()
+
 		return nil, fmt.Errorf("upload start action: %w", err)
 	}
 
@@ -64,6 +68,8 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 	}
 	for {
 		if err := waitJSONResponse(ctx, ws, response); err != nil {
+			cancel()
+
 			return nil, fmt.Errorf("waiting start confirmation: %w", err)
 		}
 
@@ -72,6 +78,8 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 		}
 
 		if err := response.GetError(); err != nil {
+			cancel()
+
 			return nil, fmt.Errorf("start confirmation: %w", err)
 		}
 
@@ -84,6 +92,7 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 		RequestID: requestID,
 		written:   0,
 		expected:  input.Size,
+		cancel:    cancel,
 	}, nil
 }
 
@@ -169,6 +178,8 @@ func newRequestID() types.UploadRequestID {
 
 type ChunkWriter struct {
 	*websocket.Conn
+
+	cancel context.CancelFunc
 
 	RequestID         types.UploadRequestID
 	lock              sync.Mutex

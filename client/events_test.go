@@ -35,6 +35,8 @@ var _ = Describe("events", func() {
 	BeforeEach(func() {
 		ctx, cancelContext = context.WithCancel(context.Background())
 		server = ghttp.NewServer()
+		DeferCleanup(server.Close)
+
 		*endpoint = server.Addr()
 
 		*returnedChannel = make(chan types.Event)
@@ -44,9 +46,6 @@ var _ = Describe("events", func() {
 			WithPrivateToken(privateToken)
 
 		*sessionToken = setupLoginFlow(server)
-	})
-	AfterEach(func() {
-		server.Close()
 	})
 	JustBeforeEach(func() {
 		*returnedChannel, *returnedErr = freeboxClient.ListenEvents(ctx, *events)
@@ -198,23 +197,20 @@ var _ = Describe("events", func() {
 
 	Context("when logging in fails", func() {
 		BeforeEach(func() {
-			server = ghttp.NewServer()
-			*endpoint = server.Addr()
-			freeboxClient = Must(client.New(*endpoint, version)).
-				WithAppID(appID).
-				WithPrivateToken(privateToken)
-
-			server.AppendHandlers(
+			// override the login flow
+			server.SetHandler(0,
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/login", version)),
 					ghttp.RespondWith(http.StatusInternalServerError, nil),
 				),
 			)
 		})
+
 		It("should return an error", func() {
 			Expect(*returnedErr).ToNot(BeNil())
 		})
 	})
+
 	Context("when dialing the websocket fails", func() {
 		BeforeEach(func() {
 			server.AppendHandlers(func(w http.ResponseWriter, r *http.Request) {
