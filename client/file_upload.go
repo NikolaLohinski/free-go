@@ -2,9 +2,11 @@ package client
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -57,8 +59,23 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 		return nil, fmt.Errorf("upload start action: %w", err)
 	}
 
-	if _, err := waitJSONResponse(ctx, ws, &types.WebSocketResponse[interface{}]{}, requestID, types.FileUploadStartActionNameUploadStart); err != nil {
-		return nil, fmt.Errorf("upload start confirmation: %w", err)
+	response := &types.FileUploadStartResponse{
+		Success: true,
+	}
+	for {
+		if err := waitJSONResponse(ctx, ws, response); err != nil {
+			return nil, fmt.Errorf("waiting start confirmation: %w", err)
+		}
+
+		if response.RequestID != requestID || response.Action != types.FileUploadStartActionNameUploadStart {
+			continue
+		}
+
+		if err := response.GetError(); err != nil {
+			return nil, fmt.Errorf("start confirmation: %w", err)
+		}
+
+		break
 	}
 
 	// caller should close the writer
@@ -168,7 +185,7 @@ func (w *ChunkWriter) Write(data []byte) (n int, err error) {
 		return 0, fmt.Errorf("write chunk: %w", err)
 	}
 
-	responseData, err := waitJSONResponse(context.Background(), w.Conn, &types.WebSocketResponse[types.FileUploadChunkResponse]{}, w.RequestID, types.FileUploadStartActionNameUploadData)
+	responseData, err := waitWebSocketResponse(context.Background(), w.Conn, &types.WebSocketResponse[types.FileUploadChunkResponse]{}, w.RequestID, types.FileUploadStartActionNameUploadData)
 	if err != nil {
 		return 0, fmt.Errorf("chunk upload confirmation: %w", err)
 	}
@@ -187,9 +204,35 @@ func (w *ChunkWriter) Write(data []byte) (n int, err error) {
 	return written, nil
 }
 
-func (w *ChunkWriter) Close() error {
+func (w *ChunkWriter) Close() (finalErr error) {
 	w.lock.Lock()
 	defer w.lock.Unlock()
+
+	ctx := context.Background()
+
+	defer func(ctx context.Context, conn *websocket.Conn) {
+		var errs []error
+
+		errs = append(errs, finalErr)
+
+		if err := conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")); err != nil {
+			if !errors.Is(err, net.ErrClosed) {
+				errs = append(errs, fmt.Errorf("send close message: %w", err))
+			}
+		} else if _, err := waitResponse(ctx, w.Conn, websocket.CloseMessage); err != nil {
+			if !errors.Is(err, net.ErrClosed) {
+				errs = append(errs, fmt.Errorf("close confirmation: %w", err))
+			}
+		}
+
+		if err := conn.Close(); err != nil {
+			if !isCloseError(err) {
+				errs = append(errs, fmt.Errorf("close websocket: %w", err))
+			}
+		}
+
+		finalErr = errors.Join(errs...)
+	}(ctx, w.Conn)
 
 	switch w.written {
 	case w.expected:
@@ -197,50 +240,91 @@ func (w *ChunkWriter) Close() error {
 			Action:    types.FileUploadStartActionNameUploadFinalize,
 			RequestID: w.RequestID,
 		}); err != nil {
-			return fmt.Errorf("finalize upload: %w", err)
+			finalErr = fmt.Errorf("finalize upload: %w", err)
+			return finalErr
 		}
 
+		if _, err := waitWebSocketResponse(ctx, w.Conn, &types.WebSocketResponse[types.FileUploadFinalizeResponse]{}, w.RequestID, types.FileUploadStartActionNameUploadFinalize); err != nil {
+			finalErr = fmt.Errorf("finalize upload confirmation: %w", err)
+			return finalErr
+		}
 	default:
 		if err := w.Conn.WriteJSON(&types.FileUploadFinalize{
 			Action:    types.FileUploadStartActionNameUploadCancel,
 			RequestID: w.RequestID,
 		}); err != nil {
-			return fmt.Errorf("cancel upload: %w", err)
+			finalErr = fmt.Errorf("cancel upload: %w", err)
+			return finalErr
 		}
 
-		if _, err := waitJSONResponse(context.Background(), w.Conn, &types.WebSocketResponse[types.FileUploadCancelAction]{}, w.RequestID, types.FileUploadStartActionNameUploadCancel); err != nil {
-			return fmt.Errorf("cancel upload confirmation: %w", err)
+		if _, err := waitWebSocketResponse(ctx, w.Conn, &types.WebSocketResponse[types.FileUploadCancelAction]{}, w.RequestID, types.FileUploadStartActionNameUploadCancel); err != nil {
+			finalErr = fmt.Errorf("cancel upload confirmation: %w", err)
+			return finalErr
 		}
-	}
-
-	if err := w.Conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")); err != nil {
-		return fmt.Errorf("send close message: %w", err)
-	}
-
-	if err := w.Conn.Close(); err != nil {
-		return fmt.Errorf("close websocket: %w", err)
 	}
 
 	return nil
 }
 
-func waitJSONResponse[R interface{}](ctx context.Context, ws *websocket.Conn, message *types.WebSocketResponse[R], requestID types.UploadRequestID, action types.WebSocketAction) (*R, error) {
+func waitWebSocketResponse[R interface{}](ctx context.Context, ws *websocket.Conn, message *types.WebSocketResponse[R], requestID types.UploadRequestID, action types.WebSocketAction) (*R, error) {
 	for {
 		select {
 		case <-ctx.Done():
 			return nil, fmt.Errorf("cancelled: %w", ctx.Err())
 		default:
-			if err := ws.ReadJSON(message); err != nil {
-				return nil, fmt.Errorf("read websocket response: %w", err)
+			if err := waitJSONResponse(ctx, ws, message); err != nil {
+				return nil, err
 			}
 
-			if err := message.GetError(); err != nil {
-				return nil, fmt.Errorf("upload start: %w", err)
-			}
+			if message.RequestID == requestID && message.Action == action {
+				if err := message.GetError(); err != nil {
+					return nil, fmt.Errorf("response: %w", err)
+				}
 
-			if message.RequestID == types.WebSocketRequestID(requestID) && message.Action == action {
 				return &message.Result, nil
 			}
 		}
 	}
+}
+
+func waitJSONResponse(ctx context.Context, ws *websocket.Conn, message interface{}) error {
+	content, err := waitResponse(ctx, ws, websocket.TextMessage)
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(content, message); err != nil {
+		return fmt.Errorf("unmarshal response: %w", err)
+	}
+
+	return nil
+}
+
+func waitResponse(ctx context.Context, ws *websocket.Conn, expectedType int) ([]byte, error) {
+	for {
+		select {
+		case <-ctx.Done():
+			return nil, fmt.Errorf("cancelled: %w", ctx.Err())
+		default:
+			messageType, data, err := ws.ReadMessage()
+			if err != nil {
+				if expectedType == websocket.CloseMessage && isCloseError(err) { // gorilla package does not return net.ErrClosed
+					return data, nil
+				}
+
+				return nil, fmt.Errorf("read websocket message: %w", err)
+			}
+
+			if messageType == expectedType {
+				return data, nil
+			}
+			if messageType == websocket.CloseMessage {
+				return data, fmt.Errorf("websocket closed: %w", errors.New(string(data)))
+			}
+		}
+	}
+}
+
+func isCloseError(err error) bool {
+	return websocket.IsUnexpectedCloseError(err) || strings.HasSuffix(err.Error(), net.ErrClosed.Error())
 }

@@ -2,8 +2,10 @@ package types
 
 import "fmt"
 
-type WebSocketAction string
-type WebSocketRequestID int64
+type (
+	WebSocketAction    string
+	WebSocketRequestID int64
+)
 
 // https://dev.freebox.fr/sdk/os/#WebSocketResponse
 type WebSocketResponse[R interface{}] struct {
@@ -19,6 +21,7 @@ func (r *WebSocketResponse[R]) GetError() error {
 	if r.Success {
 		return nil
 	}
+
 	return &WebSocketResponseError{
 		ErrorCode: r.ErrorCode,
 		Message:   r.Message,

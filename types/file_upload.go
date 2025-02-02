@@ -28,11 +28,22 @@ type FileUploadStartAction struct {
 
 type FileUploadStartResponse struct {
 	Success   bool            `json:"success"`
-	Action    string          `json:"action"`
+	Action    WebSocketAction `json:"action"`
 	RequestID UploadRequestID `json:"request_id"`
-	Message   string          `json:"msg"`
-	FileSize  int             `json:"file_size"`
-	ErrorCode string          `json:"error_code"`
+	Message   string          `json:"msg,omitempty"`
+	FileSize  int             `json:"file_size,omitempty"`
+	ErrorCode string          `json:"error_code,omitempty"`
+}
+
+func (r *FileUploadStartResponse) GetError() error {
+	if !r.Success {
+		return &WebSocketResponseError{
+			ErrorCode: r.ErrorCode,
+			Message:   r.Message,
+		}
+	}
+
+	return nil
 }
 
 type FileUploadStartActionInput struct {
