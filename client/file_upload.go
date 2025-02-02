@@ -224,23 +224,17 @@ func (w *ChunkWriter) Close() (finalErr error) {
 	defer func(ctx context.Context, conn *websocket.Conn) {
 		var errs []error
 
+		defer w.cancel() // cancel the context to stop the goroutine
+
 		errs = append(errs, finalErr)
 
 		if err := conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")); err != nil {
 			if !errors.Is(err, net.ErrClosed) {
 				errs = append(errs, fmt.Errorf("send close message: %w", err))
 			}
-		} else if _, err := waitResponse(ctx, w.Conn, websocket.CloseMessage); err != nil {
-			if !errors.Is(err, net.ErrClosed) {
-				errs = append(errs, fmt.Errorf("close confirmation: %w", err))
-			}
 		}
 
-		if err := conn.Close(); err != nil {
-			if !isCloseError(err) {
-				errs = append(errs, fmt.Errorf("close websocket: %w", err))
-			}
-		}
+		_ = conn.Close()
 
 		finalErr = errors.Join(errs...)
 	}(ctx, w.Conn)
@@ -319,7 +313,7 @@ func waitResponse(ctx context.Context, ws *websocket.Conn, expectedType int) ([]
 		default:
 			messageType, data, err := ws.ReadMessage()
 			if err != nil {
-				if expectedType == websocket.CloseMessage && isCloseError(err) { // gorilla package does not return net.ErrClosed
+				if expectedType == websocket.CloseMessage && isCloseError(err) {
 					return data, nil
 				}
 
@@ -337,5 +331,8 @@ func waitResponse(ctx context.Context, ws *websocket.Conn, expectedType int) ([]
 }
 
 func isCloseError(err error) bool {
-	return websocket.IsUnexpectedCloseError(err) || strings.HasSuffix(err.Error(), net.ErrClosed.Error())
+	return websocket.IsUnexpectedCloseError(err) ||
+		strings.HasSuffix(err.Error(), net.ErrClosed.Error()) || // gorilla package does not return net.ErrClosed
+		errors.Is(err, net.ErrClosed) ||
+		errors.Is(err, websocket.ErrCloseSent)
 }
