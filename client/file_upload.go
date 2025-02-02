@@ -26,10 +26,12 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 
 	url := *c.base
 	url.Scheme = "ws"
+
 	if strings.ToLower(c.base.Scheme) == "https" {
 		url.Scheme = "wss"
 	}
-	url.Path = fmt.Sprintf("%s/ws/upload", url.Path)
+
+	url.Path = url.Path + "/ws/upload"
 
 	ws, dialResponse, err := websocket.DefaultDialer.DialContext(ctx, url.String(), header)
 	if err != nil {
@@ -38,6 +40,7 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 
 	go func() {
 		<-ctx.Done()
+
 		_ = ws.Close()
 	}()
 
@@ -93,6 +96,7 @@ func (c *client) GetUploadTask(ctx context.Context, identifier int64) (*types.Up
 		if response != nil && response.ErrorCode == codeTaskNotFound {
 			return nil, ErrTaskNotFound
 		}
+
 		return nil, fmt.Errorf("GET upload/%d endpoint: %w", identifier, err)
 	}
 
@@ -125,6 +129,7 @@ func (c *client) DeleteUploadTask(ctx context.Context, identifier int64) error {
 		if response != nil && response.ErrorCode == codeUploadTaskNotFound {
 			return ErrTaskNotFound
 		}
+
 		return fmt.Errorf("DELETE upload/%d endpoint: %w", identifier, err)
 	}
 
@@ -155,12 +160,12 @@ type ChunkWriter struct {
 
 var _ io.WriteCloser = (*ChunkWriter)(nil)
 
-func (w *ChunkWriter) Write(p []byte) (n int, err error) {
+func (w *ChunkWriter) Write(data []byte) (n int, err error) {
 	w.lock.Lock()
 	defer w.lock.Unlock()
 
-	if err := w.Conn.WriteMessage(websocket.BinaryMessage, p); err != nil {
-		return 0, err
+	if err := w.Conn.WriteMessage(websocket.BinaryMessage, data); err != nil {
+		return 0, fmt.Errorf("write chunk: %w", err)
 	}
 
 	responseData, err := waitJSONResponse(context.Background(), w.Conn, &types.WebSocketResponse[types.FileUploadChunkResponse]{}, w.RequestID, types.FileUploadStartActionNameUploadData)
@@ -175,7 +180,7 @@ func (w *ChunkWriter) Write(p []byte) (n int, err error) {
 		return written, errors.New("upload cancelled")
 	}
 
-	if written != len(p) {
+	if written != len(data) {
 		return written, io.ErrShortWrite
 	}
 
@@ -208,16 +213,22 @@ func (w *ChunkWriter) Close() error {
 		}
 	}
 
-	w.Conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+	if err := w.Conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")); err != nil {
+		return fmt.Errorf("send close message: %w", err)
+	}
 
-	return w.Conn.Close()
+	if err := w.Conn.Close(); err != nil {
+		return fmt.Errorf("close websocket: %w", err)
+	}
+
+	return nil
 }
 
 func waitJSONResponse[R interface{}](ctx context.Context, ws *websocket.Conn, message *types.WebSocketResponse[R], requestID types.UploadRequestID, action types.WebSocketAction) (*R, error) {
 	for {
 		select {
 		case <-ctx.Done():
-			return nil, ctx.Err()
+			return nil, fmt.Errorf("cancelled: %w", ctx.Err())
 		default:
 			if err := ws.ReadJSON(message); err != nil {
 				return nil, fmt.Errorf("read websocket response: %w", err)
