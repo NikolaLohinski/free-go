@@ -23,7 +23,7 @@ const (
 type diskTaskError string
 
 const (
-	// Undocumented and reverse engineered error codes
+	// Undocumented and reverse engineered error codes.
 	DiskTaskErrorNone     diskTaskError = "none"      // No error
 	DiskTaskErrorTooSmall diskTaskError = "too_small" // Disk is too small
 	DiskTaskErrorExists   diskTaskError = "exists"    // Disk already exists

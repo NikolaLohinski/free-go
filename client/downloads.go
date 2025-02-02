@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -39,6 +40,7 @@ func (c *client) GetDownloadTask(ctx context.Context, identifier int64) (result 
 		if response != nil && response.ErrorCode == codeTaskNotFound {
 			return result, ErrTaskNotFound
 		}
+
 		return result, fmt.Errorf("failed to GET downloads/%d endpoint: %w", identifier, err)
 	}
 
@@ -49,8 +51,7 @@ func (c *client) GetDownloadTask(ctx context.Context, identifier int64) (result 
 	return result, nil
 }
 
-// /!\ NOTE: for this API the request arguments must be encoded using
-// “application/x-www-form-urlencoded” instead of “application/json”
+// “application/x-www-form-urlencoded” instead of “application/json”.
 func (c *client) AddDownloadTask(ctx context.Context, downloadRequest types.DownloadRequest) (int64, error) {
 	form := url.Values{}
 
@@ -66,21 +67,25 @@ func (c *client) AddDownloadTask(ctx context.Context, downloadRequest types.Down
 
 	if downloadRequest.Filename != "" {
 		if len(downloadRequest.DownloadURLs) > 1 {
-			return 0, fmt.Errorf("can not set filename with more than one download URL")
+			return 0, errors.New("can not set filename with more than one download URL")
 		}
+
 		if downloadRequest.Recursive {
-			return 0, fmt.Errorf("can not set filename with a recursive download")
+			return 0, errors.New("can not set filename with a recursive download")
 		}
+
 		form.Set("filename", downloadRequest.Filename)
 	}
 
 	if downloadRequest.Hash != "" {
 		if len(downloadRequest.DownloadURLs) > 1 {
-			return 0, fmt.Errorf("can not set hash with more than one download URL")
+			return 0, errors.New("can not set hash with more than one download URL")
 		}
+
 		if downloadRequest.Recursive {
-			return 0, fmt.Errorf("can not set hash with a recursive download")
+			return 0, errors.New("can not set hash with a recursive download")
 		}
+
 		form.Set("hash", downloadRequest.Hash)
 	}
 
@@ -105,6 +110,7 @@ func (c *client) AddDownloadTask(ctx context.Context, downloadRequest types.Down
 		for name, value := range downloadRequest.Cookies {
 			arguments = append(arguments, fmt.Sprintf("%s=%s", name, value))
 		}
+
 		sort.Strings(arguments)
 		form.Set("cookies", strings.Join(arguments, "; "))
 	}
@@ -122,6 +128,7 @@ func (c *client) AddDownloadTask(ctx context.Context, downloadRequest types.Down
 	var responseBody struct {
 		ID int64 `json:"id"`
 	}
+
 	if err = c.fromGenericResponse(response, &responseBody); err != nil {
 		return 0, fmt.Errorf("failed to get an ID from generic response: %w", err)
 	}
@@ -136,6 +143,7 @@ func (c *client) DeleteDownloadTask(ctx context.Context, identifier int64) error
 		if response != nil && response.ErrorCode == codeTaskNotFound {
 			return ErrTaskNotFound
 		}
+
 		return fmt.Errorf("failed to DELETE downloads/%d endpoint: %w", identifier, err)
 	}
 
@@ -149,6 +157,7 @@ func (c *client) EraseDownloadTask(ctx context.Context, identifier int64) error 
 		if response != nil && response.ErrorCode == codeTaskNotFound {
 			return ErrTaskNotFound
 		}
+
 		return fmt.Errorf("failed to DELETE downloads/%d endpoint: %w", identifier, err)
 	}
 
@@ -162,6 +171,7 @@ func (c *client) UpdateDownloadTask(ctx context.Context, identifier int64, downl
 		if resp != nil && resp.ErrorCode == codeTaskNotFound {
 			return ErrTaskNotFound
 		}
+
 		return fmt.Errorf("failed to PUT downloads/%d endpoint: %w", identifier, err)
 	}
 

@@ -26,7 +26,7 @@ func (c *client) ListLanInterfaceInfo(ctx context.Context) (result []types.LanIn
 }
 
 func (c *client) GetLanInterface(ctx context.Context, name string) (result []types.LanInterfaceHost, err error) {
-	response, err := c.get(ctx, fmt.Sprintf("lan/browser/%s", name), c.withSession(ctx))
+	response, err := c.get(ctx, "lan/browser/"+name, c.withSession(ctx))
 	if err != nil {
 		if response != nil && response.ErrorCode == interfaceNotFoundCode {
 			return result, ErrInterfaceNotFound
