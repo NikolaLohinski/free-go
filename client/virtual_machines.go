@@ -54,6 +54,7 @@ func (c *client) CreateVirtualMachine(ctx context.Context, payload types.Virtual
 	if len(payload.Name) > 30 {
 		return result, ErrVirtualMachineNameTooLong
 	}
+
 	response, err := c.post(ctx, "vm/", payload, c.withSession(ctx))
 	if err != nil {
 		return result, fmt.Errorf("failed to POST to vm/ endpoint: %w", err)
@@ -85,6 +86,7 @@ func (c *client) GetVirtualMachine(ctx context.Context, identifier int64) (resul
 		if response != nil && response.ErrorCode == codeVirtualMachineNotFound {
 			return result, ErrVirtualMachineNotFound
 		}
+
 		return result, fmt.Errorf("failed to GET to vm/%d endpoint: %w", identifier, err)
 	}
 
@@ -101,6 +103,7 @@ func (c *client) DeleteVirtualMachine(ctx context.Context, identifier int64) err
 		if response != nil && response.ErrorCode == codeVirtualMachineNotFound {
 			return ErrVirtualMachineNotFound
 		}
+
 		return fmt.Errorf("failed to DELETE to vm/%d endpoint: %w", identifier, err)
 	}
 
@@ -112,8 +115,10 @@ func (c *client) StartVirtualMachine(ctx context.Context, identifier int64) erro
 		if response != nil && response.ErrorCode == codeVirtualMachineNotFound {
 			return ErrVirtualMachineNotFound
 		}
+
 		return fmt.Errorf("failed to POST to vm/%d/start endpoint: %w", identifier, err)
 	}
+
 	return nil
 }
 
@@ -122,8 +127,10 @@ func (c *client) KillVirtualMachine(ctx context.Context, identifier int64) error
 		if response != nil && response.ErrorCode == codeVirtualMachineNotFound {
 			return ErrVirtualMachineNotFound
 		}
+
 		return fmt.Errorf("failed to POST to vm/%d/stop endpoint: %w", identifier, err)
 	}
+
 	return nil
 }
 
@@ -132,7 +139,9 @@ func (c *client) StopVirtualMachine(ctx context.Context, identifier int64) error
 		if response != nil && response.ErrorCode == codeVirtualMachineNotFound {
 			return ErrVirtualMachineNotFound
 		}
+
 		return fmt.Errorf("failed to POST to vm/%d/powerbutton endpoint: %w", identifier, err)
 	}
+
 	return nil
 }

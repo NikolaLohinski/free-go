@@ -35,7 +35,7 @@ const (
 	FileTaskTypeExtract     fileTaskType = "extract" // Extract an archive
 	FileTaskTypeRepair      fileTaskType = "repair"  // Check and repair files
 
-	// Undocumented and reverse engineered task types
+	// Undocumented and reverse engineered task types.
 	FileTaskTypeHash fileTaskType = "hash" // Hash a file
 )
 

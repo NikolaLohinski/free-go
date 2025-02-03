@@ -28,6 +28,8 @@ var _ = Describe("filesystem", func() {
 	)
 	BeforeEach(func() {
 		server = ghttp.NewServer()
+		DeferCleanup(server.Close)
+
 		*endpoint = server.Addr()
 
 		freeboxClient = Must(client.New(*endpoint, version)).
@@ -35,9 +37,6 @@ var _ = Describe("filesystem", func() {
 			WithPrivateToken(privateToken)
 
 		*sessionToken = setupLoginFlow(server)
-	})
-	AfterEach(func() {
-		server.Close()
 	})
 	Context("getting file info", func() {
 		const filePath = "path/to/file"

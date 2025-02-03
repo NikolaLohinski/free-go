@@ -46,6 +46,7 @@ func (c *client) CreateVirtualDisk(ctx context.Context, payload types.VirtualDis
 	var responseBody struct {
 		ID int64 `json:"id"`
 	}
+
 	if err = c.fromGenericResponse(response, &responseBody); err != nil {
 		return 0, fmt.Errorf("failed to get an ID from generic response: %w", err)
 	}
@@ -85,6 +86,7 @@ func (c *client) ResizeVirtualDisk(ctx context.Context, payload types.VirtualDis
 	var responseBody struct {
 		ID int64 `json:"id"`
 	}
+
 	if err = c.fromGenericResponse(response, &responseBody); err != nil {
 		return 0, fmt.Errorf("failed to get an ID from generic response: %w", err)
 	}

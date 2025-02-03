@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/hmac"
 	"crypto/sha1" //nolint:gosec
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"time"
@@ -65,6 +66,7 @@ func (c *client) requestToken(ctx context.Context, request types.AuthorizationRe
 
 func (c *client) waitForTokenApproval(ctx context.Context, trackID int64) error {
 	timeout := time.After(AuthorizeGrantingTimeout)
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -163,7 +165,7 @@ func (c *client) getSession(ctx context.Context, challenge string) (*sessionResp
 
 	response, err := c.post(ctx, "login/session", sessionsRequest{
 		AppID:    *c.appID,
-		Password: fmt.Sprintf("%x", hash.Sum(nil)),
+		Password: hex.EncodeToString(hash.Sum(nil)),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to POST login/session endpoint: %w", err)

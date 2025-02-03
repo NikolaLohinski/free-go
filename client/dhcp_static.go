@@ -25,7 +25,7 @@ func (c *client) ListDHCPStaticLease(ctx context.Context) (result []types.DHCPSt
 }
 
 func (c *client) GetDHCPStaticLease(ctx context.Context, identifier string) (result types.DHCPStaticLeaseInfo, err error) {
-	response, err := c.get(ctx, fmt.Sprintf("dhcp/static_lease/%s", identifier), c.withSession(ctx))
+	response, err := c.get(ctx, "dhcp/static_lease/"+identifier, c.withSession(ctx))
 	if err != nil {
 		return result, fmt.Errorf("failed to GET dhcp/static_lease/%s endpoint: %w", identifier, err)
 	}
@@ -38,7 +38,7 @@ func (c *client) GetDHCPStaticLease(ctx context.Context, identifier string) (res
 }
 
 func (c *client) UpdateDHCPStaticLease(ctx context.Context, identifier string, payload types.DHCPStaticLeasePayload) (result types.LanInterfaceHost, err error) {
-	response, err := c.put(ctx, fmt.Sprintf("dhcp/static_lease/%s", identifier), c.withSession(ctx))
+	response, err := c.put(ctx, "dhcp/static_lease/"+identifier, c.withSession(ctx))
 	if err != nil {
 		return result, fmt.Errorf("failed to PUT dhcp/static_lease/%s endpoint: %w", identifier, err)
 	}
@@ -64,7 +64,7 @@ func (c *client) CreateDHCPStaticLease(ctx context.Context, payload types.DHCPSt
 }
 
 func (c *client) DeleteDHCPStaticLease(ctx context.Context, identifier string) error {
-	_, err := c.delete(ctx, fmt.Sprintf("dhcp/static_lease/%s", identifier), c.withSession(ctx))
+	_, err := c.delete(ctx, "dhcp/static_lease/"+identifier, c.withSession(ctx))
 	if err != nil {
 		return fmt.Errorf("failed to DELETE dhcp/static_lease/%s endpoint: %w", identifier, err)
 	}

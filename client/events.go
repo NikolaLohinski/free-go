@@ -42,10 +42,12 @@ func (c *client) ListenEvents(ctx context.Context, events []types.EventDescripti
 
 	url := *c.base
 	url.Scheme = "ws"
+
 	if strings.ToLower(c.base.Scheme) == "https" {
 		url.Scheme = "wss"
 	}
-	url.Path = fmt.Sprintf("%s/ws/event", url.Path)
+
+	url.Path = url.Path + "/ws/event"
 
 	ws, dialResponse, err := websocket.DefaultDialer.Dial(url.String(), header)
 	if err != nil {
@@ -68,11 +70,13 @@ func (c *client) ListenEvents(ctx context.Context, events []types.EventDescripti
 	if err := ws.ReadJSON(&response); err != nil {
 		return nil, fmt.Errorf("failed to read register response from websocket: %w", err)
 	}
+
 	if !response.Success {
 		return nil, fmt.Errorf("registering to websocket notifications failed with error %s: %s", response.ErrorCode, response.Message)
 	}
 
 	channel := make(chan types.Event)
+
 	go func() {
 		var err error
 		defer func() {
@@ -81,13 +85,16 @@ func (c *client) ListenEvents(ctx context.Context, events []types.EventDescripti
 					Error: fmt.Errorf("encountered error while handling the event notification: %w", err),
 				}
 			}
+
 			if err = ws.Close(); err != nil {
 				channel <- types.Event{
 					Error: fmt.Errorf("closing websocket returned an error: %w", err),
 				}
 			}
+
 			close(channel)
 		}()
+
 		for {
 			select {
 			case <-ctx.Done():
@@ -95,6 +102,7 @@ func (c *client) ListenEvents(ctx context.Context, events []types.EventDescripti
 				if err != nil && !websocket.IsCloseError(err, websocket.CloseNormalClosure) {
 					err = fmt.Errorf("failed to gracefully close websocket connection: %w", err)
 				}
+
 				return
 			default:
 				var eventPayload types.EventNotification
@@ -102,11 +110,13 @@ func (c *client) ListenEvents(ctx context.Context, events []types.EventDescripti
 					if !websocket.IsCloseError(err, websocket.CloseNormalClosure) {
 						err = fmt.Errorf("failed to read message from websocket: %w", err)
 					}
+
 					return
 				}
 
 				if !eventPayload.Success || eventPayload.Action != actionNotification {
 					err = fmt.Errorf("received unexpected event payload with success=%t and action=%s", eventPayload.Success, eventPayload.Action)
+
 					return
 				}
 				channel <- types.Event{

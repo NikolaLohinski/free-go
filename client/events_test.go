@@ -35,6 +35,8 @@ var _ = Describe("events", func() {
 	BeforeEach(func() {
 		ctx, cancelContext = context.WithCancel(context.Background())
 		server = ghttp.NewServer()
+		DeferCleanup(server.Close)
+
 		*endpoint = server.Addr()
 
 		*returnedChannel = make(chan types.Event)
@@ -44,9 +46,6 @@ var _ = Describe("events", func() {
 			WithPrivateToken(privateToken)
 
 		*sessionToken = setupLoginFlow(server)
-	})
-	AfterEach(func() {
-		server.Close()
 	})
 	JustBeforeEach(func() {
 		*returnedChannel, *returnedErr = freeboxClient.ListenEvents(ctx, *events)
@@ -99,7 +98,9 @@ var _ = Describe("events", func() {
 		})
 		It("should send the expected events through the returned channel", func() {
 			Expect(*returnedErr).To(BeNil())
-			Expect(<-*returnedChannel).To(Equal(types.Event{
+			var event types.Event
+			Eventually(*returnedChannel).Should(Receive(&event))
+			Expect(event).To(Equal(types.Event{
 				Notification: types.EventNotification{
 					Action:  "notification",
 					Success: true,
@@ -190,7 +191,9 @@ var _ = Describe("events", func() {
 		})
 		It("should return an error", func() {
 			Expect(*returnedErr).To(BeNil())
-			Expect(<-*returnedChannel).To(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
+			var event types.Event
+			Eventually(*returnedChannel).Should(Receive(&event))
+			Expect(event).To(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
 				"Error": Not(BeNil()),
 			}))
 		})
