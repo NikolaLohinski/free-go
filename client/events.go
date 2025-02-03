@@ -72,7 +72,7 @@ func (c *client) ListenEvents(ctx context.Context, events []types.EventDescripti
 		return nil, fmt.Errorf("registering to websocket notifications failed with error %s: %s", response.ErrorCode, response.Message)
 	}
 
-	channel := make(chan types.Event)
+	channel := make(chan types.Event, 10)
 	go func() {
 		var err error
 		defer func() {
