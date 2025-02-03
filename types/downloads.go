@@ -48,7 +48,7 @@ const (
 	DownloadTaskErrorExists            downloadTaskError = "exists"               // Same task already exists
 	DownloadTaskErrorPortOutsideRange  downloadTaskError = "port_outside_range"   // Incoming port is not available for this customer (see ConnectionStatus ipv4_port_range)
 
-	// Undocumented and reverse engineered error codes
+	// Undocumented and reverse engineered error codes.
 	DownloadTaskErrorNone             downloadTaskError = "none"          // No error
 	DownloadTaskErrorHashDownloadDisk downloadTaskError = "hash_download" // Error downloading the hash file
 	DownloadTaskError4XX              downloadTaskError = "http_4xx"      // Error 4xx

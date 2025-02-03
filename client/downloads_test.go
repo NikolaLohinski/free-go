@@ -27,6 +27,8 @@ var _ = Describe("downloads", func() {
 	)
 	BeforeEach(func() {
 		server = ghttp.NewServer()
+		DeferCleanup(server.Close)
+
 		*endpoint = server.Addr()
 
 		freeboxClient = Must(client.New(*endpoint, version)).
@@ -34,9 +36,6 @@ var _ = Describe("downloads", func() {
 			WithPrivateToken(privateToken)
 
 		*sessionToken = setupLoginFlow(server)
-	})
-	AfterEach(func() {
-		server.Close()
 	})
 	Context("listing download tasks", func() {
 		returnedDownloadTasks := new([]types.DownloadTask)

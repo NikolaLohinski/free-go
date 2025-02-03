@@ -21,11 +21,12 @@ const (
 func (c *client) GetFileInfo(ctx context.Context, path string) (types.FileInfo, error) {
 	base64Path := base64.StdEncoding.EncodeToString([]byte(path))
 
-	response, err := c.get(ctx, fmt.Sprintf("fs/info/%s", base64Path), c.withSession(ctx))
+	response, err := c.get(ctx, "fs/info/"+base64Path, c.withSession(ctx))
 	if err != nil {
 		if response != nil && response.ErrorCode == pathNotFoundCode {
 			return types.FileInfo{}, ErrPathNotFound
 		}
+
 		return types.FileInfo{}, fmt.Errorf("failed to GET fs/info/%s endpoint: %w", base64Path, err)
 	}
 
@@ -71,7 +72,7 @@ func (c *client) UpdateFileSystemTask(ctx context.Context, identifier int64, pay
 }
 
 func (c *client) ListFileSystemTasks(ctx context.Context) (task []types.FileSystemTask, err error) {
-	response, err := c.get(ctx, fmt.Sprintf("fs/tasks/"), c.withSession(ctx))
+	response, err := c.get(ctx, "fs/tasks/", c.withSession(ctx))
 	if err != nil {
 		return task, fmt.Errorf("failed to GET fs/tasks/ endpoint: %w", err)
 	}
@@ -113,6 +114,7 @@ func (c *client) DeleteFileSystemTask(ctx context.Context, identifier int64) err
 		if response != nil && response.ErrorCode == codeTaskNotFound {
 			return ErrTaskNotFound
 		}
+
 		return fmt.Errorf("failed to DELETE fs/tasks/%d endpoint: %w", identifier, err)
 	}
 
@@ -135,6 +137,7 @@ func (c *client) MoveFiles(ctx context.Context, source []string, destination str
 		if response != nil && response.ErrorCode == destinationConflictCode {
 			return result, ErrDestinationConflict
 		}
+
 		return result, fmt.Errorf("failed to POST to fs/mkdir/ endpoint: %w", err)
 	}
 
@@ -176,6 +179,7 @@ func (c *client) CreateDirectory(ctx context.Context, parent, name string) (stri
 		if response != nil && response.ErrorCode == destinationConflictCode {
 			return "", ErrDestinationConflict
 		}
+
 		return "", fmt.Errorf("failed to POST to fs/mkdir/ endpoint: %w", err)
 	}
 
@@ -256,7 +260,7 @@ func (c *client) GetFile(ctx context.Context, path string) (result types.File, e
 			return result, fmt.Errorf("failed to parse media type: %w", err)
 		}
 
-		filename, _ = params["filename"]
+		filename = params["filename"]
 	}
 
 	return types.File{
