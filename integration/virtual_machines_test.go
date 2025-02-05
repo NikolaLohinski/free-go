@@ -87,8 +87,8 @@ var _ = Describe("virtual machines", Ordered, func() {
 				defer GinkgoRecover()
 				event := <-eventStream
 				Expect(event.Error).To(BeNil())
-				Expect(event.Notification.Source).To(Equal("vm"))
-				Expect(event.Notification.Event).To(Equal("state_changed"))
+				Expect(string(event.Notification.Source)).To(Equal("vm"))
+				Expect(string(event.Notification.Event)).To(Equal("state_changed"))
 				Expect(event.Notification.Result).To(MatchJSON(`{
 					"id": ` + strconv.Itoa(int(virtualMachine.ID)) + `,
 					"status": "` + types.RunningStatus + `"
@@ -107,8 +107,8 @@ var _ = Describe("virtual machines", Ordered, func() {
 				defer GinkgoRecover()
 				event := <-eventStream
 				Expect(event.Error).To(BeNil())
-				Expect(event.Notification.Source).To(Equal("vm"))
-				Expect(event.Notification.Event).To(Equal("state_changed"))
+				Expect(string(event.Notification.Source)).To(Equal("vm"))
+				Expect(string(event.Notification.Event)).To(Equal("state_changed"))
 				Expect(event.Notification.Result).To(MatchJSON(`{
 					"id": ` + strconv.Itoa(int(virtualMachine.ID)) + `,
 					"status": "` + types.StoppedStatus + `"

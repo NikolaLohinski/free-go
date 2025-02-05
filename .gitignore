@@ -27,3 +27,6 @@ go.work
 # Coverage
 cover.html
 cover.out
+
+# Credentials
+.env

@@ -21,7 +21,7 @@ func (Go) Test(ctx context.Context) error {
 
 // Runs ginkgo for integration test
 func (Go) Integration(ctx context.Context) error {
-	return Run(Invoke(ctx, "Running integration tests"), "ginkgo", ",-p", "-tags=integration", "./integration/...")
+	return Run(Invoke(ctx, "Running integration tests"), "ginkgo", "-p", "-tags=integration", "./integration")
 }
 
 // Cleans dependencies and imports
@@ -44,7 +44,7 @@ func (Go) Format(ctx context.Context) error {
 // Builds and opens a coverage report
 func (Go) Cover(ctx context.Context) error {
 	ctx = Invoke(ctx, "Generating coverage report")
-	if err := Run(ctx, "go", "test", "-v", "-coverprofile", "cover.out", "./..."); err != nil {
+	if err := Run(ctx, "go", "test", "-v", "-coverprofile", "-parallel", "1", "cover.out", "./..."); err != nil {
 		panic(err)
 	}
 	if err := sh.Run("go", "tool", "cover", "-html", "cover.out", "-o", "cover.html"); err != nil {
