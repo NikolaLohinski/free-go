@@ -11,6 +11,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
+	"github.com/onsi/gomega/gleak"
 )
 
 const (
@@ -23,6 +24,12 @@ func TestClient(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "client")
 }
+
+var _ = BeforeEach(func() {
+	DeferCleanup(func(existing []gleak.Goroutine) {
+		Eventually(gleak.Goroutines).ShouldNot(gleak.HaveLeaked(existing))
+	}, gleak.Goroutines())
+})
 
 func Must[T interface{}](returned T, err error) T {
 	if err != nil {

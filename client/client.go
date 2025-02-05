@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -78,6 +79,13 @@ type Client interface {
 	DeleteDownloadTask(ctx context.Context, identifier int64) error
 	EraseDownloadTask(ctx context.Context, identifier int64) error
 	UpdateDownloadTask(ctx context.Context, identifier int64, payload types.DownloadTaskUpdate) error
+	// uploads
+	FileUploadStart(ctx context.Context, input types.FileUploadStartActionInput) (io.WriteCloser, error)
+	GetUploadTask(ctx context.Context, identifier int64) (*types.UploadTask, error)
+	ListUploadTasks(ctx context.Context) ([]types.UploadTask, error)
+	CancelUploadTask(ctx context.Context, identifier int64) error
+	DeleteUploadTask(ctx context.Context, identifier int64) error
+	CleanUploadTasks(ctx context.Context) error
 }
 
 type HTTPClient interface {
