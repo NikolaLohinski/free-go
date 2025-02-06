@@ -119,9 +119,9 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [x] Resize a virtual disk
   - [x] Get a virtual disk task
   - [x] Delete a virtual disk task
-- [ ] [Websocket API](https://dev.freebox.fr/sdk/os/) : `/ws/*`
+- [x] [Websocket API](https://dev.freebox.fr/sdk/os/) : `/ws/*`
   - [x] WebSocket event API
-  - [ ] WebSocket file Upload API
+  - [x] WebSocket file Upload API
 - [ ] [Download API](https://dev.freebox.fr/sdk/os/download/) : `/downloads/*`
   - [x] Get a download task
   - [x] List download tasks
