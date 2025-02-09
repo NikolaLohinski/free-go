@@ -269,3 +269,25 @@ func (c *client) GetFile(ctx context.Context, path string) (result types.File, e
 		Content:     bufio.NewReader(httpResponse.Body),
 	}, nil
 }
+
+func (c *client) ExtractFile(ctx context.Context, src, dst, password string, deleteArchive, overwrite bool) (types.FileSystemTask, error) {
+	payload := map[string]interface{}{
+		"src":            base64.StdEncoding.EncodeToString([]byte(src)),
+		"dst":            base64.StdEncoding.EncodeToString([]byte(dst)),
+		"password":       password,
+		"delete_archive": deleteArchive,
+		"overwrite":      overwrite,
+	}
+
+	response, err := c.post(ctx, "fs/extract/", payload, c.withSession(ctx))
+	if err != nil {
+		return types.FileSystemTask{}, fmt.Errorf("failed to POST to fs/extract/ endpoint: %w", err)
+	}
+
+	var result types.FileSystemTask
+	if err := c.fromGenericResponse(response, &result); err != nil {
+		return types.FileSystemTask{}, fmt.Errorf("failed to get a filesystem task from a generic response: %w", err)
+	}
+
+	return result, nil
+}
