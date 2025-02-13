@@ -154,3 +154,11 @@ const (
 	FileCopyModeBoth      FileCopyMode = "both"      // Keep both files (rename the file adding a suffix)
 	FileCopyModeRecent    FileCopyMode = "recent"    // Only overwrite if newer than destination file
 )
+
+type ExtractFilePayload struct {
+	Src           Base64Path `json:"src"`
+	Dst           Base64Path `json:"dst"`
+	Password      string     `json:"password"`
+	DeleteArchive bool       `json:"delete_archive"`
+	Overwrite     bool       `json:"overwrite"`
+}

@@ -1067,4 +1067,115 @@ var _ = Describe("filesystem", func() {
 			})
 		})
 	})
+	Context("ExtractFile", func() {
+		var (
+			returnedTask = new(types.FileSystemTask)
+		)
+
+		JustBeforeEach(func(ctx SpecContext) {
+			*returnedTask, *returnedErr = freeboxClient.ExtractFile(ctx, types.ExtractFilePayload{
+				Src:       "src",
+				Dst:       "dst",
+				Overwrite: true,
+			})
+		})
+
+		Context("default", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/fs/extract/", version)),
+						verifyAuth(*sessionToken),
+						ghttp.VerifyJSON(`{
+							"src": "c3Jj",
+							"dst": "ZHN0",
+							"password": "",
+							"delete_archive": false,
+							"overwrite": true
+						}`),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": {
+								"id": 48,
+								"type": "extract",
+								"state": "running",
+								"error": "none",
+								"curr_bytes_done": 0,
+								"total_bytes": 0,
+								"nfiles_done": 0,
+								"started_ts": 1355842252,
+								"duration": 0,
+								"done_ts": 0,
+								"curr_bytes": 0,
+								"to": "/Disque dur/old_hdd",
+								"nfiles": 0,
+								"created_ts": 1355842252,
+								"total_bytes_done": 0,
+								"from": "/Disque dur/old_hdd/testiso.1.iso",
+								"rate": 0,
+								"eta": 0,
+								"progress": 0
+							}
+						}`),
+					),
+				)
+			})
+
+			It("should return the task", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(*returnedTask).To(Equal(types.FileSystemTask{
+					ID:                            48,
+					Type:                          "extract",
+					State:                         "running",
+					Error:                         "none",
+					CurrentBytesDone:              0,
+					TotalBytes:                    0,
+					NumberFilesDone:               0,
+					StartedTimestamp:              1355842252,
+					DurationSeconds:               0,
+					DoneTimestamp:                 0,
+					CurrentBytes:                  0,
+					To:                            "/Disque dur/old_hdd",
+					NumberFiles:                   0,
+					CreatedTimestamp:              1355842252,
+					TotalBytesDone:                0,
+					From:                          "/Disque dur/old_hdd/testiso.1.iso",
+					ProcessingRate:                0,
+					EstimatedTimeRemainingSeconds: 0,
+					ProgressPercent:               0,
+				}))
+			})
+		})
+
+		Context("when server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+
+		Context("when the server returns an unexpected payload", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/fs/extract/", version)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true,
+							"result": [
+								"foo"
+							]
+						}`),
+					),
+				)
+			})
+
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+	})
 })
