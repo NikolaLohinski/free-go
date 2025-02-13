@@ -1073,7 +1073,11 @@ var _ = Describe("filesystem", func() {
 		)
 
 		JustBeforeEach(func(ctx SpecContext) {
-			*returnedTask, *returnedErr = freeboxClient.ExtractFile(ctx, "src", "dst", "", false, true)
+			*returnedTask, *returnedErr = freeboxClient.ExtractFile(ctx, types.ExtractFilePayload{
+				Src:       "src",
+				Dst:       "dst",
+				Overwrite: true,
+			})
 		})
 
 		Context("default", func() {

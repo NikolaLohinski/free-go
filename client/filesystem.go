@@ -270,15 +270,7 @@ func (c *client) GetFile(ctx context.Context, path string) (result types.File, e
 	}, nil
 }
 
-func (c *client) ExtractFile(ctx context.Context, src, dst, password string, deleteArchive, overwrite bool) (types.FileSystemTask, error) {
-	payload := map[string]interface{}{
-		"src":            base64.StdEncoding.EncodeToString([]byte(src)),
-		"dst":            base64.StdEncoding.EncodeToString([]byte(dst)),
-		"password":       password,
-		"delete_archive": deleteArchive,
-		"overwrite":      overwrite,
-	}
-
+func (c *client) ExtractFile(ctx context.Context, payload types.ExtractFilePayload) (types.FileSystemTask, error) {
 	response, err := c.post(ctx, "fs/extract/", payload, c.withSession(ctx))
 	if err != nil {
 		return types.FileSystemTask{}, fmt.Errorf("failed to POST to fs/extract/ endpoint: %w", err)

@@ -72,7 +72,7 @@ type Client interface {
 	GetFile(ctx context.Context, path string) (result types.File, err error)
 	MoveFiles(ctx context.Context, sources []string, destination string, mode types.FileMoveMode) (result types.FileSystemTask, err error)
 	CopyFiles(ctx context.Context, sources []string, destination string, mode types.FileCopyMode) (result types.FileSystemTask, err error)
-	ExtractFile(ctx context.Context, src, dst, password string, deleteArchive, overwrite bool) (result types.FileSystemTask, err error)
+	ExtractFile(ctx context.Context, payload types.ExtractFilePayload) (task types.FileSystemTask, err error)
 	// downloads
 	ListDownloadTasks(ctx context.Context) ([]types.DownloadTask, error)
 	GetDownloadTask(ctx context.Context, identifier int64) (types.DownloadTask, error)
