@@ -9,6 +9,7 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"strings"
 
 	"github.com/nikolalohinski/free-go/types"
 )
@@ -271,6 +272,12 @@ func (c *client) GetFile(ctx context.Context, path string) (result types.File, e
 }
 
 func (c *client) ExtractFile(ctx context.Context, payload types.ExtractFilePayload) (types.FileSystemTask, error) {
+	if !strings.HasPrefix(string(payload.Src), "/") {
+		payload.Src = types.Base64Path("/" + payload.Src)
+	}
+	if !strings.HasPrefix(string(payload.Dst), "/") {
+		payload.Dst = types.Base64Path("/" + payload.Dst)
+	}
 	response, err := c.post(ctx, "fs/extract/", payload, c.withSession(ctx))
 	if err != nil {
 		return types.FileSystemTask{}, fmt.Errorf("failed to POST to fs/extract/ endpoint: %w", err)

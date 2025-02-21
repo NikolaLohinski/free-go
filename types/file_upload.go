@@ -92,9 +92,9 @@ const (
 )
 
 type UploadTask struct {
-	ID         int              `json:"id"`          // Upload id
-	Size       int              `json:"size"`        // Upload file size in bytes
-	Uploaded   int              `json:"uploaded"`    // Uploaded bytes
+	ID         int64            `json:"id"`          // Upload id
+	Size       int64            `json:"size"`        // Upload file size in bytes
+	Uploaded   int64            `json:"uploaded"`    // Uploaded bytes
 	Status     UploadTaskStatus `json:"status"`      // Upload status
 	StartDate  Timestamp        `json:"start_date"`  // Upload start date
 	LastUpdate Timestamp        `json:"last_update"` // Last update of file upload object
