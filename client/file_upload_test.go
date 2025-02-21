@@ -54,7 +54,7 @@ var _ = Describe("FileUpload", func() {
 		ctx, cancel := context.WithTimeout(uploadContext, 10*time.Second)
 		DeferCleanup(cancel)
 
-		returnedWriter, returnedErr = freeboxClient.FileUploadStart(ctx, types.FileUploadStartActionInput{
+		returnedWriter, _, returnedErr = freeboxClient.FileUploadStart(ctx, types.FileUploadStartActionInput{
 			Dirname:  "dir",
 			Filename: "the-file",
 			Force:    types.FileUploadStartActionForceOverwrite,

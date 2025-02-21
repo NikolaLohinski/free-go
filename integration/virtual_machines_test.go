@@ -26,7 +26,7 @@ var _ = Describe("virtual machines", Ordered, func() {
 		ctx = context.Background()
 
 		freeboxClient = freeboxClient.WithAppID(appID).WithPrivateToken(token)
-		permissions := Must(freeboxClient.Login(ctx))
+		permissions := MustReturn(freeboxClient.Login(ctx))
 		Expect(permissions.Settings).To(BeTrue(), fmt.Sprintf("the token for the '%s' app does not appear to have the permissions to modify freebox settings", appID))
 
 		_, err := freeboxClient.CreateDirectory(ctx, root, "Logiciels")

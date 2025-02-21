@@ -44,7 +44,7 @@ func init() {
 		root = "Freebox"
 	}
 
-	freeboxClient = Must(client.New(endpoint, version))
+	freeboxClient = MustReturn(client.New(endpoint, version))
 }
 
 func TestClient(t *testing.T) {
@@ -52,9 +52,13 @@ func TestClient(t *testing.T) {
 	RunSpecs(t, "integration")
 }
 
-func Must[T interface{}](r T, err error) T {
+func Must(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func MustReturn[T interface{}](r T, err error) T {
+	Must(err)
 	return r
 }

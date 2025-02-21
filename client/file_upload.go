@@ -18,12 +18,12 @@ import (
 
 const codeUploadTaskNotFound = "noent"
 
-func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStartActionInput) (io.WriteCloser, error) {
+func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStartActionInput) (io.WriteCloser, types.UploadRequestID, error) {
 	header := http.Header{}
 	if err := c.withSession(ctx)(&http.Request{
 		Header: header,
 	}); err != nil {
-		return nil, fmt.Errorf("get a session: %w", err)
+		return nil, 0, fmt.Errorf("get a session: %w", err)
 	}
 
 	url := *c.base
@@ -37,7 +37,7 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 
 	ws, dialResponse, err := websocket.DefaultDialer.DialContext(ctx, url.String(), header)
 	if err != nil {
-		return nil, fmt.Errorf("dialing websocket returned a status %s: %w", dialResponse.Status, err)
+		return nil, 0, fmt.Errorf("dialing websocket returned a status %s: %w", dialResponse.Status, err)
 	}
 
 	ctx, cancel := context.WithCancel(ctx)
@@ -60,7 +60,7 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 	}); err != nil {
 		cancel()
 
-		return nil, fmt.Errorf("upload start action: %w", err)
+		return nil, requestID, fmt.Errorf("upload start action: %w", err)
 	}
 
 	response := &types.FileUploadStartResponse{
@@ -70,7 +70,7 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 		if err := waitJSONResponse(ctx, ws, response); err != nil {
 			cancel()
 
-			return nil, fmt.Errorf("waiting start confirmation: %w", err)
+			return nil, requestID, fmt.Errorf("waiting start confirmation: %w", err)
 		}
 
 		if response.RequestID != requestID || response.Action != types.FileUploadStartActionNameUploadStart {
@@ -80,7 +80,7 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 		if err := response.GetError(); err != nil {
 			cancel()
 
-			return nil, fmt.Errorf("start confirmation: %w", err)
+			return nil, requestID, fmt.Errorf("start confirmation: %w", err)
 		}
 
 		break
@@ -93,7 +93,7 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 		written:   0,
 		expected:  input.Size,
 		cancel:    cancel,
-	}, nil
+	}, requestID, nil
 }
 
 // ListUploadTasks returns a list of upload tasks.
@@ -116,22 +116,21 @@ func (c *client) ListUploadTasks(ctx context.Context) ([]types.UploadTask, error
 }
 
 // GetUploadTask returns a upload task by its identifier.
-func (c *client) GetUploadTask(ctx context.Context, identifier int64) (*types.UploadTask, error) {
+func (c *client) GetUploadTask(ctx context.Context, identifier int64) (result types.UploadTask, err error) {
 	response, err := c.get(ctx, fmt.Sprintf("upload/%d", identifier), c.withSession(ctx))
 	if err != nil {
 		if response != nil && response.ErrorCode == codeTaskNotFound {
-			return nil, ErrTaskNotFound
+			return result, ErrTaskNotFound
 		}
 
-		return nil, fmt.Errorf("GET upload/%d endpoint: %w", identifier, err)
+		return result, fmt.Errorf("GET upload/%d endpoint: %w", identifier, err)
 	}
 
-	var result types.UploadTask
 	if err = c.fromGenericResponse(response, &result); err != nil {
-		return nil, fmt.Errorf("upload task from generic response: %w", err)
+		return result, fmt.Errorf("upload task from generic response: %w", err)
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 // CancelUploadTask cancels a upload task by its identifier.

@@ -1068,9 +1068,7 @@ var _ = Describe("filesystem", func() {
 		})
 	})
 	Context("ExtractFile", func() {
-		var (
-			returnedTask = new(types.FileSystemTask)
-		)
+		returnedTask := new(types.FileSystemTask)
 
 		JustBeforeEach(func(ctx SpecContext) {
 			*returnedTask, *returnedErr = freeboxClient.ExtractFile(ctx, types.ExtractFilePayload{
@@ -1087,8 +1085,8 @@ var _ = Describe("filesystem", func() {
 						ghttp.VerifyRequest(http.MethodPost, fmt.Sprintf("/api/%s/fs/extract/", version)),
 						verifyAuth(*sessionToken),
 						ghttp.VerifyJSON(`{
-							"src": "c3Jj",
-							"dst": "ZHN0",
+							"src": "L3NyYw==",
+							"dst": "L2RzdA==",
 							"password": "",
 							"delete_archive": false,
 							"overwrite": true
