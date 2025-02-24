@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"strings"
 
 	"github.com/gorilla/websocket"
 	"github.com/nikolalohinski/free-go/types"
@@ -17,9 +15,9 @@ const (
 )
 
 type registerAction struct {
-	RequestID string   `json:"request_id,omitempty"`
-	Action    string   `json:"action"`
-	Events    []string `json:"events"`
+	RequestID types.WebSocketRequestID `json:"request_id,omitempty"`
+	Action    string                   `json:"action"`
+	Events    []string                 `json:"events"`
 }
 
 type registerResponse struct {
@@ -33,25 +31,9 @@ type registerResponse struct {
 
 // ListenEvents implements Client.
 func (c *client) ListenEvents(ctx context.Context, events []types.EventDescription) (chan types.Event, error) {
-	header := http.Header{}
-	if err := c.withSession(ctx)(&http.Request{
-		Header: header,
-	}); err != nil {
-		return nil, fmt.Errorf("failed to get a session: %w", err)
-	}
-
-	url := *c.base
-	url.Scheme = "ws"
-
-	if strings.ToLower(c.base.Scheme) == "https" {
-		url.Scheme = "wss"
-	}
-
-	url.Path = url.Path + "/ws/event"
-
-	ws, dialResponse, err := websocket.DefaultDialer.Dial(url.String(), header)
+	ws, err := c.webSocket(ctx, "/ws/event")
 	if err != nil {
-		return nil, fmt.Errorf("dialing websocket returned a status %s: %w", dialResponse.Status, err)
+		return nil, fmt.Errorf("websocket connection: %w", err)
 	}
 
 	registerActionPayload := registerAction{
@@ -63,26 +45,40 @@ func (c *client) ListenEvents(ctx context.Context, events []types.EventDescripti
 	}
 
 	if err := ws.WriteJSON(registerActionPayload); err != nil {
+		ws.Close()
+
 		return nil, fmt.Errorf("failed to register action: %w", err)
 	}
 
 	var response registerResponse
 	if err := ws.ReadJSON(&response); err != nil {
+		ws.Close()
+
 		return nil, fmt.Errorf("failed to read register response from websocket: %w", err)
 	}
 
 	if !response.Success {
+		ws.Close()
+
 		return nil, fmt.Errorf("registering to websocket notifications failed with error %s: %s", response.ErrorCode, response.Message)
 	}
 
 	channel := make(chan types.Event, 10)
 
 	go func() {
-		var err error
+		var finalErr error
+
 		defer func() {
-			if err != nil {
+			if finalErr != nil {
 				channel <- types.Event{
 					Error: fmt.Errorf("encountered error while handling the event notification: %w", err),
+				}
+			}
+
+			err := ws.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+			if err != nil && !websocket.IsCloseError(err, websocket.CloseNormalClosure) {
+				channel <- types.Event{
+					Error: fmt.Errorf("failed to gracefully close websocket connection: %w", err),
 				}
 			}
 
@@ -96,35 +92,36 @@ func (c *client) ListenEvents(ctx context.Context, events []types.EventDescripti
 		}()
 
 		for {
-			select {
-			case <-ctx.Done():
-				err = ws.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-				if err != nil && !websocket.IsCloseError(err, websocket.CloseNormalClosure) {
-					err = fmt.Errorf("failed to gracefully close websocket connection: %w", err)
-				}
+			eventPayload, err := waitEventNotification(ctx, ws, actionNotification)
+			if err != nil {
+				finalErr = fmt.Errorf("wait json response: %w", err)
 
 				return
-			default:
-				var eventPayload types.EventNotification
-				if err = ws.ReadJSON(&eventPayload); err != nil {
-					if !websocket.IsCloseError(err, websocket.CloseNormalClosure) {
-						err = fmt.Errorf("failed to read message from websocket: %w", err)
-					}
+			}
 
-					return
-				}
+			if !eventPayload.Success {
+				err = fmt.Errorf("received unexpected event payload with success=%t", eventPayload.Success)
 
-				if !eventPayload.Success || eventPayload.Action != actionNotification {
-					err = fmt.Errorf("received unexpected event payload with success=%t and action=%s", eventPayload.Success, eventPayload.Action)
-
-					return
-				}
-				channel <- types.Event{
-					Notification: eventPayload,
-				}
+				return
+			}
+			channel <- types.Event{
+				Notification: *eventPayload,
 			}
 		}
 	}()
 
 	return channel, nil
+}
+
+func waitEventNotification(ctx context.Context, ws *websocket.Conn, action types.WebSocketAction) (*types.WebSocketNotification, error) {
+	for {
+		message, err := waitJSONResponse[types.WebSocketNotification](ctx, ws)
+		if err != nil {
+			return nil, err
+		}
+
+		if message.Action == action {
+			return message, nil
+		}
+	}
 }

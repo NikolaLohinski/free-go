@@ -14,7 +14,7 @@ type WebSocketResponse[R interface{}] struct {
 	Success   bool               `json:"success"`              // Indicates if the request was successful
 	Result    R                  `json:"result,omitempty"`     // The result of the request. (It may be omitted if the request does not expect any result)
 	ErrorCode string             `json:"error_code"`           // In case of request error, this error_code provides information about the error. The possible error_code values are documented for each API.
-	Message   string             `json:"msg"`                  // In cas of error, provides a French error message relative to the error
+	Message   string             `json:"msg"`                  // In case of error, provides a French error message relative to the error
 }
 
 func (r *WebSocketResponse[R]) GetError() error {
@@ -35,4 +35,8 @@ type WebSocketResponseError struct {
 
 func (e *WebSocketResponseError) Error() string {
 	return fmt.Sprintf("%s: %s", e.ErrorCode, e.Message)
+}
+
+func (a WebSocketAction) Is(desc *EventDescription) bool {
+	return string(a) == desc.String()
 }

@@ -101,7 +101,7 @@ var _ = Describe("events", func() {
 			var event types.Event
 			Eventually(*returnedChannel).Should(Receive(&event))
 			Expect(event).To(Equal(types.Event{
-				Notification: types.EventNotification{
+				Notification: types.WebSocketNotification{
 					Action:  "notification",
 					Success: true,
 					Source:  "foo",
@@ -146,7 +146,7 @@ var _ = Describe("events", func() {
 				cancelContext()
 
 				_, _, err = ws.ReadMessage()
-				Expect(websocket.IsCloseError(err, websocket.CloseNormalClosure)).To(BeTrue(), "websocket should have been closed by client")
+				Expect(websocket.IsCloseError(err, websocket.CloseNormalClosure)).To(BeTrue(), fmt.Sprintf("websocket should have been closed by client, got: %v", err))
 			})
 		})
 		It("should not return an error", func() {
