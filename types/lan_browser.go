@@ -95,3 +95,9 @@ type L3Connectivity struct {
 	LastTimeReachable Timestamp `json:"last_time_reachable"`
 	Type              af        `json:"af"`
 }
+
+type LanHostNetworkControl struct {
+	ProfileID   int    `json:"profile_id"`   // Id of profile this device is associated with.
+	Name        string `json:"name"`         // Name of profile this device is associated with.
+	CurrentMode string `json:"current_mode"` // Mode described in Network Control Object
+}
