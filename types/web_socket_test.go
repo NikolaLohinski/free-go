@@ -43,9 +43,9 @@ var _ = Describe("WebSocket", func() {
 			Context("when the response is a failure", func() {
 				It("should return the error", func() {
 					Expect((&types.WebSocketResponse[interface{}]{
-						Success: false,
+						Success:   false,
 						ErrorCode: `error_code`,
-						Message: `un message d'erreur`,
+						Message:   `un message d'erreur`,
 					}).GetError()).To(MatchError(And(ContainSubstring(`error_code`), ContainSubstring(`un message d'erreur`))))
 				})
 			})
