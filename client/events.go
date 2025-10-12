@@ -71,7 +71,7 @@ func (c *client) ListenEvents(ctx context.Context, events []types.EventDescripti
 		defer func() {
 			if finalErr != nil {
 				channel <- types.Event{
-					Error: fmt.Errorf("encountered error while handling the event notification: %w", err),
+					Error: fmt.Errorf("encountered error while handling the event notification: %w", finalErr),
 				}
 			}
 
@@ -82,7 +82,7 @@ func (c *client) ListenEvents(ctx context.Context, events []types.EventDescripti
 				}
 			}
 
-			if err = ws.Close(); err != nil {
+			if err := ws.Close(); err != nil {
 				channel <- types.Event{
 					Error: fmt.Errorf("closing websocket returned an error: %w", err),
 				}
@@ -100,7 +100,7 @@ func (c *client) ListenEvents(ctx context.Context, events []types.EventDescripti
 			}
 
 			if !eventPayload.Success {
-				err = fmt.Errorf("received unexpected event payload with success=%t", eventPayload.Success)
+				finalErr = fmt.Errorf("received unexpected event payload with success=%t", eventPayload.Success)
 
 				return
 			}
