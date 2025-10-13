@@ -99,7 +99,7 @@ func (c *client) ListUploadTasks(ctx context.Context) ([]types.UploadTask, error
 func (c *client) GetUploadTask(ctx context.Context, identifier int64) (result types.UploadTask, err error) {
 	response, err := c.get(ctx, fmt.Sprintf("upload/%d", identifier), c.withSession(ctx))
 	if err != nil {
-		if response != nil && response.ErrorCode == codeTaskNotFound {
+		if response != nil && response.ErrorCode == codeUploadTaskNotFound {
 			return result, ErrTaskNotFound
 		}
 
@@ -117,7 +117,7 @@ func (c *client) GetUploadTask(ctx context.Context, identifier int64) (result ty
 func (c *client) CancelUploadTask(ctx context.Context, identifier int64) error {
 	response, err := c.delete(ctx, fmt.Sprintf("upload/%d/cancel", identifier), nil, c.withSession(ctx))
 	if err != nil {
-		if response != nil && response.ErrorCode == codeTaskNotFound {
+		if response != nil && response.ErrorCode == codeUploadTaskNotFound {
 			return ErrTaskNotFound
 		}
 
