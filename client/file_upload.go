@@ -15,7 +15,7 @@ import (
 
 const codeUploadTaskNotFound = "noent"
 
-func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStartActionInput) (io.WriteCloser, types.UploadRequestID, error) {
+func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStartActionInput) (io.WriteCloser, int64, error) {
 	ws, err := c.webSocket(ctx, "/ws/upload")
 	if err != nil {
 		return nil, 0, fmt.Errorf("websocket connection: %w", err)
@@ -33,7 +33,7 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 	}); err != nil {
 		ws.Close()
 
-		return nil, requestID, fmt.Errorf("upload start action: %w", err)
+		return nil, 0, fmt.Errorf("upload start action: %w", err)
 	}
 
 	for {
@@ -41,7 +41,7 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 		if err != nil {
 			ws.Close()
 
-			return nil, requestID, fmt.Errorf("waiting start confirmation: %w", err)
+			return nil, 0, fmt.Errorf("waiting start confirmation: %w", err)
 		}
 
 		if response.RequestID != requestID || response.Action != types.FileUploadStartActionNameUploadStart {
@@ -51,19 +51,29 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 		if err := response.GetError(); err != nil {
 			ws.Close()
 
-			return nil, requestID, fmt.Errorf("start confirmation: %w", err)
+			return nil, 0, fmt.Errorf("start confirmation: %w", err)
 		}
 
 		break
 	}
 
+	// Find the ID of the task we just created
+	tasks, err := c.ListUploadTasks(ctx)
+	for _, task := range tasks {
+		if task.Uploaded == 0 && task.Status == types.UploadTaskStatusInProgress && task.Size == int64(input.Size) && task.Dirname == string(input.Dirname) && task.UploadName == input.Filename && task.StartDate.Compare(task.LastUpdate.Time) == 0 {
+			return &ChunkWriter{
+				Conn:      ws,
+				RequestID: requestID,
+				written:   0,
+				expected:  input.Size,
+			}, task.ID, nil
+		}
+	}
+
+	ws.Close()
+
 	// caller should close the writer
-	return &ChunkWriter{
-		Conn:      ws,
-		RequestID: requestID,
-		written:   0,
-		expected:  input.Size,
-	}, requestID, nil
+	return nil, 0, fmt.Errorf("failed to find upload task")
 }
 
 // ListUploadTasks returns a list of upload tasks.
