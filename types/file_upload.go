@@ -66,11 +66,26 @@ type FileUploadFinalize struct {
 
 type FileUploadCancelAction struct {
 	Action    WebSocketAction `json:"action"` // must be ‘upload_cancel’
-	RequestID UploadRequestID `json:"request_id,omitempty"`
+	RequestID UploadRequestID `json:"request_id"`
 }
 
 type FileUploadCancelResponse struct {
-	Cancelled bool `json:"cancelled,omitempty"` // Will be true in a reply FileUploadCancelAction
+	Success   bool            `json:"success"`
+	Action    WebSocketAction `json:"action"`
+	RequestID UploadRequestID `json:"request_id"`
+	Message   string          `json:"msg,omitempty"`
+	ErrorCode string          `json:"error_code,omitempty"`
+}
+
+func (r *FileUploadCancelResponse) GetError() error {
+	if !r.Success {
+		return &WebSocketResponseError{
+			ErrorCode: r.ErrorCode,
+			Message:   r.Message,
+		}
+	}
+
+	return nil
 }
 
 type FileUploadFinalizeResponse struct {

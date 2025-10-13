@@ -115,7 +115,7 @@ func (c *client) GetUploadTask(ctx context.Context, identifier int64) (result ty
 
 // CancelUploadTask cancels a upload task by its identifier.
 func (c *client) CancelUploadTask(ctx context.Context, identifier int64) error {
-	response, err := c.delete(ctx, fmt.Sprintf("upload/%d/cancel", identifier), nil, c.withSession(ctx))
+	response, err := c.delete(ctx, fmt.Sprintf("upload/%d/cancel", identifier), c.withSession(ctx))
 	if err != nil {
 		if response != nil && response.ErrorCode == codeUploadTaskNotFound {
 			return ErrTaskNotFound
