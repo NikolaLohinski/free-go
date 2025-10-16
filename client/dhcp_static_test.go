@@ -158,6 +158,7 @@ var _ = Describe("DHCPStatic", func() {
 								"Time": BeTemporally("==", time.Unix(1682578724, 0)),
 							}),
 							"PrimaryName": Equal("testing"),
+							"NetworkControl": BeNil(),
 						}),
 					})),
 				)
@@ -324,6 +325,7 @@ var _ = Describe("DHCPStatic", func() {
 								"Time": BeTemporally("==", time.Unix(1682578724, 0)),
 							}),
 						})),
+						"NetworkControl": BeNil(),
 					}),
 				}))
 			})
