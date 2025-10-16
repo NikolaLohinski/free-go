@@ -20,8 +20,8 @@ type PortForwardingRulePayload struct {
 
 type PortForwardingRule struct {
 	PortForwardingRulePayload
-	ID       int64            `json:"id"`
-	Valid    bool             `json:"valid"`
-	Hostname string           `json:"hostname"`
-	Host     LanInterfaceHost `json:"host"`
+	ID       int64             `json:"id"`
+	Valid    bool              `json:"valid"`
+	Hostname string            `json:"hostname"`
+	Host     *LanInterfaceHost `json:"host"`
 }
