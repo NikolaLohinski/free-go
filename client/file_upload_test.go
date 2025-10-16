@@ -131,6 +131,10 @@ var _ = Describe("FileUpload", func() {
 							})).To(Succeed())
 						}),
 					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, "/api/v0/upload/"),
+						ghttp.RespondWithJSONEncoded(http.StatusOK, listTasksResponse(size)),
+					),
 				)
 			})
 
@@ -182,6 +186,10 @@ var _ = Describe("FileUpload", func() {
 								Message:   "Le fichier existe déjà",
 							})).To(Succeed())
 						}),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, "/api/v0/upload/"),
+						ghttp.RespondWithJSONEncoded(http.StatusOK, listTasksResponse(size)),
 					),
 				)
 			})
@@ -308,6 +316,10 @@ var _ = Describe("FileUpload", func() {
 							})).To(Succeed())
 						}),
 					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, "/api/v0/upload/"),
+						ghttp.RespondWithJSONEncoded(http.StatusOK, listTasksResponse(size)),
+					),
 				)
 			})
 
@@ -385,10 +397,14 @@ var _ = Describe("FileUpload", func() {
 								Action:    types.FileUploadStartActionNameUploadCancel,
 								RequestID: result.RequestID,
 								Result: types.FileUploadCancelResponse{
-									Cancelled: true,
+									Success: false,
 								},
 							})).To(Succeed())
 						}),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, "/api/v0/upload/"),
+						ghttp.RespondWithJSONEncoded(http.StatusOK, listTasksResponse(size)),
 					),
 				)
 			})
@@ -478,6 +494,10 @@ var _ = Describe("FileUpload", func() {
 							})).To(Succeed())
 						}),
 					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, "/api/v0/upload/"),
+						ghttp.RespondWithJSONEncoded(http.StatusOK, listTasksResponse(size)),
+					),
 				)
 			})
 
@@ -552,5 +572,23 @@ func wsHandler(predicate func(ws *websocket.Conn)) http.HandlerFunc {
 		}(ws)
 
 		predicate(ws)
+	}
+}
+
+func listTasksResponse(size int) map[string]interface{} {
+	return map[string]interface{}{
+		"success": true,
+		"result": []types.UploadTask{
+			{
+				ID: 1234567890,
+				Size: int64(size),
+				Uploaded: 0,
+				Status: types.UploadTaskStatusAuthorized,
+				StartDate: types.Timestamp{Time: time.Now()},
+				LastUpdate: types.Timestamp{Time: time.Now()},
+				UploadName: "the-file",
+				Dirname: "dir",
+			},
+		},
 	}
 }
