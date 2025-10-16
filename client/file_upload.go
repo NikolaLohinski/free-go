@@ -59,8 +59,15 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 
 	// Find the ID of the task we just created
 	tasks, err := c.ListUploadTasks(ctx)
+	if err != nil {
+		ws.Close()
+
+		return nil, 0, fmt.Errorf("list upload tasks: %w", err)
+	}
+
 	for _, task := range tasks {
-		if task.Uploaded == 0 && task.Status == types.UploadTaskStatusInProgress && task.Size == int64(input.Size) && task.Dirname == string(input.Dirname) && task.UploadName == input.Filename && task.StartDate.Compare(task.LastUpdate.Time) == 0 {
+		if task.Uploaded == 0 && task.Size == int64(input.Size) && task.Dirname == string(input.Dirname) && task.UploadName == input.Filename && task.StartDate.Compare(task.LastUpdate.Time) == 0 &&
+			(task.Status == types.UploadTaskStatusInProgress || task.Status == types.UploadTaskStatusAuthorized) {
 			return &ChunkWriter{
 				Conn:      ws,
 				RequestID: requestID,

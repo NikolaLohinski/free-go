@@ -66,7 +66,7 @@ type FileUploadFinalize struct {
 
 type FileUploadCancelAction struct {
 	Action    WebSocketAction `json:"action"` // must be ‘upload_cancel’
-	RequestID UploadRequestID `json:"request_id"`
+	RequestID UploadRequestID `json:"request_id,omitempty"`
 }
 
 type FileUploadCancelResponse struct {
