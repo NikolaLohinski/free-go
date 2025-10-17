@@ -245,7 +245,7 @@ var _ = Describe("lan browser", func() {
 						Names: []types.HostName{
 							{Name: "test", Source: "dhcp"},
 						},
-						L3Connectivities: []types.L3Connectivity{
+						L3Connectivities: []types.LanHostL3Connectivity{
 							{
 								Address:   "192.168.1.254",
 								Active:    false,
@@ -397,7 +397,7 @@ var _ = Describe("lan browser", func() {
 					Names: []types.HostName{
 						{Name: "test", Source: "dhcp"},
 					},
-					L3Connectivities: []types.L3Connectivity{
+					L3Connectivities: []types.LanHostL3Connectivity{
 						{
 							Address:   "192.168.1.254",
 							Active:    false,

@@ -86,7 +86,7 @@ var _ = Describe("DHCPStatic", func() {
 										ID:                "ether-7e:ec:37:cd:5b:6a",
 										LastTimeReachable: types.Timestamp{Time: time.Unix(1682578724, 0)},
 										PrimaryNameManual: true,
-										L3Connectivities: []types.L3Connectivity{
+										L3Connectivities: []types.LanHostL3Connectivity{
 											{
 												Address:           IPAddress,
 												Active:            true,
@@ -148,6 +148,7 @@ var _ = Describe("DHCPStatic", func() {
 								"LastTimeReachable": gstruct.MatchAllFields(gstruct.Fields{
 									"Time": BeTemporally("==", time.Unix(1682578724, 0)),
 								}),
+								"Model": BeEmpty(),
 							})),
 							"DefaultName": Equal("testing"),
 							"FirstActivity": gstruct.MatchAllFields(gstruct.Fields{
@@ -157,7 +158,10 @@ var _ = Describe("DHCPStatic", func() {
 							"LastActivity": gstruct.MatchAllFields(gstruct.Fields{
 								"Time": BeTemporally("==", time.Unix(1682578724, 0)),
 							}),
-							"PrimaryName": Equal("testing"),
+							"PrimaryName":    Equal("testing"),
+							"NetworkControl": BeNil(),
+							"Model":          BeEmpty(),
+							"AccessPoint":    BeNil(),
 						}),
 					})),
 				)
@@ -259,7 +263,7 @@ var _ = Describe("DHCPStatic", func() {
 									LastActivity:      types.Timestamp{Time: time.Unix(1682578724, 0)},
 									PrimaryName:       "testing",
 									DefaultName:       "testing",
-									L3Connectivities: []types.L3Connectivity{
+									L3Connectivities: []types.LanHostL3Connectivity{
 										{
 											Address:           IPAddress,
 											Active:            true,
@@ -323,7 +327,11 @@ var _ = Describe("DHCPStatic", func() {
 							"LastTimeReachable": gstruct.MatchAllFields(gstruct.Fields{
 								"Time": BeTemporally("==", time.Unix(1682578724, 0)),
 							}),
+							"Model": BeEmpty(),
 						})),
+						"Model":          BeEmpty(),
+						"NetworkControl": BeNil(),
+						"AccessPoint":    BeNil(),
 					}),
 				}))
 			})
@@ -402,7 +410,7 @@ var _ = Describe("DHCPStatic", func() {
 										Source: "dhcp",
 									},
 								},
-								L3Connectivities: []types.L3Connectivity{
+								L3Connectivities: []types.LanHostL3Connectivity{
 									{
 										Address:           IPAddress,
 										Active:            true,
@@ -498,7 +506,7 @@ var _ = Describe("DHCPStatic", func() {
 										Source: "dhcp",
 									},
 								},
-								L3Connectivities: []types.L3Connectivity{
+								L3Connectivities: []types.LanHostL3Connectivity{
 									{
 										Address:           IPAddress,
 										Active:            true,
