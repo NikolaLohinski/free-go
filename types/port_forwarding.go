@@ -3,8 +3,8 @@ package types
 type ipProtocol = string
 
 const (
-	TCP ipProtocol = "tcp"
-	UDP ipProtocol = "udp"
+	TCP ipProtocol = "tcp" // TCP
+	UDP ipProtocol = "udp" // UDP
 )
 
 type PortForwardingRulePayload struct {
