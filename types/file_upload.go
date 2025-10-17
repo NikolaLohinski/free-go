@@ -60,13 +60,14 @@ type FileUploadChunkResponse struct {
 }
 
 type FileUploadFinalize struct {
-	Action    WebSocketAction `json:"action"` // must be ‘upload_finalize’
-	RequestID UploadRequestID `json:"request_id,omitempty"`
+	Action    WebSocketAction `json:"action"`               // must be ‘upload_finalize’
+	RequestID UploadRequestID `json:"request_id,omitempty"` // optional request_id
 }
 
 type FileUploadCancelAction struct {
-	Action    WebSocketAction `json:"action"` // must be ‘upload_cancel’
-	RequestID UploadRequestID `json:"request_id,omitempty"`
+	Action    WebSocketAction `json:"action"`               // must be ‘upload_cancel’
+	RequestID UploadRequestID `json:"request_id,omitempty"` // optional request_id
+
 }
 
 type FileUploadCancelResponse struct {

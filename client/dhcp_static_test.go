@@ -148,6 +148,7 @@ var _ = Describe("DHCPStatic", func() {
 								"LastTimeReachable": gstruct.MatchAllFields(gstruct.Fields{
 									"Time": BeTemporally("==", time.Unix(1682578724, 0)),
 								}),
+								"Model": BeEmpty(),
 							})),
 							"DefaultName": Equal("testing"),
 							"FirstActivity": gstruct.MatchAllFields(gstruct.Fields{
@@ -157,8 +158,10 @@ var _ = Describe("DHCPStatic", func() {
 							"LastActivity": gstruct.MatchAllFields(gstruct.Fields{
 								"Time": BeTemporally("==", time.Unix(1682578724, 0)),
 							}),
-							"PrimaryName": Equal("testing"),
+							"PrimaryName":    Equal("testing"),
 							"NetworkControl": BeNil(),
+							"Model":          BeEmpty(),
+							"AccessPoint":    BeNil(),
 						}),
 					})),
 				)
@@ -324,8 +327,11 @@ var _ = Describe("DHCPStatic", func() {
 							"LastTimeReachable": gstruct.MatchAllFields(gstruct.Fields{
 								"Time": BeTemporally("==", time.Unix(1682578724, 0)),
 							}),
+							"Model": BeEmpty(),
 						})),
+						"Model":          BeEmpty(),
 						"NetworkControl": BeNil(),
+						"AccessPoint":    BeNil(),
 					}),
 				}))
 			})
