@@ -46,21 +46,21 @@ const (
 )
 
 type LanInterfaceHost struct {
-	Active            bool                   `json:"active"`              // If true the host sends traffic to the Freebox
-	Persistent        bool                   `json:"persistent"`          // If true the host is always shown even if it has not been active since the Freebox startup
-	Reachable         bool                   `json:"reachable"`           // If true the host can receive traffic from the Freebox
-	PrimaryNameManual bool                   `json:"primary_name_manual"` // If true the primary name has been set manually
-	VendorName        string                 `json:"vendor_name"`         // Host vendor name (from the mac address)
-	Type              hostType               `json:"host_type"`           // When possible, the Freebox will try to guess the host_type, but you can manually override this to the correct value
-	ID                string                 `json:"id"`                  // Host id (unique on this interface)
-	LastTimeReachable Timestamp              `json:"last_time_reachable"` // Last time the host was reached
-	FirstActivity     Timestamp              `json:"first_activity"`      // First time the host sent traffic, or 0 (Unix Epoch) if it wasn’t seen before this field was added.
-	LastActivity      Timestamp              `json:"last_activity"`       // Last time the host sent traffic
-	PrimaryName       string                 `json:"primary_name"`        // Host primary name (chosen from the list of available names, or manually set by user)
-	L2Ident           L2Ident                `json:"l2ident"`             // Layer 2 network id and its type
-	Names             []HostName             `json:"names"`               // List of available names, and their source
-	L3Connectivities  []L3Connectivity       `json:"l3connectivities"`    // List of available layer 3 network connections
-	NetworkControl    *LanHostNetworkControl `json:"network_control"`     // If device is associated with a profile, contains profile summary.
+	Active            bool                    `json:"active"`              // If true the host sends traffic to the Freebox
+	Persistent        bool                    `json:"persistent"`          // If true the host is always shown even if it has not been active since the Freebox startup
+	Reachable         bool                    `json:"reachable"`           // If true the host can receive traffic from the Freebox
+	PrimaryNameManual bool                    `json:"primary_name_manual"` // If true the primary name has been set manually
+	VendorName        string                  `json:"vendor_name"`         // Host vendor name (from the mac address)
+	Type              hostType                `json:"host_type"`           // When possible, the Freebox will try to guess the host_type, but you can manually override this to the correct value
+	ID                string                  `json:"id"`                  // Host id (unique on this interface)
+	LastTimeReachable Timestamp               `json:"last_time_reachable"` // Last time the host was reached
+	FirstActivity     Timestamp               `json:"first_activity"`      // First time the host sent traffic, or 0 (Unix Epoch) if it wasn’t seen before this field was added.
+	LastActivity      Timestamp               `json:"last_activity"`       // Last time the host sent traffic
+	PrimaryName       string                  `json:"primary_name"`        // Host primary name (chosen from the list of available names, or manually set by user)
+	L2Ident           L2Ident                 `json:"l2ident"`             // Layer 2 network id and its type
+	Names             []HostName              `json:"names"`               // List of available names, and their source
+	L3Connectivities  []LanHostL3Connectivity `json:"l3connectivities"`    // List of available layer 3 network connections
+	NetworkControl    *LanHostNetworkControl  `json:"network_control"`     // If device is associated with a profile, contains profile summary.
 
 	// Undocumented fields
 
@@ -134,21 +134,21 @@ type L2Ident struct {
 	Type l2IdentType `json:"type"` // Type of layer 2 address
 }
 
-type af = string
+type lanHostL3ConnectivityAF = string
 
 const (
-	IPV4 af = "ipv4" // IPv4 address family
-	IPV6 af = "ipv6" // IPv6 address family
+	IPV4 lanHostL3ConnectivityAF = "ipv4" // IPv4 address family
+	IPV6 lanHostL3ConnectivityAF = "ipv6" // IPv6 address family
 )
 
-type L3Connectivity struct {
-	Address           string    `json:"addr"`                // Layer 3 address
-	Active            bool      `json:"active"`              // is the connection active
-	Reachable         bool      `json:"reachable"`           // is the connection reachable
-	LastActivity      Timestamp `json:"last_activity"`       // last activity timestamp
-	LastTimeReachable Timestamp `json:"last_time_reachable"` // last reachable timestamp
-	Type              af        `json:"af"`                  // address family
-	Model             string    `json:"model"`               // device model if known
+type LanHostL3Connectivity struct {
+	Address           string                  `json:"addr"`                // Layer 3 address
+	Active            bool                    `json:"active"`              // is the connection active
+	Reachable         bool                    `json:"reachable"`           // is the connection reachable
+	LastActivity      Timestamp               `json:"last_activity"`       // last activity timestamp
+	LastTimeReachable Timestamp               `json:"last_time_reachable"` // last reachable timestamp
+	Type              lanHostL3ConnectivityAF `json:"af"`                  // address family
+	Model             string                  `json:"model"`               // device model if known
 }
 
 type LanHostNetworkControl struct {
