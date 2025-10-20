@@ -15,7 +15,7 @@ import (
 
 const codeUploadTaskNotFound = "noent"
 
-func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStartActionInput) (io.WriteCloser, types.UploadRequestID, error) {
+func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStartActionInput) (io.WriteCloser, int64, error) {
 	ws, err := c.webSocket(ctx, "/ws/upload")
 	if err != nil {
 		return nil, 0, fmt.Errorf("websocket connection: %w", err)
@@ -33,7 +33,7 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 	}); err != nil {
 		ws.Close()
 
-		return nil, requestID, fmt.Errorf("upload start action: %w", err)
+		return nil, 0, fmt.Errorf("upload start action: %w", err)
 	}
 
 	for {
@@ -41,7 +41,7 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 		if err != nil {
 			ws.Close()
 
-			return nil, requestID, fmt.Errorf("waiting start confirmation: %w", err)
+			return nil, 0, fmt.Errorf("waiting start confirmation: %w", err)
 		}
 
 		if response.RequestID != requestID || response.Action != types.FileUploadStartActionNameUploadStart {
@@ -51,19 +51,36 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 		if err := response.GetError(); err != nil {
 			ws.Close()
 
-			return nil, requestID, fmt.Errorf("start confirmation: %w", err)
+			return nil, 0, fmt.Errorf("start confirmation: %w", err)
 		}
 
 		break
 	}
 
-	// caller should close the writer
-	return &ChunkWriter{
-		Conn:      ws,
-		RequestID: requestID,
-		written:   0,
-		expected:  input.Size,
-	}, requestID, nil
+	// Find the ID of the task we just created
+	tasks, err := c.ListUploadTasks(ctx)
+	if err != nil {
+		ws.Close()
+
+		return nil, 0, fmt.Errorf("list upload tasks: %w", err)
+	}
+
+	for _, task := range tasks {
+		if task.Uploaded == 0 && task.Size == int64(input.Size) && task.Dirname == string(input.Dirname) && task.UploadName == input.Filename && task.StartDate.Compare(task.LastUpdate.Time) == 0 &&
+			(task.Status == types.UploadTaskStatusInProgress || task.Status == types.UploadTaskStatusAuthorized) {
+			// caller should close the websocket by itself.
+			return &ChunkWriter{
+				Conn:      ws,
+				RequestID: requestID,
+				written:   0,
+				expected:  input.Size,
+			}, task.ID, nil
+		}
+	}
+
+	ws.Close()
+
+	return nil, 0, fmt.Errorf("failed to find upload task")
 }
 
 // ListUploadTasks returns a list of upload tasks.
@@ -89,7 +106,7 @@ func (c *client) ListUploadTasks(ctx context.Context) ([]types.UploadTask, error
 func (c *client) GetUploadTask(ctx context.Context, identifier int64) (result types.UploadTask, err error) {
 	response, err := c.get(ctx, fmt.Sprintf("upload/%d", identifier), c.withSession(ctx))
 	if err != nil {
-		if response != nil && response.ErrorCode == codeTaskNotFound {
+		if response != nil && response.ErrorCode == codeUploadTaskNotFound {
 			return result, ErrTaskNotFound
 		}
 
@@ -105,9 +122,9 @@ func (c *client) GetUploadTask(ctx context.Context, identifier int64) (result ty
 
 // CancelUploadTask cancels a upload task by its identifier.
 func (c *client) CancelUploadTask(ctx context.Context, identifier int64) error {
-	response, err := c.delete(ctx, fmt.Sprintf("upload/%d/cancel", identifier), nil, c.withSession(ctx))
+	response, err := c.delete(ctx, fmt.Sprintf("upload/%d/cancel", identifier), c.withSession(ctx))
 	if err != nil {
-		if response != nil && response.ErrorCode == codeTaskNotFound {
+		if response != nil && response.ErrorCode == codeUploadTaskNotFound {
 			return ErrTaskNotFound
 		}
 
