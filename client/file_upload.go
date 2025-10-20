@@ -68,6 +68,7 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 	for _, task := range tasks {
 		if task.Uploaded == 0 && task.Size == int64(input.Size) && task.Dirname == string(input.Dirname) && task.UploadName == input.Filename && task.StartDate.Compare(task.LastUpdate.Time) == 0 &&
 			(task.Status == types.UploadTaskStatusInProgress || task.Status == types.UploadTaskStatusAuthorized) {
+			// caller should close the websocket by itself.
 			return &ChunkWriter{
 				Conn:      ws,
 				RequestID: requestID,
@@ -79,7 +80,6 @@ func (c *client) FileUploadStart(ctx context.Context, input types.FileUploadStar
 
 	ws.Close()
 
-	// caller should close the writer
 	return nil, 0, fmt.Errorf("failed to find upload task")
 }
 
