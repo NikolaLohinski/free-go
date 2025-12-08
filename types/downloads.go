@@ -50,6 +50,7 @@ const (
 
 	// Undocumented and reverse engineered error codes.
 	DownloadTaskErrorNone             downloadTaskError = "none"          // No error
+	DownloadTaskErrorBadHash          downloadTaskError = "http_bad_hash" // Invalid checksum
 	DownloadTaskErrorHashDownloadDisk downloadTaskError = "hash_download" // Error downloading the hash file
 	DownloadTaskError4XX              downloadTaskError = "http_4xx"      // Error 4xx
 )
