@@ -72,6 +72,14 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [x] Getting the challenge value
   - [x] Opening a session
   - [x] Closing the current session
+- [ ] [Connection](https://dev.freebox.fr/sdk/os/connection/) : `/connection/*`
+  - [ ] Get the current Connection status
+  - [ ] Get the current Connection configuration
+  - [ ] Update the Connection configuration
+  - [ ] Get the current IPv6 Connection configuration
+  - [ ] Update the IPv6 Connection configuration
+  - [ ] Get the status of a DynDNS service
+  - [ ] Set the config of a DynDNS service
 - [x] [Discovery over HTTP](https://dev.freebox.fr/sdk/os/) : `/api_version`
 - [ ] [Lan](https://dev.freebox.fr/sdk/os/lan/#lan) : `/lan/*`
   - [x] Getting the list of browsable LAN interfaces
@@ -155,6 +163,11 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [x] Get a task
   - [x] Delete a task
   - [x] Update a task
+- [ ] [File Sharing Link](https://dev.freebox.fr/sdk/os/share/) : `/share_link/*`
+  - [ ] List File Sharing links
+  - [ ] Create a File Sharing link
+  - [ ] Retrieve a File Sharing link
+  - [ ] Delete a File Sharing link
 
 ## Development
 
