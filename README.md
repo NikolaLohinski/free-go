@@ -168,6 +168,77 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [ ] Create a File Sharing link
   - [ ] Retrieve a File Sharing link
   - [ ] Delete a File Sharing link
+- [ ] [Wi-Fi](https://dev.freebox.fr/sdk/os/wifi/) : `/wifi/*`
+  - [ ] Get the current Wi-Fi global configuration
+  - [ ] Update the Wi-Fi global configuration
+  - [ ] List the Wi-Fi Access Points
+  - [ ] Get a specific Access Point
+  - [ ] Update an Access Point configuration
+  - [ ] Get the Wi-Fi allowed combinations for the given Access Point
+  - [ ] List the Wi-Fi Stations (connected devices)
+  - [ ] List the Basic Service Sets
+  - [ ] Get a specific Basic Service Set
+  - [ ] Update a Basic Service Set
+  - [ ] List the neighbors for the given Access Point
+  - [ ] List the Wi-Fi channels usages for the given Access Point
+  - [ ] Refresh the radar informations
+  - [ ] Get the Wi-Fi Planning configuration
+  - [ ] Update the Wi-Fi Planning configuration
+  - [ ] List the MAC Filter entries
+  - [ ] Get a specific MAC Filter entry
+  - [ ] Update a MAC Filter entry
+  - [ ] Delete a MAC Filter entry
+  - [ ] Create a MAC Filter entry
+  - [ ] Reset the Wi-Fi configuration
+- [ ] [System](https://dev.freebox.fr/sdk/os/system/) : `/system/*`
+  - [ ] Reboot the Freebox
+- [ ] [AirMedia](https://dev.freebox.fr/sdk/os/airmedia/) : `/airmedia/*`
+  - [ ] Get the AirMedia configuration
+  - [ ] Update the AirMedia configuration
+  - [ ] Get the list of AirMedia receivers
+  - [ ] Sending a new request to an AirMedia receiver
+- [ ] [Call](https://dev.freebox.fr/sdk/os/call/) : `/call/*`
+  - [ ] List the calls
+  - [ ] Delete all calls
+  - [ ] Mark all calls as read
+  - [ ] Get a call
+  - [ ] Delete a call
+  - [ ] Update a call entry
+- [ ] [Contact](https://dev.freebox.fr/sdk/os/contacts/) : `/contact/*`
+  - [ ] List the contacts
+  - [ ] Get a contact
+  - [ ] Create a contact
+  - [ ] Delete a contact
+  - [ ] Update a contact
+  - [ ] List the contact numbers
+  - [ ] Get a contact number
+  - [ ] Create a contact number
+  - [ ] Delete a contact number
+  - [ ] Update a contact number
+- [ ] [FreePlugs](https://dev.freebox.fr/sdk/os/freeplug/) : `/freeplug/*`
+  - [ ] List the Freeplugs networks and its members
+  - [ ] Get a specific Freeplug
+  - [ ] Reset a Freeplug
+- [ ] [Parental](https://dev.freebox.fr/sdk/os/parental/) : `/parental/*`
+  - [ ] Get parental filter configuration
+  - [ ] Update parental filter configuration
+  - [ ] List the parental filter rules
+  - [ ] Get a parental filter rule
+  - [ ] Delete a parental filter rule
+  - [ ] Update a parental filter rule
+  - [ ] Create a parental filter rule
+  - [ ] Get the planning for a parental filter rule
+  - [ ] Update the planning for a parental filter rule
+- [ ] [LCD](https://dev.freebox.fr/sdk/os/lcd/) : `/lcd/*`
+  - [ ] Get the current LCD configuration
+  - [ ] Update the LCD configuration
+- [ ] [Switch](https://dev.freebox.fr/sdk/os/switch/) : `/switch/*`
+  - [ ] Get the switch status and the list of ports
+  - [ ] Get a specific port configuration
+  - [ ] Update a port configuration
+- [ ] [Universal Plug and Play Audio Video](https://dev.freebox.fr/sdk/os/upnpav/) : `/upnpav/*`
+  - [ ] Get the UPnP AV configuration
+  - [ ] Update UPnP AV configuration
 
 ## Development
 
