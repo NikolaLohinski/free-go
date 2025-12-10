@@ -36,6 +36,9 @@ type Client interface {
 	UpdateDHCPStaticLease(ctx context.Context, identifier string, payload types.DHCPStaticLeasePayload) (types.LanInterfaceHost, error)
 	CreateDHCPStaticLease(ctx context.Context, payload types.DHCPStaticLeasePayload) (types.LanInterfaceHost, error)
 	DeleteDHCPStaticLease(ctx context.Context, identifier string) error
+	// lan
+	GetLanConfig(ctx context.Context) (result types.LanConfig, err error)
+	UpdateLanConfig(ctx context.Context, payload types.LanConfig) (result types.LanConfig, err error)
 	// lan browser
 	ListLanInterfaceInfo(context.Context) ([]types.LanInfo, error)
 	GetLanInterface(ctx context.Context, name string) (result []types.LanInterfaceHost, err error)
