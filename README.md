@@ -87,8 +87,8 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [x] Getting a host information
   - [ ] Updating a host information
   - [ ] Wake on LAN
-  - [ ] Get the current Lan configuration
-  - [ ] Update the current Lan configuration
+  - [x] Get the current Lan configuration
+  - [x] Update the current Lan configuration
 - [ ] [DHCP](https://dev.freebox.fr/sdk/os/dhcp/#dhcp) : `/dhcp/*`
   - [ ] Get the current DHCP configuration
   - [ ] Update the current DHCP configuration
