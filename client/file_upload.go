@@ -246,7 +246,7 @@ func (w *ChunkWriter) Close() (finalErr error) {
 			return finalErr
 		}
 
-		if _, err := waitWebSocketResponse[types.FileUploadCancelAction](ctx, w.Conn, w.RequestID, types.FileUploadStartActionNameUploadCancel); err != nil {
+		if _, err := waitWebSocketResponse[types.FileUploadCancelResponse](ctx, w.Conn, w.RequestID, types.FileUploadStartActionNameUploadCancel); err != nil {
 			finalErr = fmt.Errorf("cancel upload confirmation: %w", err)
 			return finalErr
 		}
