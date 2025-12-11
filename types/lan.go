@@ -18,3 +18,13 @@ type LanConfig struct {
 	NameNetBIOS string  `json:"name_netbios"` // Freebox Server netbios name
 	Mode        LanMode `json:"mode"`         // LAN mode (router or bridge)
 }
+
+type lanConfigError string
+
+const (
+	LanConfigErrorNoent          lanConfigError = "noent"            // Invalid id
+	LanConfigErrorInternalError  lanConfigError = "internal_error"   // Internal error
+	LanConfigErrorIOError        lanConfigError = "ioerror"          // Internal error
+	LanConfigErrorInval          lanConfigError = "inval"            // Invalid parameter
+	LanConfigErrorInvalGatewayIP lanConfigError = "inval_gateway_ip" // Invalid Gateway IP
+)
