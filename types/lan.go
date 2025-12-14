@@ -1,6 +1,6 @@
 package types
 
-// LanMode represents the LAN operating mode
+// LanMode represents the LAN operating mode.
 type LanMode = string
 
 const (

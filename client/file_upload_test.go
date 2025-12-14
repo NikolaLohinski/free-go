@@ -580,14 +580,14 @@ func listTasksResponse(size int) map[string]interface{} {
 		"success": true,
 		"result": []types.UploadTask{
 			{
-				ID: 1234567890,
-				Size: int64(size),
-				Uploaded: 0,
-				Status: types.UploadTaskStatusAuthorized,
-				StartDate: types.Timestamp{Time: time.Now()},
+				ID:         1234567890,
+				Size:       int64(size),
+				Uploaded:   0,
+				Status:     types.UploadTaskStatusAuthorized,
+				StartDate:  types.Timestamp{Time: time.Now()},
 				LastUpdate: types.Timestamp{Time: time.Now()},
 				UploadName: "the-file",
-				Dirname: "dir",
+				Dirname:    "dir",
 			},
 		},
 	}

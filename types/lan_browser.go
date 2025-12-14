@@ -124,7 +124,7 @@ const (
 	UPNP    l2IdentType = "upnp"     // UPnP
 	WSD     l2IdentType = "wsd"      // WS-Discovery
 
-	// Undocumented fields
+	// Undocumented fields.
 
 	MacAddress l2IdentType = "mac_address" // MAC
 )
