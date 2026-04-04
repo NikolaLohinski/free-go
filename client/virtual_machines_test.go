@@ -273,6 +273,22 @@ var _ = Describe("virtual machines", func() {
 				Expect(*returnedErr).ToNot(BeNil())
 			})
 		})
+		Context("when the server returns no result (empty list)", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/vm/", version)),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": true
+						}`),
+					),
+				)
+			})
+			It("should return an empty list without error", func() {
+				Expect(*returnedErr).To(BeNil())
+				Expect(*returnedMachines).To(BeEmpty())
+			})
+		})
 	})
 	Context("creating a virtual machine", func() {
 		var (
