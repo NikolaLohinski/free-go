@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
 	"time"
 )
 
@@ -103,6 +104,16 @@ func (c *client) do(request *http.Request, options ...HTTPOption) (response *gen
 }
 
 func (c *client) fromGenericResponse(generic *genericResponse, target interface{}) error {
+	// The Freebox API omits the "result" field entirely when the result is an
+	// empty list (e.g. GET /vm/ with no VMs). Treat a missing result as an
+	// empty value only when the target is a slice; for any other type a missing
+	// result is unexpected and should still surface as an error.
+	if len(generic.Result) == 0 {
+		if reflect.TypeOf(target).Elem().Kind() == reflect.Slice {
+			return nil
+		}
+	}
+
 	if err := json.Unmarshal(generic.Result, target); err != nil {
 		return fmt.Errorf("failed to decode response result to given target: %w", err)
 	}
