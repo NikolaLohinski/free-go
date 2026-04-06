@@ -76,6 +76,8 @@ type Client interface {
 	MoveFiles(ctx context.Context, sources []string, destination string, mode types.FileMoveMode) (result types.FileSystemTask, err error)
 	CopyFiles(ctx context.Context, sources []string, destination string, mode types.FileCopyMode) (result types.FileSystemTask, err error)
 	ExtractFile(ctx context.Context, payload types.ExtractFilePayload) (task types.FileSystemTask, err error)
+	// system
+	GetSystemInfo(ctx context.Context) (types.SystemConfig, error)
 	// downloads
 	ListDownloadTasks(ctx context.Context) ([]types.DownloadTask, error)
 	GetDownloadTask(ctx context.Context, identifier int64) (types.DownloadTask, error)
