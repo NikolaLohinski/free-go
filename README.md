@@ -195,6 +195,7 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [ ] Create a MAC Filter entry
   - [ ] Reset the Wi-Fi configuration
 - [ ] [System](https://dev.freebox.fr/sdk/os/system/) : `/system/*`
+  - [x] Get the current system info [UNSTABLE]
   - [ ] Reboot the Freebox
 - [ ] [AirMedia](https://dev.freebox.fr/sdk/os/airmedia/) : `/airmedia/*`
   - [ ] Get the AirMedia configuration
