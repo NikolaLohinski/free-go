@@ -137,6 +137,10 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [x] Update a download task
   - [ ] Get a download log
   - [x] Add a new download task
+ - [ ] [Download Configuration API](https://dev.freebox.fr/sdk/os/download_config/) : `/downloads/config/`
+   - [x] Get the download configuration
+   - [x] Update the download configuration
+   - [ ] Update the current throttling mode
 - [x] [Upload API](https://dev.freebox.fr/sdk/os/upload/) : `/upload/*`
   - [x] Get an upload task
   - [x] List upload tasks

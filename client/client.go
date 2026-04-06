@@ -83,6 +83,8 @@ type Client interface {
 	DeleteDownloadTask(ctx context.Context, identifier int64) error
 	EraseDownloadTask(ctx context.Context, identifier int64) error
 	UpdateDownloadTask(ctx context.Context, identifier int64, payload types.DownloadTaskUpdate) error
+	GetDownloadConfiguration(ctx context.Context) (types.DownloadConfiguration, error)
+	UpdateDownloadConfiguration(ctx context.Context, payload types.DownloadConfiguration) (types.DownloadConfiguration, error)
 	// uploads
 	FileUploadStart(ctx context.Context, input types.FileUploadStartActionInput) (io.WriteCloser, int64, error)
 	GetUploadTask(ctx context.Context, identifier int64) (types.UploadTask, error)
