@@ -90,6 +90,15 @@ type Client interface {
 	CancelUploadTask(ctx context.Context, identifier int64) error
 	DeleteUploadTask(ctx context.Context, identifier int64) error
 	CleanUploadTasks(ctx context.Context) error
+	// vpn
+	GetOpenVPNServerConfig(ctx context.Context) (types.OpenVPNServerConfig, error)
+	UpdateOpenVPNServerConfig(ctx context.Context, payload types.OpenVPNServerConfig) (types.OpenVPNServerConfig, error)
+	ListVPNUsers(ctx context.Context) ([]types.VPNUser, error)
+	GetVPNUser(ctx context.Context, login string) (types.VPNUser, error)
+	CreateVPNUser(ctx context.Context, payload types.VPNUserPayload) (types.VPNUser, error)
+	UpdateVPNUser(ctx context.Context, login string, payload types.VPNUserPayload) (types.VPNUser, error)
+	DeleteVPNUser(ctx context.Context, login string) error
+	GetVPNUserClientConfig(ctx context.Context, login string) (string, error)
 }
 
 type HTTPClient interface {
