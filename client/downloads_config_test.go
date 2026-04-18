@@ -132,7 +132,7 @@ var _ = Describe("downloads config", func() {
 						MaxItems:      0,
 					},
 					BlockList: types.DlBlockListConfig{
-						Sources: []string{},
+						Sources: []interface{}{},
 					},
 				}))
 			})
