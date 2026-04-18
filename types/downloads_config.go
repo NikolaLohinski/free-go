@@ -60,7 +60,7 @@ type DlFeedConfig struct {
 }
 
 type DlBlockListConfig struct {
-	Sources []string `json:"sources"`
+	Sources interface{} `json:"sources"`
 }
 
 type DownloadConfiguration struct {
