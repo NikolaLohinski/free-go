@@ -73,6 +73,7 @@ type Client interface {
 	AddHashFileTask(ctx context.Context, payload types.HashPayload) (task types.FileSystemTask, err error)
 	GetHashResult(ctx context.Context, identifier int64) (result string, err error)
 	GetFile(ctx context.Context, path string) (result types.File, err error)
+	ListFiles(ctx context.Context, path string) (files []types.FileInfo, err error)
 	MoveFiles(ctx context.Context, sources []string, destination string, mode types.FileMoveMode) (result types.FileSystemTask, err error)
 	CopyFiles(ctx context.Context, sources []string, destination string, mode types.FileCopyMode) (result types.FileSystemTask, err error)
 	ExtractFile(ctx context.Context, payload types.ExtractFilePayload) (task types.FileSystemTask, err error)

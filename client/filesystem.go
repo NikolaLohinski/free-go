@@ -59,6 +59,19 @@ func (c *client) RemoveFiles(ctx context.Context, paths []string) (task types.Fi
 	return task, nil
 }
 
+func (c *client) ListFiles(ctx context.Context, path string) (files []types.FileInfo, err error) {
+	response, err := c.get(ctx, "fs/ls/"+base64.StdEncoding.EncodeToString([]byte(path)), c.withSession(ctx))
+	if err != nil {
+		return files, fmt.Errorf("failed to GET fs/ls/%s endpoint: %w", path, err)
+	}
+
+	if err = c.fromGenericResponse(response, &files); err != nil {
+		return files, fmt.Errorf("failed to get a list of files from a generic response: %w", err)
+	}
+
+	return files, nil
+}
+
 func (c *client) UpdateFileSystemTask(ctx context.Context, identifier int64, payload types.FileSytemTaskUpdate) (task types.FileSystemTask, err error) {
 	response, err := c.put(ctx, fmt.Sprintf("fs/tasks/%d", identifier), payload, c.withSession(ctx))
 	if err != nil {
