@@ -1,9 +1,9 @@
 package types
 
-type ProfileId = int64
+type ProfileID = int64
 
 type NetworkControlInfo struct {
-	ProfileID ProfileId `json:"profile_id"` // Id of the profile this network control is associated with. This is read-only, unless you use the POST api to add a network control.
+	ProfileID ProfileID `json:"profile_id"` // Id of the profile this network control is associated with. This is read-only, unless you use the POST api to add a network control.
 	NextChange int `json:"next_change"` // UNIX timestamp of next rule change in seconds. 0 if no next change.
 	OverrideMode RuleMode `json:"override_mode"` // Mode of current override.
 	CurrentMode RuleMode `json:"current_mode"` // Mode in use. If override is true, it will be override_mode, otherwise it’s the mode from the rules attached to this NetworkControl.
@@ -35,7 +35,7 @@ const (
 )
 
 type NetworkControlPayload struct {
-	ProfileID ProfileId `json:"profile_id,omitempty"` // Id of the profile this network control is associated with. This is read-only, unless you use the POST api to add a network control.
+	ProfileID ProfileID `json:"profile_id"` // Id of the profile this network control is associated with. This is read-only, unless you use the POST api to add a network control.
 	NextChange int `json:"next_change,omitempty"` // UNIX timestamp of next rule change in seconds. 0 if no next change.
 	OverrideMode RuleMode `json:"override_mode"` // Mode of current override.
 	CurrentMode RuleMode `json:"current_mode,omitempty"` // Mode in use. If override is true, it will be override_mode, otherwise it’s the mode from the rules attached to this NetworkControl.
