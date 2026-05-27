@@ -244,6 +244,11 @@ At the time of this writing, generating credentials can only be done via the Fre
 - [ ] [Universal Plug and Play Audio Video](https://dev.freebox.fr/sdk/os/upnpav/) : `/upnpav/*`
   - [ ] Get the UPnP AV configuration
   - [ ] Update UPnP AV configuration
+- [x] [Network Share](https://dev.freebox.fr/sdk/os/network_share/) : `/netshare/*`
+  - [x] Get the Samba configuration
+  - [x] Update the Samba configuration
+  - [x] Get the AFP configuration
+  - [x] Update the AFP configuration
 - [x] [VPN](https://dev.freebox.fr/sdk/os/vpn/) : `/vpn/*`
   - [x] Get the VPN configuration
   - [x] Update the VPN configuration

@@ -105,6 +105,11 @@ type Client interface {
 	UpdateVPNUser(ctx context.Context, login string, payload types.VPNUserPayload) (types.VPNUser, error)
 	DeleteVPNUser(ctx context.Context, login string) error
 	GetVPNUserClientConfig(ctx context.Context, login string) (string, error)
+	// netshare
+	GetSambaConfiguration(ctx context.Context) (types.SambaConfiguration, error)
+	UpdateSambaConfiguration(ctx context.Context, payload types.SambaConfigurationPayload) (types.SambaConfiguration, error)
+	GetAFPConfiguration(ctx context.Context) (types.AFPConfiguration, error)
+	UpdateAFPConfiguration(ctx context.Context, payload types.AFPConfigurationPayload) (types.AFPConfiguration, error)
 }
 
 type HTTPClient interface {
