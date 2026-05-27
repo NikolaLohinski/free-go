@@ -51,6 +51,3 @@ func (c *Base64Path) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-const (
-	InvalidRequestErrorCode ErrorCode = "invalid_request" // e.g. invalid CSRF token
-)

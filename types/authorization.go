@@ -11,7 +11,8 @@ type AuthorizationRequest struct {
 type ErrorCode string
 
 const (
-	AuthorizationErrorCode ErrorCode = "auth_required" // "Vous devez vous connecter pour accéder à cette fonction"
-	AccessDeniedErrorCode  ErrorCode = "access_denied" // "Accès refusé"
-	RateLimitedErrorCode   ErrorCode = "ratelimited"   // "Trop d'échec de connexion depuis cette ip"
+	AuthorizationErrorCode  ErrorCode = "auth_required"   // "Vous devez vous connecter pour accéder à cette fonction"
+	AccessDeniedErrorCode   ErrorCode = "access_denied"   // "Accès refusé"
+	RateLimitedErrorCode    ErrorCode = "ratelimited"     // "Trop d'échec de connexion depuis cette ip"
+	InvalidRequestErrorCode ErrorCode = "invalid_request" // e.g. invalid CSRF token
 )
