@@ -139,7 +139,7 @@ func (c *client) MoveFiles(ctx context.Context, source []string, destination str
 			return result, ErrDestinationConflict
 		}
 
-		return result, fmt.Errorf("failed to POST to fs/mkdir/ endpoint: %w", err)
+		return result, fmt.Errorf("failed to POST to fs/mv/ endpoint: %w", err)
 	}
 
 	if err = c.fromGenericResponse(response, &result); err != nil {
