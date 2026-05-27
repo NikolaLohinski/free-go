@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strconv"
 	"strings"
 	"time"
 
@@ -110,7 +111,6 @@ func parseMDNSResponse(msg *dns.Msg, entries map[string]*types.MDNSDiscovery) {
 				if _, ok := entries[r.Ptr]; !ok {
 					entries[r.Ptr] = &types.MDNSDiscovery{
 						Name: strings.TrimSuffix(r.Ptr, "."+freeboxMDNSService),
-						Info: map[string]string{},
 					}
 				}
 			}
@@ -123,7 +123,7 @@ func parseMDNSResponse(msg *dns.Msg, entries map[string]*types.MDNSDiscovery) {
 			if e, ok := entries[r.Hdr.Name]; ok {
 				for _, txt := range r.Txt {
 					if kv := strings.SplitN(txt, "=", 2); len(kv) == 2 {
-						e.Info[kv[0]] = kv[1]
+						parseMDNSTXTField(e, kv[0], kv[1])
 					}
 				}
 			}
@@ -143,6 +143,27 @@ func parseMDNSResponse(msg *dns.Msg, entries map[string]*types.MDNSDiscovery) {
 				e.IPv6 = appendUniqueIP(e.IPv6, r.AAAA)
 			}
 		}
+	}
+}
+
+func parseMDNSTXTField(e *types.MDNSDiscovery, key, value string) {
+	switch key {
+	case "uid":
+		e.UID = value
+	case "device_type":
+		e.DeviceType = value
+	case "api_version":
+		e.APIVersion = value
+	case "api_domain":
+		e.APIDomain = value
+	case "api_base_url":
+		e.APIBaseURL = value
+	case "https_port":
+		if p, err := strconv.Atoi(value); err == nil {
+			e.HTTPSPort = p
+		}
+	case "https_available":
+		e.HTTPSAvailable = value == "1"
 	}
 }
 
