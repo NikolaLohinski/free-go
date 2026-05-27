@@ -1,7 +1,6 @@
 package client_test
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -26,9 +25,9 @@ func TestClient(t *testing.T) {
 	RunSpecs(t, "client")
 }
 
-var _ = BeforeEach(func(ctx context.Context) {
+var _ = BeforeEach(func() {
 	DeferCleanup(func(existing []gleak.Goroutine) {
-		Eventually(gleak.Goroutines).WithContext(ctx).ShouldNot(gleak.HaveLeaked(existing))
+		Eventually(gleak.Goroutines).ShouldNot(gleak.HaveLeaked(existing))
 	}, gleak.Goroutines())
 })
 
