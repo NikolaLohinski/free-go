@@ -42,6 +42,23 @@ func (c *client) GetLanInterface(ctx context.Context, name string) (result []typ
 	return result, nil
 }
 
+func (c *client) DeleteLanInterfaceHost(ctx context.Context, interfaceName, identifier string) error {
+	response, err := c.delete(ctx, fmt.Sprintf("lan/browser/%s/%s", interfaceName, identifier), c.withSession(ctx))
+	if err != nil {
+		if response != nil && response.ErrorCode == interfaceNotFoundCode {
+			return ErrInterfaceNotFound
+		}
+
+		if response != nil && response.ErrorCode == interfaceHostNotFoundCode {
+			return ErrInterfaceHostNotFound
+		}
+
+		return fmt.Errorf("failed to DELETE lan/browser/%s/%s endpoint: %w", interfaceName, identifier, err)
+	}
+
+	return nil
+}
+
 func (c *client) GetLanInterfaceHost(ctx context.Context, interfaceName, identifier string) (result types.LanInterfaceHost, err error) {
 	response, err := c.get(ctx, fmt.Sprintf("lan/browser/%s/%s", interfaceName, identifier), c.withSession(ctx))
 	if err != nil {

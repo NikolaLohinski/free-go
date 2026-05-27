@@ -43,6 +43,7 @@ type Client interface {
 	ListLanInterfaceInfo(context.Context) ([]types.LanInfo, error)
 	GetLanInterface(ctx context.Context, name string) (result []types.LanInterfaceHost, err error)
 	GetLanInterfaceHost(ctx context.Context, interfaceName, identifier string) (result types.LanInterfaceHost, err error)
+	DeleteLanInterfaceHost(ctx context.Context, interfaceName, identifier string) error
 	// virtual machines
 	GetVirtualMachineInfo(context.Context) (result types.VirtualMachinesInfo, err error)
 	GetVirtualMachineDistributions(context.Context) (result []types.VirtualMachineDistribution, err error)
