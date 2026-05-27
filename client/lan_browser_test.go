@@ -481,4 +481,75 @@ var _ = Describe("lan browser", func() {
 			})
 		})
 	})
+	Context("deleting a lan interface host", func() {
+		const (
+			interfaceName  = "pub"
+			hostIdentifier = "ether-7e:ec:37:cd:5b:6a"
+		)
+		JustBeforeEach(func() {
+			*returnedErr = freeboxClient.DeleteLanInterfaceHost(context.Background(), interfaceName, hostIdentifier)
+		})
+		Context("default", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodDelete, fmt.Sprintf("/api/%s/lan/browser/%s/%s", version, interfaceName, hostIdentifier)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{"success":true}`),
+					),
+				)
+			})
+			It("should return no error", func() {
+				Expect(*returnedErr).ToNot(HaveOccurred())
+			})
+		})
+		Context("when the interface does not exist", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodDelete, fmt.Sprintf("/api/%s/lan/browser/%s/%s", version, interfaceName, hostIdentifier)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": false,
+							"error_code": "nodev",
+							"msg": "Interface invalide"
+						}`),
+					),
+				)
+			})
+			It("should return the correct error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+				Expect(*returnedErr).To(Equal(client.ErrInterfaceNotFound))
+				Expect((*returnedErr).Error()).To(Equal("interface not found"))
+			})
+		})
+		Context("when the host does not exist", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodDelete, fmt.Sprintf("/api/%s/lan/browser/%s/%s", version, interfaceName, hostIdentifier)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{
+							"success": false,
+							"error_code": "nohost",
+							"msg": "Pas d'hôte avec cet identifiant"
+						}`),
+					),
+				)
+			})
+			It("should return the correct error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+				Expect(*returnedErr).To(Equal(client.ErrInterfaceHostNotFound))
+				Expect((*returnedErr).Error()).To(Equal("interface host not found"))
+			})
+		})
+		Context("when server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+	})
 })
