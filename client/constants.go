@@ -24,6 +24,7 @@ const (
 	ErrTaskNotFound               = Error("task not found")
 	ErrDestinationConflict        = Error("file or folder already exists")
 	ErrVPNUserNotFound            = Error("vpn user not found")
+	ErrAccessDenied               = Error("access denied")
 )
 
 var (
