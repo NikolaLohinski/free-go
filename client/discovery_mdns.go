@@ -29,33 +29,51 @@ func DiscoverMDNS(ctx context.Context, timeout time.Duration) ([]types.MDNSDisco
 		return nil, fmt.Errorf("failed to pack mDNS query: %w", err)
 	}
 
-	addr := &net.UDPAddr{IP: net.ParseIP(mdnsMulticastGroup), Port: mdnsPort}
+	mcastAddr := &net.UDPAddr{IP: net.ParseIP(mdnsMulticastGroup), Port: mdnsPort}
 
-	conn, err := net.ListenMulticastUDP("udp4", nil, addr)
+	// recvConn joins the multicast group to receive mDNS responses.
+	recvConn, err := net.ListenMulticastUDP("udp4", nil, mcastAddr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to join mDNS multicast group: %w", err)
 	}
-	defer conn.Close()
+	defer recvConn.Close()
 
-	if _, err = conn.WriteTo(packed, addr); err != nil {
-		return nil, fmt.Errorf("failed to send mDNS query: %w", err)
+	// sendConn is a regular unicast socket so the query carries a valid source address.
+	sendConn, err := net.ListenUDP("udp4", &net.UDPAddr{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to open send socket: %w", err)
+	}
+	defer sendConn.Close()
+
+	deadline := time.Now().Add(timeout)
+	if ctxDeadline, ok := ctx.Deadline(); ok && ctxDeadline.Before(deadline) {
+		deadline = ctxDeadline
 	}
 
-	if err = conn.SetDeadline(time.Now().Add(timeout)); err != nil {
+	if err = recvConn.SetDeadline(deadline); err != nil {
 		return nil, fmt.Errorf("failed to set read deadline: %w", err)
+	}
+
+	done := make(chan struct{})
+	defer close(done)
+
+	go func() {
+		select {
+		case <-ctx.Done():
+			recvConn.SetDeadline(time.Now()) //nolint:errcheck
+		case <-done:
+		}
+	}()
+
+	if _, err = sendConn.WriteTo(packed, mcastAddr); err != nil {
+		return nil, fmt.Errorf("failed to send mDNS query: %w", err)
 	}
 
 	entries := map[string]*types.MDNSDiscovery{}
 	buf := make([]byte, 65536)
 
 	for {
-		select {
-		case <-ctx.Done():
-			return collectMDNSEntries(entries), ctx.Err()
-		default:
-		}
-
-		n, _, err := conn.ReadFromUDP(buf)
+		n, _, err := recvConn.ReadFromUDP(buf)
 		if err != nil {
 			if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
 				break
@@ -72,11 +90,18 @@ func DiscoverMDNS(ctx context.Context, timeout time.Duration) ([]types.MDNSDisco
 		parseMDNSResponse(response, entries)
 	}
 
+	if err := ctx.Err(); err != nil {
+		return collectMDNSEntries(entries), err
+	}
+
 	return collectMDNSEntries(entries), nil
 }
 
 func parseMDNSResponse(msg *dns.Msg, entries map[string]*types.MDNSDiscovery) {
-	allRRs := append(append(msg.Answer, msg.Ns...), msg.Extra...)
+	allRRs := make([]dns.RR, 0, len(msg.Answer)+len(msg.Ns)+len(msg.Extra))
+	allRRs = append(allRRs, msg.Answer...)
+	allRRs = append(allRRs, msg.Ns...)
+	allRRs = append(allRRs, msg.Extra...)
 
 	for _, rr := range allRRs {
 		switch r := rr.(type) {
