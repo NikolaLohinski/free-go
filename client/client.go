@@ -103,6 +103,10 @@ type Client interface {
 	UpdateVPNUser(ctx context.Context, login string, payload types.VPNUserPayload) (types.VPNUser, error)
 	DeleteVPNUser(ctx context.Context, login string) error
 	GetVPNUserClientConfig(ctx context.Context, login string) (string, error)
+	// network control
+	ListNetworkControl(ctx context.Context) ([]types.NetworkControlInfo, error)
+	GetNetworkControl(ctx context.Context, identifier int64) (types.NetworkControlInfo, error)
+	UpdateNetworkControl(ctx context.Context, payload types.NetworkControlPayload) (types.NetworkControlInfo, error)
 }
 
 type HTTPClient interface {
