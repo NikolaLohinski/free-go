@@ -60,9 +60,15 @@ func (c *client) RemoveFiles(ctx context.Context, paths []string) (task types.Fi
 }
 
 func (c *client) ListFiles(ctx context.Context, path string) (files []types.FileInfo, err error) {
-	response, err := c.get(ctx, "fs/ls/"+base64.StdEncoding.EncodeToString([]byte(path)), c.withSession(ctx))
+	base64Path := base64.StdEncoding.EncodeToString([]byte(path))
+
+	response, err := c.get(ctx, "fs/ls/"+base64Path, c.withSession(ctx))
 	if err != nil {
-		return files, fmt.Errorf("failed to GET fs/ls/%s endpoint: %w", path, err)
+		if response != nil && response.ErrorCode == pathNotFoundCode {
+			return files, ErrPathNotFound
+		}
+
+		return files, fmt.Errorf("failed to GET fs/ls/%s endpoint: %w", base64Path, err)
 	}
 
 	if err = c.fromGenericResponse(response, &files); err != nil {
