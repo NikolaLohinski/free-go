@@ -85,6 +85,34 @@ var _ = Describe("parseMDNSResponse", func() {
 			Expect(e.IPv4).To(BeEmpty())
 			Expect(e.IPv6).To(BeEmpty())
 		})
+
+		Context("when SRV and A records arrive in a subsequent packet", func() {
+			JustBeforeEach(func() {
+				second := new(dns.Msg)
+				second.Answer = []dns.RR{
+					&dns.SRV{
+						Hdr:    dns.RR_Header{Name: "Freebox Server._fbx-api._tcp.local.", Rrtype: dns.TypeSRV},
+						Target: "mafreebox.freebox.fr.",
+						Port:   80,
+					},
+				}
+				second.Extra = []dns.RR{
+					&dns.A{
+						Hdr: dns.RR_Header{Name: "mafreebox.freebox.fr.", Rrtype: dns.TypeA},
+						A:   net.ParseIP("192.168.1.254"),
+					},
+				}
+				parseMDNSResponse(second, entries)
+			})
+
+			It("assembles the full entry across both packets", func() {
+				e := entries["Freebox Server._fbx-api._tcp.local."]
+				Expect(e.Hostname).To(Equal("mafreebox.freebox.fr"))
+				Expect(e.Port).To(Equal(uint16(80)))
+				Expect(e.IPv4).To(HaveLen(1))
+				Expect(e.IPv4[0].String()).To(Equal("192.168.1.254"))
+			})
+		})
 	})
 
 	Context("with a PTR record for a different service type", func() {
