@@ -15,6 +15,7 @@ const (
 	ErrAppIDIsNotSet              = Error("app id is not set")
 	ErrPrivateTokenIsNotSet       = Error("private token is not set")
 	ErrInterfaceNotFound          = Error("interface not found")
+	ErrDHCPStaticLeaseNotFound    = Error("dhcp static lease not found")
 	ErrInterfaceHostNotFound      = Error("interface host not found")
 	ErrPortForwardingRuleNotFound = Error("port forwarding rule not found")
 	ErrVirtualMachineNotFound     = Error("virtual machine not found")
