@@ -295,15 +295,12 @@ var _ = Describe("filesystem", func() {
 				server.AppendHandlers(ghttp.CombineHandlers(
 					ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fs/ls/%s", version, dirPathBase64)),
 					verifyAuth(*sessionToken),
-					ghttp.RespondWith(http.StatusOK, `{
-						"msg": "Erreur lors de la récupération de la liste des fichiers : Le fichier n'existe pas",
-						"success": false,
-						"error_code": "path_not_found"
-					}`),
+					ghttp.RespondWith(http.StatusOK, `{"success":false,"error_code":"path_not_found","msg":"not found"}`),
 				))
 			})
 			It("should return an error", func() {
 				Expect(*returnedErr).ToNot(BeNil())
+				Expect(*returnedErr).To(Equal(client.ErrPathNotFound))
 			})
 		})
 		Context("when the server fails to respond", func() {
