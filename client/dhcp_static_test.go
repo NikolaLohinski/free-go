@@ -356,6 +356,22 @@ var _ = Describe("DHCPStatic", func() {
 				Expect(*returnedErr).To(HaveOccurred())
 			})
 		})
+
+		Context("when the lease is not found", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", fmt.Sprintf("/api/%s/dhcp/static_lease/%s", version, MACAddress)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{"success":false,"error_code":"noent","msg":"not found"}`),
+					),
+				)
+			})
+
+			It("should return ErrDHCPStaticLeaseNotFound", func() {
+				Expect(*returnedErr).To(Equal(client.ErrDHCPStaticLeaseNotFound))
+			})
+		})
 	})
 
 	Context("UpdateDHCPStaticLease", func() {
@@ -425,6 +441,10 @@ var _ = Describe("DHCPStatic", func() {
 					),
 				)
 			})
+
+			It("should not return an error", func() {
+				Expect(*returnedErr).ToNot(HaveOccurred())
+			})
 		})
 
 		Context("when the server returns an error", func() {
@@ -444,6 +464,84 @@ var _ = Describe("DHCPStatic", func() {
 
 			It("should return an error", func() {
 				Expect(*returnedErr).To(HaveOccurred())
+			})
+		})
+
+		Context("when the lease is not found", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", fmt.Sprintf("/api/%s/dhcp/static_lease/%s", version, MACAddress)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{"success":false,"error_code":"noent","msg":"not found"}`),
+					),
+				)
+			})
+
+			It("should return ErrDHCPStaticLeaseNotFound", func() {
+				Expect(*returnedErr).To(Equal(client.ErrDHCPStaticLeaseNotFound))
+			})
+		})
+	})
+
+	Context("DeleteDHCPStaticLease", func() {
+		const (
+			MACAddress = "00:11:22:33:44:59"
+		)
+
+		JustBeforeEach(func(ctx SpecContext) {
+			*returnedErr = freeboxClient.DeleteDHCPStaticLease(ctx, MACAddress)
+		})
+
+		Context("default", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("DELETE", fmt.Sprintf("/api/%s/dhcp/static_lease/%s", version, MACAddress)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{"success":true}`),
+					),
+				)
+			})
+
+			It("should not return an error", func() {
+				Expect(*returnedErr).ToNot(HaveOccurred())
+			})
+		})
+
+		Context("when the server returns an error", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("DELETE", fmt.Sprintf("/api/%s/dhcp/static_lease/%s", version, MACAddress)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWithJSONEncoded(http.StatusOK, struct {
+							Success bool `json:"success"`
+						}{
+							Success: false,
+						}),
+					),
+				)
+			})
+
+			It("should return an error", func() {
+				Expect(*returnedErr).To(HaveOccurred())
+			})
+		})
+
+		Context("when the lease is not found", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("DELETE", fmt.Sprintf("/api/%s/dhcp/static_lease/%s", version, MACAddress)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, `{"success":false,"error_code":"noent","msg":"not found"}`),
+					),
+				)
+			})
+
+			It("should return ErrDHCPStaticLeaseNotFound", func() {
+				Expect(*returnedErr).To(Equal(client.ErrDHCPStaticLeaseNotFound))
 			})
 		})
 	})
