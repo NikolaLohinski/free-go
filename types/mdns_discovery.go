@@ -13,6 +13,6 @@ type MDNSDiscovery struct {
 	APIVersion     string   // e.g. "4.0"
 	APIDomain      string   // domain for remote API access, e.g. "xyz.fbxos.fr"
 	APIBaseURL     string   // API root path, e.g. "/api/"
-	HTTPSPort      int      // port for remote HTTPS access
+	HTTPSPort      int      // port for remote HTTPS access; 0 if not present in TXT record
 	HTTPSAvailable bool     // whether HTTPS is available for remote access
 }
