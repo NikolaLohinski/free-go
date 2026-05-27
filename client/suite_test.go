@@ -26,8 +26,8 @@ func TestClient(t *testing.T) {
 }
 
 var _ = BeforeEach(func() {
-	DeferCleanup(func(existing []gleak.Goroutine) {
-		Eventually(gleak.Goroutines).ShouldNot(gleak.HaveLeaked(existing))
+	DeferCleanup(func(ctx SpecContext, existing []gleak.Goroutine) {
+		Eventually(gleak.Goroutines).WithContext(ctx).ShouldNot(gleak.HaveLeaked(existing))
 	}, gleak.Goroutines())
 })
 
