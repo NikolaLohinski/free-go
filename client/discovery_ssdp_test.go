@@ -1,11 +1,24 @@
 package client
 
 import (
+	"time"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	"github.com/nikolalohinski/free-go/types"
 )
+
+var _ = Describe("buildMSearch", func() {
+	DescribeTable("MX clamping",
+		func(timeout time.Duration, expectedMX string) {
+			Expect(buildMSearch(timeout)).To(ContainSubstring("MX: " + expectedMX))
+		},
+		Entry("timeout shorter than 1s clamps to MX=1", 500*time.Millisecond, "1"),
+		Entry("timeout of 3s gives MX=3", 3*time.Second, "3"),
+		Entry("timeout longer than 5s clamps to MX=5", 10*time.Second, "5"),
+	)
+})
 
 var _ = Describe("parseSSDPResponse", func() {
 	var (
