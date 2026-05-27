@@ -1,5 +1,10 @@
 package types
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 type LanInfo struct {
 	Name      string `json:"name"`
 	HostCount int    `json:"host_count"`
@@ -68,6 +73,48 @@ type LanInterfaceHost struct {
 	DefaultName string              `json:"default_name"`
 	Interface   string              `json:"interface"`
 	Model       string              `json:"model"`
+}
+
+// UnmarshalJSON handles primary_name_manual being a bool or an empty string from the API.
+func (o *LanInterfaceHost) UnmarshalJSON(data []byte) error {
+	type Alias LanInterfaceHost
+
+	aux := &struct {
+		PrimaryNameManual json.RawMessage `json:"primary_name_manual"`
+		*Alias
+	}{
+		Alias: (*Alias)(o),
+	}
+
+	if err := json.Unmarshal(data, aux); err != nil {
+		return fmt.Errorf("failed to unmarshal LanInterfaceHost: %w", err)
+	}
+
+	if len(aux.PrimaryNameManual) == 0 {
+		o.PrimaryNameManual = false
+
+		return nil
+	}
+
+	var boolValue bool
+	if err := json.Unmarshal(aux.PrimaryNameManual, &boolValue); err == nil {
+		o.PrimaryNameManual = boolValue
+
+		return nil
+	}
+
+	var stringValue string
+	if err := json.Unmarshal(aux.PrimaryNameManual, &stringValue); err == nil {
+		if stringValue == "" {
+			o.PrimaryNameManual = false
+
+			return nil
+		}
+
+		return fmt.Errorf("received unexpected non-empty string for primary_name_manual: '%s'", stringValue)
+	}
+
+	return fmt.Errorf("failed to parse primary_name_manual field: '%s'", string(aux.PrimaryNameManual))
 }
 
 type LanHostAccessPoint struct {
