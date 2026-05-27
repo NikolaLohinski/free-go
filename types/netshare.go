@@ -10,8 +10,8 @@ type SambaConfiguration struct {
 }
 
 type SambaConfigurationPayload struct {
-	SambaConfiguration `json:",inline"`
-	LoginPassword      string `json:"login_password"` // Samba user password
+	SambaConfiguration
+	LoginPassword string `json:"login_password"` // Samba user password
 }
 
 type AFPConfiguration struct {
@@ -22,8 +22,8 @@ type AFPConfiguration struct {
 }
 
 type AFPConfigurationPayload struct {
-	AFPConfiguration `json:",inline"`
-	LoginPassword    string `json:"login_password"` // Afp user password
+	AFPConfiguration
+	LoginPassword string `json:"login_password"` // Afp user password
 }
 
 type netshareAFPServerType = string
