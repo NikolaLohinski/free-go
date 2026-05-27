@@ -80,7 +80,7 @@ func DiscoverMDNS(ctx context.Context, timeout time.Duration) ([]types.MDNSDisco
 				break
 			}
 
-			return collectMDNSEntries(entries), fmt.Errorf("failed to read mDNS response: %w", err)
+			return nil, fmt.Errorf("failed to read mDNS response: %w", err)
 		}
 
 		response := new(dns.Msg)
