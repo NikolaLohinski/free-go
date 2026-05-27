@@ -41,7 +41,15 @@ var _ = Describe("parseMDNSResponse", func() {
 				},
 				&dns.TXT{
 					Hdr: dns.RR_Header{Name: "Freebox Server._fbx-api._tcp.local.", Rrtype: dns.TypeTXT},
-					Txt: []string{"api_version=10", "device_type=FreeboxServer"},
+					Txt: []string{
+						"uid=23b86ec8091013d668829fe12791fdab",
+						"api_version=4.0",
+						"device_type=FreeboxServer1,2",
+						"api_base_url=/api/",
+						"api_domain=abcdefgh.fbxos.fr",
+						"https_available=1",
+						"https_port=3615",
+					},
 				},
 				&dns.A{
 					Hdr: dns.RR_Header{Name: "mafreebox.freebox.fr.", Rrtype: dns.TypeA},
@@ -59,10 +67,13 @@ var _ = Describe("parseMDNSResponse", func() {
 			Expect(e.Port).To(Equal(uint16(80)))
 			Expect(e.IPv4).To(HaveLen(1))
 			Expect(e.IPv4[0].String()).To(Equal("192.168.1.254"))
-			Expect(e.Info).To(Equal(map[string]string{
-				"api_version": "10",
-				"device_type": "FreeboxServer",
-			}))
+			Expect(e.UID).To(Equal("23b86ec8091013d668829fe12791fdab"))
+			Expect(e.APIVersion).To(Equal("4.0"))
+			Expect(e.DeviceType).To(Equal("FreeboxServer1,2"))
+			Expect(e.APIBaseURL).To(Equal("/api/"))
+			Expect(e.APIDomain).To(Equal("abcdefgh.fbxos.fr"))
+			Expect(e.HTTPSAvailable).To(BeTrue())
+			Expect(e.HTTPSPort).To(Equal(3615))
 		})
 	})
 
@@ -135,7 +146,6 @@ var _ = Describe("parseMDNSResponse", func() {
 			entries["Freebox Server._fbx-api._tcp.local."] = &types.MDNSDiscovery{
 				Name:     "Freebox Server",
 				Hostname: "mafreebox.freebox.fr",
-				Info:     map[string]string{},
 			}
 			response.Extra = []dns.RR{
 				&dns.AAAA{
@@ -158,7 +168,6 @@ var _ = Describe("parseMDNSResponse", func() {
 				Name:     "Freebox Server",
 				Hostname: "mafreebox.freebox.fr",
 				IPv4:     []net.IP{net.ParseIP("192.168.1.254")},
-				Info:     map[string]string{},
 			}
 			response.Extra = []dns.RR{
 				&dns.A{
