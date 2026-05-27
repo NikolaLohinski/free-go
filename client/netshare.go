@@ -41,8 +41,10 @@ func (c *client) GetAFPConfiguration(ctx context.Context) (result types.AFPConfi
 		return result, fmt.Errorf("failed to GET netshare/afp/ endpoint: %w", err)
 	}
 
-	if err = c.fromGenericResponse(response, &result); err != nil {
-		return result, fmt.Errorf("failed to get AFP configuration from generic response: %w", err)
+	if response.Result != nil {
+		if err = c.fromGenericResponse(response, &result); err != nil {
+			return types.AFPConfiguration{}, fmt.Errorf("failed to get AFP configuration from generic response: %w", err)
+		}
 	}
 
 	return result, nil
