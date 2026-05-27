@@ -11,11 +11,10 @@ var _ = Describe("parseSSDPResponse", func() {
 	var (
 		data   []byte
 		result *types.SSDPDiscovery
-		err    error
 	)
 
 	JustBeforeEach(func() {
-		result, err = parseSSDPResponse(data)
+		result = parseSSDPResponse(data)
 	})
 
 	Context("with a valid Freebox M-SEARCH response", func() {
@@ -30,7 +29,6 @@ var _ = Describe("parseSSDPResponse", func() {
 		})
 
 		It("returns a populated SSDPDiscovery", func() {
-			Expect(err).To(BeNil())
 			Expect(result).NotTo(BeNil())
 			Expect(result.Location).To(Equal("http://192.168.1.254/index.html"))
 			Expect(result.USN).To(Equal("uuid:abc::urn:schemas-freebox-fr:device:Freebox:1"))
@@ -46,8 +44,7 @@ var _ = Describe("parseSSDPResponse", func() {
 				"\r\n")
 		})
 
-		It("returns nil without error", func() {
-			Expect(err).To(BeNil())
+		It("returns nil", func() {
 			Expect(result).To(BeNil())
 		})
 	})
@@ -59,8 +56,7 @@ var _ = Describe("parseSSDPResponse", func() {
 				"\r\n")
 		})
 
-		It("returns nil without error", func() {
-			Expect(err).To(BeNil())
+		It("returns nil", func() {
 			Expect(result).To(BeNil())
 		})
 	})
@@ -73,8 +69,7 @@ var _ = Describe("parseSSDPResponse", func() {
 				"\r\n")
 		})
 
-		It("returns an error", func() {
-			Expect(err).To(MatchError(ContainSubstring("missing LOCATION header")))
+		It("returns nil", func() {
 			Expect(result).To(BeNil())
 		})
 	})
@@ -84,8 +79,7 @@ var _ = Describe("parseSSDPResponse", func() {
 			data = []byte{}
 		})
 
-		It("returns nil without error", func() {
-			Expect(err).To(BeNil())
+		It("returns nil", func() {
 			Expect(result).To(BeNil())
 		})
 	})

@@ -36,21 +36,31 @@ func DiscoverSSDP(ctx context.Context, timeout time.Duration) ([]types.SSDPDisco
 		return nil, fmt.Errorf("failed to send M-SEARCH: %w", err)
 	}
 
-	if err = conn.SetDeadline(time.Now().Add(timeout)); err != nil {
+	deadline := time.Now().Add(timeout)
+	if ctxDeadline, ok := ctx.Deadline(); ok && ctxDeadline.Before(deadline) {
+		deadline = ctxDeadline
+	}
+
+	if err = conn.SetDeadline(deadline); err != nil {
 		return nil, fmt.Errorf("failed to set read deadline: %w", err)
 	}
+
+	done := make(chan struct{})
+	defer close(done)
+
+	go func() {
+		select {
+		case <-ctx.Done():
+			conn.SetDeadline(time.Now()) //nolint:errcheck
+		case <-done:
+		}
+	}()
 
 	seen := map[string]struct{}{}
 	var results []types.SSDPDiscovery
 	buf := make([]byte, 65536)
 
 	for {
-		select {
-		case <-ctx.Done():
-			return results, ctx.Err()
-		default:
-		}
-
 		n, _, err := conn.ReadFromUDP(buf)
 		if err != nil {
 			if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
@@ -60,24 +70,33 @@ func DiscoverSSDP(ctx context.Context, timeout time.Duration) ([]types.SSDPDisco
 			return results, fmt.Errorf("failed to read SSDP response: %w", err)
 		}
 
-		entry, err := parseSSDPResponse(buf[:n])
-		if err != nil || entry == nil {
+		entry := parseSSDPResponse(buf[:n])
+		if entry == nil {
 			continue
 		}
 
-		if _, duplicate := seen[entry.USN]; !duplicate {
-			seen[entry.USN] = struct{}{}
+		dedupKey := entry.USN
+		if dedupKey == "" {
+			dedupKey = entry.Location
+		}
+
+		if _, duplicate := seen[dedupKey]; !duplicate {
+			seen[dedupKey] = struct{}{}
 			results = append(results, *entry)
 		}
+	}
+
+	if err := ctx.Err(); err != nil {
+		return results, err
 	}
 
 	return results, nil
 }
 
-func parseSSDPResponse(data []byte) (*types.SSDPDiscovery, error) {
+func parseSSDPResponse(data []byte) *types.SSDPDiscovery {
 	lines := strings.Split(string(data), "\r\n")
 	if len(lines) == 0 || !strings.HasPrefix(lines[0], "HTTP/1.1 200") {
-		return nil, nil
+		return nil
 	}
 
 	headers := map[string]string{}
@@ -94,19 +113,17 @@ func parseSSDPResponse(data []byte) (*types.SSDPDiscovery, error) {
 		headers[strings.ToUpper(strings.TrimSpace(parts[0]))] = strings.TrimSpace(parts[1])
 	}
 
-	st, ok := headers["ST"]
-	if !ok || st != freeboxSSDPTarget {
-		return nil, nil
+	if headers["ST"] != freeboxSSDPTarget {
+		return nil
 	}
 
-	location, ok := headers["LOCATION"]
-	if !ok || location == "" {
-		return nil, fmt.Errorf("missing LOCATION header in SSDP response")
+	if headers["LOCATION"] == "" {
+		return nil
 	}
 
 	return &types.SSDPDiscovery{
-		Location: location,
+		Location: headers["LOCATION"],
 		USN:      headers["USN"],
 		Server:   headers["SERVER"],
-	}, nil
+	}
 }
