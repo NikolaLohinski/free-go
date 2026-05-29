@@ -50,3 +50,4 @@ func (c *Base64Path) UnmarshalJSON(data []byte) error {
 
 	return nil
 }
+

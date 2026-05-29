@@ -238,6 +238,80 @@ var _ = Describe("filesystem", func() {
 			})
 		})
 	})
+	Context("listing files", func() {
+		const (
+			dirPath       = "path/to/dir"
+			dirPathBase64 = "cGF0aC90by9kaXI="
+		)
+		returnedFiles := new([]types.FileInfo)
+		JustBeforeEach(func(ctx SpecContext) {
+			*returnedFiles, *returnedErr = freeboxClient.ListFiles(ctx, dirPath)
+		})
+		Context("default", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(ghttp.CombineHandlers(
+					ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fs/ls/%s", version, dirPathBase64)),
+					verifyAuth(*sessionToken),
+					ghttp.RespondWith(http.StatusOK, `{
+						"success": true,
+						"result": [
+							{"type": "file", "name": "foo.txt", "path": "cGF0aC90by9kaXIvZm9vLnR4dA==", "size": 1024, "index": 0, "link": false, "hidden": false, "modification": 1711657506, "mimetype": "text/plain", "parent": "cGF0aC90by9kaXI="},
+							{"type": "dir",  "name": "subdir",  "path": "cGF0aC90by9kaXIvc3ViZGly",     "size": 0,    "index": 1, "link": false, "hidden": false, "modification": 1711657506, "mimetype": "",          "parent": "cGF0aC90by9kaXI="}
+						]
+					}`),
+				))
+			})
+			It("should return the list of files", func() {
+				Expect(*returnedErr).ToNot(HaveOccurred())
+				Expect(*returnedFiles).To(HaveLen(2))
+				Expect((*returnedFiles)[0]).To(Equal(types.FileInfo{
+					Type:         "file",
+					Name:         "foo.txt",
+					Path:         "path/to/dir/foo.txt",
+					SizeBytes:    1024,
+					Index:        0,
+					Link:         false,
+					Hidden:       false,
+					Modification: 1711657506,
+					MimeType:     "text/plain",
+					Parent:       "path/to/dir",
+				}))
+				Expect((*returnedFiles)[1]).To(Equal(types.FileInfo{
+					Type:         "dir",
+					Name:         "subdir",
+					Path:         "path/to/dir/subdir",
+					SizeBytes:    0,
+					Index:        1,
+					Link:         false,
+					Hidden:       false,
+					Modification: 1711657506,
+					MimeType:     "",
+					Parent:       "path/to/dir",
+				}))
+			})
+		})
+		Context("when the server returns an error", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(ghttp.CombineHandlers(
+					ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fs/ls/%s", version, dirPathBase64)),
+					verifyAuth(*sessionToken),
+					ghttp.RespondWith(http.StatusOK, `{"success":false,"error_code":"path_not_found","msg":"not found"}`),
+				))
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+				Expect(*returnedErr).To(Equal(client.ErrPathNotFound))
+			})
+		})
+		Context("when the server fails to respond", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			It("should return an error", func() {
+				Expect(*returnedErr).ToNot(BeNil())
+			})
+		})
+	})
 	Context("updating filesystem task", func() {
 		const identifier int64 = 42
 		returnedTask := new(types.FileSystemTask)

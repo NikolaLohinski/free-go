@@ -59,6 +59,25 @@ func (c *client) RemoveFiles(ctx context.Context, paths []string) (task types.Fi
 	return task, nil
 }
 
+func (c *client) ListFiles(ctx context.Context, path string) (files []types.FileInfo, err error) {
+	base64Path := base64.StdEncoding.EncodeToString([]byte(path))
+
+	response, err := c.get(ctx, "fs/ls/"+base64Path, c.withSession(ctx))
+	if err != nil {
+		if response != nil && response.ErrorCode == pathNotFoundCode {
+			return files, ErrPathNotFound
+		}
+
+		return files, fmt.Errorf("failed to GET fs/ls/%s endpoint: %w", base64Path, err)
+	}
+
+	if err = c.fromGenericResponse(response, &files); err != nil {
+		return files, fmt.Errorf("failed to get a list of files from a generic response: %w", err)
+	}
+
+	return files, nil
+}
+
 func (c *client) UpdateFileSystemTask(ctx context.Context, identifier int64, payload types.FileSytemTaskUpdate) (task types.FileSystemTask, err error) {
 	response, err := c.put(ctx, fmt.Sprintf("fs/tasks/%d", identifier), payload, c.withSession(ctx))
 	if err != nil {
@@ -139,7 +158,7 @@ func (c *client) MoveFiles(ctx context.Context, source []string, destination str
 			return result, ErrDestinationConflict
 		}
 
-		return result, fmt.Errorf("failed to POST to fs/mkdir/ endpoint: %w", err)
+		return result, fmt.Errorf("failed to POST to fs/mv/ endpoint: %w", err)
 	}
 
 	if err = c.fromGenericResponse(response, &result); err != nil {

@@ -43,6 +43,7 @@ type Client interface {
 	ListLanInterfaceInfo(context.Context) ([]types.LanInfo, error)
 	GetLanInterface(ctx context.Context, name string) (result []types.LanInterfaceHost, err error)
 	GetLanInterfaceHost(ctx context.Context, interfaceName, identifier string) (result types.LanInterfaceHost, err error)
+	DeleteLanInterfaceHost(ctx context.Context, interfaceName, identifier string) error
 	// virtual machines
 	GetVirtualMachineInfo(context.Context) (result types.VirtualMachinesInfo, err error)
 	GetVirtualMachineDistributions(context.Context) (result []types.VirtualMachineDistribution, err error)
@@ -73,6 +74,7 @@ type Client interface {
 	AddHashFileTask(ctx context.Context, payload types.HashPayload) (task types.FileSystemTask, err error)
 	GetHashResult(ctx context.Context, identifier int64) (result string, err error)
 	GetFile(ctx context.Context, path string) (result types.File, err error)
+	ListFiles(ctx context.Context, path string) (files []types.FileInfo, err error)
 	MoveFiles(ctx context.Context, sources []string, destination string, mode types.FileMoveMode) (result types.FileSystemTask, err error)
 	CopyFiles(ctx context.Context, sources []string, destination string, mode types.FileCopyMode) (result types.FileSystemTask, err error)
 	ExtractFile(ctx context.Context, payload types.ExtractFilePayload) (task types.FileSystemTask, err error)
@@ -103,6 +105,11 @@ type Client interface {
 	UpdateVPNUser(ctx context.Context, login string, payload types.VPNUserPayload) (types.VPNUser, error)
 	DeleteVPNUser(ctx context.Context, login string) error
 	GetVPNUserClientConfig(ctx context.Context, login string) (string, error)
+	// netshare
+	GetSambaConfiguration(ctx context.Context) (types.SambaConfiguration, error)
+	UpdateSambaConfiguration(ctx context.Context, payload types.SambaConfigurationPayload) (types.SambaConfiguration, error)
+	GetAFPConfiguration(ctx context.Context) (types.AFPConfiguration, error)
+	UpdateAFPConfiguration(ctx context.Context, payload types.AFPConfigurationPayload) (types.AFPConfiguration, error)
 	// network control
 	ListNetworkControl(ctx context.Context) ([]types.NetworkControlInfo, error)
 	GetNetworkControl(ctx context.Context, identifier int64) (types.NetworkControlInfo, error)
