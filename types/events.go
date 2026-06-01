@@ -84,7 +84,6 @@ func (n *WebSocketNotification) LanHost() (*LanHost, error) {
 type (
 	eventSource string
 	eventName   string
-	eventAction string
 )
 
 type (
