@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/nikolalohinski/free-go/types"
@@ -77,25 +78,36 @@ func waitJSONResponse[T interface{}](ctx context.Context, ws *websocket.Conn) (*
 }
 
 func waitResponse(ctx context.Context, ws *websocket.Conn, expectedType int) ([]byte, error) {
+	type readResult struct {
+		msgType int
+		data    []byte
+		err     error
+	}
 	for {
+		ch := make(chan readResult, 1)
+		go func() {
+			msgType, data, err := ws.ReadMessage()
+			ch <- readResult{msgType, data, err}
+		}()
 		select {
 		case <-ctx.Done():
+			ws.SetReadDeadline(time.Now())
+			<-ch
 			return nil, fmt.Errorf("cancelled: %w", ctx.Err())
-		default:
-			messageType, data, err := ws.ReadMessage()
-			if err != nil {
-				if expectedType == websocket.CloseMessage && websocket.IsUnexpectedCloseError(err) {
-					return data, nil
+		case r := <-ch:
+			if r.err != nil {
+				if expectedType == websocket.CloseMessage && websocket.IsUnexpectedCloseError(r.err) {
+					return r.data, nil
 				}
 
-				return nil, fmt.Errorf("read websocket message: %w", err)
+				return nil, fmt.Errorf("read websocket message: %w", r.err)
 			}
 
-			if messageType == expectedType {
-				return data, nil
+			if r.msgType == expectedType {
+				return r.data, nil
 			}
-			if messageType == websocket.CloseMessage {
-				return data, fmt.Errorf("websocket closed: %w", errors.New(string(data)))
+			if r.msgType == websocket.CloseMessage {
+				return r.data, fmt.Errorf("websocket closed: %w", errors.New(string(r.data)))
 			}
 		}
 	}
