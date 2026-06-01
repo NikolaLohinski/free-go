@@ -75,7 +75,7 @@ At the time of this writing, generating credentials can only be done via the Fre
 - [x] [Discovery](https://dev.freebox.fr/sdk/os/#freebox-discovery)
   - [x] HTTP (`GET /api_version`)
   - [x] mDNS (`_fbx-api._tcp.local`)
-  - [ ] UPnP/SSDP (`urn:schemas-freebox-fr:device:Freebox:1`)
+  - [x] UPnP/SSDP (`urn:schemas-freebox-fr:device:Freebox:1`)
 - [ ] [Connection](https://dev.freebox.fr/sdk/os/connection/) : `/connection/*`
   - [ ] Get the current Connection status
   - [ ] Get the current Connection configuration
