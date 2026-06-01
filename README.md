@@ -74,7 +74,7 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [x] Closing the current session
 - [x] [Discovery](https://dev.freebox.fr/sdk/os/#freebox-discovery)
   - [x] HTTP (`GET /api_version`)
-  - [ ] mDNS (`_fbx-api._tcp.local`)
+  - [x] mDNS (`_fbx-api._tcp.local`)
   - [x] UPnP/SSDP (`urn:schemas-freebox-fr:device:Freebox:1`)
 - [ ] [Connection](https://dev.freebox.fr/sdk/os/connection/) : `/connection/*`
   - [ ] Get the current Connection status
@@ -155,7 +155,7 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [x] Get file information
   - [x] Download a file
   - [x] Remove files
-  - [ ] List files
+  - [x] List files
   - [x] Move files
   - [x] Copy files
   - [ ] Concatenate files
@@ -247,6 +247,11 @@ At the time of this writing, generating credentials can only be done via the Fre
 - [ ] [Universal Plug and Play Audio Video](https://dev.freebox.fr/sdk/os/upnpav/) : `/upnpav/*`
   - [ ] Get the UPnP AV configuration
   - [ ] Update UPnP AV configuration
+- [x] [Network Share](https://dev.freebox.fr/sdk/os/network_share/) : `/netshare/*`
+  - [x] Get the Samba configuration
+  - [x] Update the Samba configuration
+  - [x] Get the AFP configuration
+  - [x] Update the AFP configuration
 - [x] [VPN](https://dev.freebox.fr/sdk/os/vpn/) : `/vpn/*`
   - [x] Get the VPN configuration
   - [x] Update the VPN configuration
@@ -255,6 +260,39 @@ At the time of this writing, generating credentials can only be done via the Fre
   - [x] Update a VPN client
   - [x] Delete a VPN client
   - [x] Create a VPN client
+- [ ] [Home](http://mafreebox.freebox.fr/#Fbx.os.app.help.app) (UNSTABLE) : `/home/*`
+  - [ ] List all home nodes
+  - [ ] Get a home node
+  - [ ] Update a home node
+  - [ ] Delete a home node
+  - [ ] List home adapters
+  - [ ] Get a home adapter
+  - [ ] Delete a home adapter
+  - [ ] Get an endpoint value
+  - [ ] Set an endpoint value
+  - [ ] Bulk-get endpoint values
+  - [ ] List home links
+  - [ ] Get a home link
+  - [ ] Delete a home link
+  - [ ] List available rules for a node
+  - [ ] Get a rule template configuration
+  - [ ] Get an existing rule configuration
+  - [ ] Create a rule from a template
+  - [ ] Update a rule
+  - [ ] Get the security module (alarm)
+  - [ ] List SMS numbers
+  - [ ] Create an SMS number
+  - [ ] Update an SMS number
+  - [ ] Send validation SMS
+  - [ ] Validate an SMS number
+  - [ ] List home tilesets
+  - [ ] Get a home tile
+  - [ ] Get pairing state
+  - [ ] Start/advance/stop pairing
+- [ ] [Camera](http://mafreebox.freebox.fr/#Fbx.os.app.help.app) (UNSTABLE) : `/camera/*`
+  - [ ] Get camera info and stream URLs
+  - [ ] Get a camera snapshot
+  - [ ] Get a camera stream (M3U8)
 
 ## Development
 

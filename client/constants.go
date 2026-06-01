@@ -15,6 +15,7 @@ const (
 	ErrAppIDIsNotSet              = Error("app id is not set")
 	ErrPrivateTokenIsNotSet       = Error("private token is not set")
 	ErrInterfaceNotFound          = Error("interface not found")
+	ErrDHCPStaticLeaseNotFound    = Error("dhcp static lease not found")
 	ErrInterfaceHostNotFound      = Error("interface host not found")
 	ErrPortForwardingRuleNotFound = Error("port forwarding rule not found")
 	ErrVirtualMachineNotFound     = Error("virtual machine not found")
@@ -23,6 +24,7 @@ const (
 	ErrTaskNotFound               = Error("task not found")
 	ErrDestinationConflict        = Error("file or folder already exists")
 	ErrVPNUserNotFound            = Error("vpn user not found")
+	ErrAccessDenied               = Error("access denied")
 )
 
 var (
