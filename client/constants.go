@@ -12,6 +12,7 @@ func (e Error) Error() string {
 
 const (
 	// Errors.
+	ErrAccessDenied               = Error("access denied")
 	ErrAppIDIsNotSet              = Error("app id is not set")
 	ErrPrivateTokenIsNotSet       = Error("private token is not set")
 	ErrInterfaceNotFound          = Error("interface not found")
@@ -24,7 +25,7 @@ const (
 	ErrTaskNotFound               = Error("task not found")
 	ErrDestinationConflict        = Error("file or folder already exists")
 	ErrVPNUserNotFound            = Error("vpn user not found")
-	ErrAccessDenied               = Error("access denied")
+	ErrNetworkControlNotFound     = Error("network control not found")
 )
 
 var (

@@ -110,6 +110,10 @@ type Client interface {
 	UpdateSambaConfiguration(ctx context.Context, payload types.SambaConfigurationPayload) (types.SambaConfiguration, error)
 	GetAFPConfiguration(ctx context.Context) (types.AFPConfiguration, error)
 	UpdateAFPConfiguration(ctx context.Context, payload types.AFPConfigurationPayload) (types.AFPConfiguration, error)
+	// network control
+	ListNetworkControl(ctx context.Context) ([]types.NetworkControlInfo, error)
+	GetNetworkControl(ctx context.Context, identifier int64) (types.NetworkControlInfo, error)
+	UpdateNetworkControl(ctx context.Context, payload types.NetworkControlPayload) (types.NetworkControlInfo, error)
 }
 
 type HTTPClient interface {
