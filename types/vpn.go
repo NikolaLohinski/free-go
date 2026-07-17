@@ -1,18 +1,59 @@
 package types
 
-// OpenVPNServerConfig is the OpenVPN server configuration.
-// Endpoint: GET/PUT /vpn/openvpn/
-// Note: field names are from the Freebox OS API — verify against a live Freebox with
-// DevTools if any mismatch is observed.
-type OpenVPNServerConfig struct {
-	Enabled       bool   `json:"enabled"`                  // Whether the OpenVPN server is enabled
-	ServerPort    int64  `json:"server_port"`              // UDP port the server listens on (default 1194)
-	ServerIP      string `json:"server_ip"`                // VPN subnet IP address (e.g. "10.8.0.0")
-	ServerMask    string `json:"server_mask"`              // VPN subnet mask (e.g. "255.255.255.0")
-	PushDefaultGW bool   `json:"push_default_gw"`          // Whether to push the default gateway to clients
-	PushDHCP      bool   `json:"push_dhcp"`                // Whether to push DHCP settings to clients
-	CA            string `json:"ca,omitempty"`             // CA certificate in PEM format (read-only, set by Freebox)
-	Cert          string `json:"cert,omitempty"`           // Server certificate in PEM format (read-only, set by Freebox)
+// VPNServerID identifies one of the VPN server configurations exposed by the
+// Freebox. Confirmed against the official [VPN Server API] documentation.
+//
+// [VPN Server API]: https://dev.freebox.fr/sdk/os/vpn/
+type VPNServerID string
+
+const (
+	VPNServerIDPPTP          VPNServerID = "pptp"
+	VPNServerIDOpenVPNRouted VPNServerID = "openvpn_routed"
+	VPNServerIDOpenVPNBridge VPNServerID = "openvpn_bridge"
+)
+
+// VPNServerType is the underlying protocol of a VPN server configuration.
+type VPNServerType string
+
+const (
+	VPNServerTypePPTP    VPNServerType = "pptp"
+	VPNServerTypeOpenVPN VPNServerType = "openvpn"
+	VPNServerTypeIPSec   VPNServerType = "ipsec"
+)
+
+// OpenVPNCipher is the cipher used by an OpenVPN server.
+type OpenVPNCipher string
+
+const (
+	OpenVPNCipherBlowfish OpenVPNCipher = "blowfish"
+	OpenVPNCipherAES128   OpenVPNCipher = "aes128"
+	OpenVPNCipherAES256   OpenVPNCipher = "aes256"
+)
+
+// OpenVPNConfig holds the settings nested under "conf_openvpn". Only present
+// when the server type is openvpn.
+type OpenVPNConfig struct {
+	Cipher          OpenVPNCipher `json:"cipher,omitempty"` // Cipher used by the OpenVPN server
+	DisableFragment bool          `json:"disable_fragment"` // Disable the fragment configuration option
+	UseTCP          bool          `json:"use_tcp"`          // Use TCP instead of UDP
+}
+
+// VPNServerConfig is the configuration of one VPN server.
+// Endpoint: GET/PUT /vpn/{id}/config/ where id is one of pptp, openvpn_routed, openvpn_bridge.
+type VPNServerConfig struct {
+	ID          VPNServerID    `json:"id,omitempty"`           // VPN server id (read-only)
+	Type        VPNServerType  `json:"type,omitempty"`         // VPN server type (read-only)
+	Enabled     bool           `json:"enabled"`                // Whether the VPN server is enabled
+	EnableIPv4  bool           `json:"enable_ipv4"`             // Enable IPv4 (not relevant for openvpn_bridge and pptp)
+	EnableIPv6  bool           `json:"enable_ipv6"`             // Enable IPv6 (not relevant for openvpn_bridge and pptp)
+	Port        int64          `json:"port"`                   // Server port (only editable when type is openvpn)
+	MinPort     int64          `json:"min_port,omitempty"`     // Read-only lower bound tied to the connection's ipv4_port_range
+	MaxPort     int64          `json:"max_port,omitempty"`     // Read-only upper bound tied to the connection's ipv4_port_range
+	ConfOpenVPN *OpenVPNConfig `json:"conf_openvpn,omitempty"` // OpenVPN-specific settings, only available when type is openvpn
+	IPStart     string         `json:"ip_start,omitempty"`     // Read-only IPv4 pool range start for clients
+	IPEnd       string         `json:"ip_end,omitempty"`       // Read-only IPv4 pool range end for clients
+	IP6Start    string         `json:"ip6_start,omitempty"`    // Read-only IPv6 pool range start for clients
+	IP6End      string         `json:"ip6_end,omitempty"`      // Read-only IPv6 pool range end for clients
 }
 
 // VPNUserPayload is the create/update payload for a VPN user.

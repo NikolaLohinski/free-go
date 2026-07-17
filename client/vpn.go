@@ -12,29 +12,33 @@ const (
 	codeVPNUserNotFound = "noent"
 )
 
-// GetOpenVPNServerConfig returns the current OpenVPN server configuration.
-func (c *client) GetOpenVPNServerConfig(ctx context.Context) (config types.OpenVPNServerConfig, err error) {
-	response, err := c.get(ctx, "vpn/openvpn/", c.withSession(ctx))
+// GetVPNServerConfig returns the current configuration of the given VPN server.
+func (c *client) GetVPNServerConfig(ctx context.Context, id types.VPNServerID) (config types.VPNServerConfig, err error) {
+	endpoint := fmt.Sprintf("vpn/%s/config/", id)
+
+	response, err := c.get(ctx, endpoint, c.withSession(ctx))
 	if err != nil {
-		return config, fmt.Errorf("failed to GET vpn/openvpn/ endpoint: %w", err)
+		return config, fmt.Errorf("failed to GET %s endpoint: %w", endpoint, err)
 	}
 
 	if err = c.fromGenericResponse(response, &config); err != nil {
-		return config, fmt.Errorf("failed to get OpenVPN server config from generic response: %w", err)
+		return config, fmt.Errorf("failed to get VPN server config from generic response: %w", err)
 	}
 
 	return config, nil
 }
 
-// UpdateOpenVPNServerConfig updates the OpenVPN server configuration.
-func (c *client) UpdateOpenVPNServerConfig(ctx context.Context, payload types.OpenVPNServerConfig) (config types.OpenVPNServerConfig, err error) {
-	response, err := c.put(ctx, "vpn/openvpn/", payload, c.withSession(ctx))
+// UpdateVPNServerConfig updates the configuration of the given VPN server.
+func (c *client) UpdateVPNServerConfig(ctx context.Context, id types.VPNServerID, payload types.VPNServerConfig) (config types.VPNServerConfig, err error) {
+	endpoint := fmt.Sprintf("vpn/%s/config/", id)
+
+	response, err := c.put(ctx, endpoint, payload, c.withSession(ctx))
 	if err != nil {
-		return config, fmt.Errorf("failed to PUT vpn/openvpn/ endpoint: %w", err)
+		return config, fmt.Errorf("failed to PUT %s endpoint: %w", endpoint, err)
 	}
 
 	if err = c.fromGenericResponse(response, &config); err != nil {
-		return config, fmt.Errorf("failed to get updated OpenVPN server config from generic response: %w", err)
+		return config, fmt.Errorf("failed to get updated VPN server config from generic response: %w", err)
 	}
 
 	return config, nil

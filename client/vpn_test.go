@@ -45,27 +45,29 @@ var _ = Describe("vpn", func() {
 
 	// ── OpenVPN server config ───────────────────────────────────────────────────
 
-	Context("getting the OpenVPN server config", func() {
-		returnedConfig := new(types.OpenVPNServerConfig)
+	Context("getting a VPN server config", func() {
+		returnedConfig := new(types.VPNServerConfig)
 		JustBeforeEach(func() {
-			*returnedConfig, *returnedErr = freeboxClient.GetOpenVPNServerConfig(ctx)
+			*returnedConfig, *returnedErr = freeboxClient.GetVPNServerConfig(ctx, types.VPNServerIDOpenVPNRouted)
 		})
 		Context("default", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/vpn/openvpn/", version)),
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/vpn/openvpn_routed/config/", version)),
 						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
 							"result": {
+								"id": "openvpn_routed",
+								"type": "openvpn",
 								"enabled": true,
-								"server_port": 1194,
-								"server_ip": "10.8.0.0",
-								"server_mask": "255.255.255.0",
-								"push_default_gw": false,
-								"push_dhcp": true,
-								"ca": "-----BEGIN CERTIFICATE-----\nMIIB...\n-----END CERTIFICATE-----\n"
+								"port": 1194,
+								"conf_openvpn": {
+									"cipher": "blowfish"
+								},
+								"ip_start": "192.168.27.65",
+								"ip_end": "192.168.27.95"
 							}
 						}`),
 					),
@@ -74,11 +76,12 @@ var _ = Describe("vpn", func() {
 			It("should return the correct config", func() {
 				Expect(*returnedErr).To(BeNil())
 				Expect(*returnedConfig).To(MatchFields(IgnoreExtras, Fields{
-					"Enabled":    Equal(true),
-					"ServerPort": Equal(int64(1194)),
-					"ServerIP":   Equal("10.8.0.0"),
-					"ServerMask": Equal("255.255.255.0"),
-					"PushDHCP":   Equal(true),
+					"ID":      Equal(types.VPNServerIDOpenVPNRouted),
+					"Type":    Equal(types.VPNServerTypeOpenVPN),
+					"Enabled": Equal(true),
+					"Port":    Equal(int64(1194)),
+					"IPStart": Equal("192.168.27.65"),
+					"IPEnd":   Equal("192.168.27.95"),
 				}))
 			})
 		})
@@ -100,46 +103,51 @@ var _ = Describe("vpn", func() {
 		})
 	})
 
-	Context("updating the OpenVPN server config", func() {
+	Context("updating a VPN server config", func() {
 		var (
-			returnedConfig = new(types.OpenVPNServerConfig)
-			payload        = new(types.OpenVPNServerConfig)
+			returnedConfig = new(types.VPNServerConfig)
+			payload        = new(types.VPNServerConfig)
 		)
 		BeforeEach(func() {
-			*payload = types.OpenVPNServerConfig{
-				Enabled:    true,
-				ServerPort: 1194,
-				ServerIP:   "10.8.0.0",
-				ServerMask: "255.255.255.0",
+			*payload = types.VPNServerConfig{
+				Enabled: true,
+				Port:    1194,
+				ConfOpenVPN: &types.OpenVPNConfig{
+					Cipher: types.OpenVPNCipherBlowfish,
+				},
 			}
 		})
 		JustBeforeEach(func() {
-			*returnedConfig, *returnedErr = freeboxClient.UpdateOpenVPNServerConfig(ctx, *payload)
+			*returnedConfig, *returnedErr = freeboxClient.UpdateVPNServerConfig(ctx, types.VPNServerIDOpenVPNRouted, *payload)
 		})
 		Context("default", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest(http.MethodPut, fmt.Sprintf("/api/%s/vpn/openvpn/", version)),
+						ghttp.VerifyRequest(http.MethodPut, fmt.Sprintf("/api/%s/vpn/openvpn_routed/config/", version)),
 						ghttp.VerifyContentType("application/json"),
 						verifyAuth(*sessionToken),
 						ghttp.VerifyJSON(`{
 							"enabled": true,
-							"server_port": 1194,
-							"server_ip": "10.8.0.0",
-							"server_mask": "255.255.255.0",
-							"push_default_gw": false,
-							"push_dhcp": false
+							"enable_ipv4": false,
+							"enable_ipv6": false,
+							"port": 1194,
+							"conf_openvpn": {
+								"cipher": "blowfish",
+								"disable_fragment": false,
+								"use_tcp": false
+							}
 						}`),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
 							"result": {
+								"id": "openvpn_routed",
+								"type": "openvpn",
 								"enabled": true,
-								"server_port": 1194,
-								"server_ip": "10.8.0.0",
-								"server_mask": "255.255.255.0",
-								"push_default_gw": false,
-								"push_dhcp": false
+								"port": 1194,
+								"conf_openvpn": {
+									"cipher": "blowfish"
+								}
 							}
 						}`),
 					),
@@ -148,8 +156,8 @@ var _ = Describe("vpn", func() {
 			It("should return the updated config", func() {
 				Expect(*returnedErr).To(BeNil())
 				Expect(*returnedConfig).To(MatchFields(IgnoreExtras, Fields{
-					"Enabled":    Equal(true),
-					"ServerPort": Equal(int64(1194)),
+					"Enabled": Equal(true),
+					"Port":    Equal(int64(1194)),
 				}))
 			})
 		})
@@ -165,7 +173,7 @@ var _ = Describe("vpn", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest(http.MethodPut, fmt.Sprintf("/api/%s/vpn/openvpn/", version)),
+						ghttp.VerifyRequest(http.MethodPut, fmt.Sprintf("/api/%s/vpn/openvpn_routed/config/", version)),
 						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
