@@ -97,8 +97,8 @@ type Client interface {
 	DeleteUploadTask(ctx context.Context, identifier int64) error
 	CleanUploadTasks(ctx context.Context) error
 	// vpn
-	GetOpenVPNServerConfig(ctx context.Context) (types.OpenVPNServerConfig, error)
-	UpdateOpenVPNServerConfig(ctx context.Context, payload types.OpenVPNServerConfig) (types.OpenVPNServerConfig, error)
+	GetVPNServerConfig(ctx context.Context, id types.VPNServerID) (types.VPNServerConfig, error)
+	UpdateVPNServerConfig(ctx context.Context, id types.VPNServerID, payload types.VPNServerConfig) (types.VPNServerConfig, error)
 	ListVPNUsers(ctx context.Context) ([]types.VPNUser, error)
 	GetVPNUser(ctx context.Context, login string) (types.VPNUser, error)
 	CreateVPNUser(ctx context.Context, payload types.VPNUserPayload) (types.VPNUser, error)
