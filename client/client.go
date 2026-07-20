@@ -114,6 +114,8 @@ type Client interface {
 	ListNetworkControl(ctx context.Context) ([]types.NetworkControlInfo, error)
 	GetNetworkControl(ctx context.Context, identifier int64) (types.NetworkControlInfo, error)
 	UpdateNetworkControl(ctx context.Context, payload types.NetworkControlPayload) (types.NetworkControlInfo, error)
+	// profile
+	ListProfiles(context.Context) ([]types.Profile, error)
 }
 
 type HTTPClient interface {
