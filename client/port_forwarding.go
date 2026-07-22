@@ -44,29 +44,13 @@ func (c *client) GetPortForwardingRule(ctx context.Context, identifier int64) (r
 	return rule, nil
 }
 
-// portForwardingRuleWritePayload adds the fields the Freebox OS web UI always sends
-// on fw/redir/ writes (id, hostname, host, valid) on top of the documented payload.
-// Omitting them causes the API to reject create/update calls with a generic
-// "internal" error, even though those fields are read-only/computed on reads.
-//
-// Host is typed as an interface{} because the web UI sends it as an empty string
-// on create (no host resolved yet) but as the full host object on update, mirroring
-// back whatever the previous GET returned: the update fails with the same generic
-// error if it isn't echoed back verbatim.
-type portForwardingRuleWritePayload struct {
-	types.PortForwardingRulePayload
-
-	ID       int64       `json:"id"`
-	Hostname string      `json:"hostname"`
-	Host     interface{} `json:"host"`
-	Valid    bool        `json:"valid"`
-}
-
 func (c *client) CreatePortForwardingRule(
 	ctx context.Context,
 	payload types.PortForwardingRulePayload,
 ) (rule types.PortForwardingRule, err error) {
-	response, err := c.post(ctx, "fw/redir/", portForwardingRuleWritePayload{PortForwardingRulePayload: payload, Host: ""}, c.withSession(ctx))
+	payload.Host = ""
+
+	response, err := c.post(ctx, "fw/redir/", payload, c.withSession(ctx))
 	if err != nil {
 		return rule, fmt.Errorf("failed to POST to fw/redir/ endpoint: %w", err)
 	}
@@ -104,15 +88,12 @@ func (c *client) UpdatePortForwardingRule(
 		return rule, err
 	}
 
-	writePayload := portForwardingRuleWritePayload{
-		PortForwardingRulePayload: payload,
-		ID:                        identifier,
-		Hostname:                  current.Hostname,
-		Host:                      current.Host,
-		Valid:                     current.Valid,
-	}
+	payload.ID = identifier
+	payload.Hostname = current.Hostname
+	payload.Host = current.Host
+	payload.Valid = current.Valid
 
-	response, err := c.put(ctx, fmt.Sprintf("fw/redir/%d", identifier), writePayload, c.withSession(ctx))
+	response, err := c.put(ctx, fmt.Sprintf("fw/redir/%d", identifier), payload, c.withSession(ctx))
 	if err != nil {
 		if response != nil && response.ErrorCode == codePortForwardingNotFound {
 			return rule, ErrPortForwardingRuleNotFound
