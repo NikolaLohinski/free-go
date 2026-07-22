@@ -44,13 +44,25 @@ func (c *client) GetPortForwardingRule(ctx context.Context, identifier int64) (r
 	return rule, nil
 }
 
+// createPortForwardingRulePayload adds the fields the Freebox OS web UI always
+// sends when creating a fw/redir/ rule (id, hostname, host, valid) on top of the
+// documented payload. Omitting them causes the API to reject the call with a
+// generic "internal_error", even though those fields are read-only/computed on
+// reads. They're all zero-valued placeholders since no host has been resolved yet.
+type createPortForwardingRulePayload struct {
+	types.PortForwardingRulePayload
+
+	ID       int64  `json:"id"`
+	Hostname string `json:"hostname"`
+	Host     string `json:"host"`
+	Valid    bool   `json:"valid"`
+}
+
 func (c *client) CreatePortForwardingRule(
 	ctx context.Context,
 	payload types.PortForwardingRulePayload,
 ) (rule types.PortForwardingRule, err error) {
-	payload.Host = ""
-
-	response, err := c.post(ctx, "fw/redir/", payload, c.withSession(ctx))
+	response, err := c.post(ctx, "fw/redir/", createPortForwardingRulePayload{PortForwardingRulePayload: payload}, c.withSession(ctx))
 	if err != nil {
 		return rule, fmt.Errorf("failed to POST to fw/redir/ endpoint: %w", err)
 	}
@@ -75,6 +87,20 @@ func (c *client) DeletePortForwardingRule(ctx context.Context, identifier int64)
 	return nil
 }
 
+// updatePortForwardingRulePayload adds the fields the Freebox OS web UI always
+// sends when updating a fw/redir/ rule (id, hostname, host, valid) on top of the
+// documented payload. Unlike on create, the API requires the rule's current host
+// binding to be echoed back verbatim here: sending zero-valued placeholders is
+// rejected with the same generic "internal_error" as omitting the fields entirely.
+type updatePortForwardingRulePayload struct {
+	types.PortForwardingRulePayload
+
+	ID       int64                   `json:"id"`
+	Hostname string                  `json:"hostname"`
+	Host     *types.LanInterfaceHost `json:"host"`
+	Valid    bool                    `json:"valid"`
+}
+
 func (c *client) UpdatePortForwardingRule(
 	ctx context.Context,
 	identifier int64,
@@ -88,12 +114,15 @@ func (c *client) UpdatePortForwardingRule(
 		return rule, err
 	}
 
-	payload.ID = identifier
-	payload.Hostname = current.Hostname
-	payload.Host = current.Host
-	payload.Valid = current.Valid
+	writePayload := updatePortForwardingRulePayload{
+		PortForwardingRulePayload: payload,
+		ID:                        identifier,
+		Hostname:                  current.Hostname,
+		Host:                      current.Host,
+		Valid:                     current.Valid,
+	}
 
-	response, err := c.put(ctx, fmt.Sprintf("fw/redir/%d", identifier), payload, c.withSession(ctx))
+	response, err := c.put(ctx, fmt.Sprintf("fw/redir/%d", identifier), writePayload, c.withSession(ctx))
 	if err != nil {
 		if response != nil && response.ErrorCode == codePortForwardingNotFound {
 			return rule, ErrPortForwardingRuleNotFound
