@@ -345,7 +345,11 @@ var _ = Describe("port forwarding", func() {
 							"wan_port_end": 12345,
 							"wan_port_start": 12345,
 							"lan_ip": "192.168.1.254",
-							"ip_proto": "tcp"
+							"ip_proto": "tcp",
+							"id": 0,
+							"hostname": "",
+							"host": "",
+							"valid": false
 						}`),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
@@ -528,7 +532,12 @@ var _ = Describe("port forwarding", func() {
 						ghttp.VerifyContentType("application/json"),
 						verifyAuth(*sessionToken),
 						ghttp.VerifyJSON(`{
-							"enabled": false
+							"enabled": false,
+							"comment": "",
+							"id": 5,
+							"hostname": "",
+							"host": "",
+							"valid": false
 						}`),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
