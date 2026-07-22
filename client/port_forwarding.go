@@ -44,11 +44,24 @@ func (c *client) GetPortForwardingRule(ctx context.Context, identifier int64) (r
 	return rule, nil
 }
 
+// portForwardingRuleWritePayload adds the fields the Freebox OS web UI always sends
+// on fw/redir/ writes (id, hostname, host, valid) on top of the documented payload.
+// Omitting them causes the API to reject create/update calls with a generic
+// "internal" error, even though those fields are read-only/computed on reads.
+type portForwardingRuleWritePayload struct {
+	types.PortForwardingRulePayload
+
+	ID       int64  `json:"id"`
+	Hostname string `json:"hostname"`
+	Host     string `json:"host"`
+	Valid    bool   `json:"valid"`
+}
+
 func (c *client) CreatePortForwardingRule(
 	ctx context.Context,
 	payload types.PortForwardingRulePayload,
 ) (rule types.PortForwardingRule, err error) {
-	response, err := c.post(ctx, "fw/redir/", payload, c.withSession(ctx))
+	response, err := c.post(ctx, "fw/redir/", portForwardingRuleWritePayload{PortForwardingRulePayload: payload}, c.withSession(ctx))
 	if err != nil {
 		return rule, fmt.Errorf("failed to POST to fw/redir/ endpoint: %w", err)
 	}
@@ -78,7 +91,7 @@ func (c *client) UpdatePortForwardingRule(
 	identifier int64,
 	payload types.PortForwardingRulePayload,
 ) (rule types.PortForwardingRule, err error) {
-	response, err := c.put(ctx, fmt.Sprintf("fw/redir/%d", identifier), payload, c.withSession(ctx))
+	response, err := c.put(ctx, fmt.Sprintf("fw/redir/%d", identifier), portForwardingRuleWritePayload{PortForwardingRulePayload: payload, ID: identifier}, c.withSession(ctx))
 	if err != nil {
 		if response != nil && response.ErrorCode == codePortForwardingNotFound {
 			return rule, ErrPortForwardingRuleNotFound
