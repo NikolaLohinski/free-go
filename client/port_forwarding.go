@@ -67,7 +67,7 @@ func (c *client) DeletePortForwardingRule(ctx context.Context, identifier int64)
 			return ErrPortForwardingRuleNotFound
 		}
 
-		return fmt.Errorf("failed to GET fw/redir/%d endpoint: %w", identifier, err)
+		return fmt.Errorf("failed to DELETE fw/redir/%d endpoint: %w", identifier, err)
 	}
 
 	return nil
@@ -84,7 +84,7 @@ func (c *client) UpdatePortForwardingRule(
 			return rule, ErrPortForwardingRuleNotFound
 		}
 
-		return rule, fmt.Errorf("failed to GET fw/redir/%d endpoint: %w", identifier, err)
+		return rule, fmt.Errorf("failed to PUT fw/redir/%d endpoint: %w", identifier, err)
 	}
 
 	if err = c.fromGenericResponse(response, &rule); err != nil {
