@@ -524,21 +524,81 @@ var _ = Describe("port forwarding", func() {
 		JustBeforeEach(func() {
 			*returnedRule, *returnedErr = freeboxClient.UpdatePortForwardingRule(ctx, identifier, *payload)
 		})
+		currentHostJSON := `{
+			"l2ident": {
+				"id": "7E:EC:37:CD:5B:6A",
+				"type": "mac_address"
+			},
+			"active": false,
+			"persistent": false,
+			"names": [
+				{
+					"name": "test",
+					"source": "dhcp"
+				}
+			],
+			"vendor_name": "",
+			"host_type": "workstation",
+			"interface": "pub",
+			"id": "ether-7e:ec:37:cd:5b:6a",
+			"last_time_reachable": 1682579132,
+			"primary_name_manual": false,
+			"l3connectivities": [
+				{
+					"addr": "192.168.1.254",
+					"active": false,
+					"reachable": false,
+					"last_activity": 1682579111,
+					"af": "ipv4",
+					"last_time_reachable": 1682579111,
+					"model": ""
+				}
+			],
+			"network_control": null,
+			"access_point": null,
+			"model": "",
+			"default_name": "testing",
+			"first_activity": 1682578724,
+			"reachable": false,
+			"last_activity": 1682579132,
+			"primary_name": "testing"
+		}`
 		Context("default", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fw/redir/%d", version, identifier)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
+							"success": true,
+							"result": {
+								"enabled": true,
+								"comment": "test",
+								"id": 5,
+								"valid": true,
+								"host": %s,
+								"src_ip": "0.0.0.0",
+								"hostname": "testing",
+								"lan_port": 80,
+								"wan_port_end": 12345,
+								"wan_port_start": 12345,
+								"lan_ip": "192.168.1.254",
+								"ip_proto": "tcp"
+							}
+						}`, currentHostJSON)),
+					),
+					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodPut, fmt.Sprintf("/api/%s/fw/redir/%d", version, identifier)),
 						ghttp.VerifyContentType("application/json"),
 						verifyAuth(*sessionToken),
-						ghttp.VerifyJSON(`{
+						ghttp.VerifyJSON(fmt.Sprintf(`{
 							"enabled": false,
 							"comment": "",
 							"id": 5,
-							"hostname": "",
-							"host": "",
-							"valid": false
-						}`),
+							"hostname": "testing",
+							"host": %s,
+							"valid": true
+						}`, currentHostJSON)),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
 							"result": {
@@ -615,7 +675,7 @@ var _ = Describe("port forwarding", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest(http.MethodPut, fmt.Sprintf("/api/%s/fw/redir/%d", version, identifier)),
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fw/redir/%d", version, identifier)),
 						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"msg": "Impossible de récupérer la redirection : Entrée non trouvée",
@@ -641,6 +701,27 @@ var _ = Describe("port forwarding", func() {
 		Context("when the server returns an unexpected payload", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/fw/redir/%d", version, identifier)),
+						verifyAuth(*sessionToken),
+						ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{
+							"success": true,
+							"result": {
+								"enabled": true,
+								"comment": "test",
+								"id": 5,
+								"valid": true,
+								"host": %s,
+								"src_ip": "0.0.0.0",
+								"hostname": "testing",
+								"lan_port": 80,
+								"wan_port_end": 12345,
+								"wan_port_start": 12345,
+								"lan_ip": "192.168.1.254",
+								"ip_proto": "tcp"
+							}
+						}`, currentHostJSON)),
+					),
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodPut, fmt.Sprintf("/api/%s/fw/redir/%d", version, identifier)),
 						verifyAuth(*sessionToken),
