@@ -48,20 +48,25 @@ func (c *client) GetPortForwardingRule(ctx context.Context, identifier int64) (r
 // on fw/redir/ writes (id, hostname, host, valid) on top of the documented payload.
 // Omitting them causes the API to reject create/update calls with a generic
 // "internal" error, even though those fields are read-only/computed on reads.
+//
+// Host is typed as an interface{} because the web UI sends it as an empty string
+// on create (no host resolved yet) but as the full host object on update, mirroring
+// back whatever the previous GET returned: the update fails with the same generic
+// error if it isn't echoed back verbatim.
 type portForwardingRuleWritePayload struct {
 	types.PortForwardingRulePayload
 
-	ID       int64  `json:"id"`
-	Hostname string `json:"hostname"`
-	Host     string `json:"host"`
-	Valid    bool   `json:"valid"`
+	ID       int64       `json:"id"`
+	Hostname string      `json:"hostname"`
+	Host     interface{} `json:"host"`
+	Valid    bool        `json:"valid"`
 }
 
 func (c *client) CreatePortForwardingRule(
 	ctx context.Context,
 	payload types.PortForwardingRulePayload,
 ) (rule types.PortForwardingRule, err error) {
-	response, err := c.post(ctx, "fw/redir/", portForwardingRuleWritePayload{PortForwardingRulePayload: payload}, c.withSession(ctx))
+	response, err := c.post(ctx, "fw/redir/", portForwardingRuleWritePayload{PortForwardingRulePayload: payload, Host: ""}, c.withSession(ctx))
 	if err != nil {
 		return rule, fmt.Errorf("failed to POST to fw/redir/ endpoint: %w", err)
 	}
@@ -91,7 +96,23 @@ func (c *client) UpdatePortForwardingRule(
 	identifier int64,
 	payload types.PortForwardingRulePayload,
 ) (rule types.PortForwardingRule, err error) {
-	response, err := c.put(ctx, fmt.Sprintf("fw/redir/%d", identifier), portForwardingRuleWritePayload{PortForwardingRulePayload: payload, ID: identifier}, c.withSession(ctx))
+	// The API rejects an update unless the current host binding (hostname, host,
+	// valid) is echoed back verbatim alongside the changed fields, so the current
+	// rule has to be read before it can be written back.
+	current, err := c.GetPortForwardingRule(ctx, identifier)
+	if err != nil {
+		return rule, err
+	}
+
+	writePayload := portForwardingRuleWritePayload{
+		PortForwardingRulePayload: payload,
+		ID:                        identifier,
+		Hostname:                  current.Hostname,
+		Host:                      current.Host,
+		Valid:                     current.Valid,
+	}
+
+	response, err := c.put(ctx, fmt.Sprintf("fw/redir/%d", identifier), writePayload, c.withSession(ctx))
 	if err != nil {
 		if response != nil && response.ErrorCode == codePortForwardingNotFound {
 			return rule, ErrPortForwardingRuleNotFound
