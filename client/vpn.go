@@ -2,7 +2,7 @@ package client
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/nikolalohinski/free-go/types"
@@ -10,6 +10,11 @@ import (
 
 const (
 	codeVPNUserNotFound = "noent"
+
+	// The real Freebox OS API serves OpenVPN client configs per VPN server
+	// (openvpn_routed or openvpn_bridge), not per user in isolation. The
+	// home-automation setup only ever configures the routed server.
+	vpnDownloadConfigServerName = "openvpn_routed"
 )
 
 // GetVPNServerConfig returns the current configuration of the given VPN server.
@@ -126,20 +131,21 @@ func (c *client) DeleteVPNUser(ctx context.Context, login string) error {
 }
 
 // GetVPNUserClientConfig returns the OpenVPN client configuration (.ovpn content) for the given user.
+// The real Freebox OS API serves this as a raw file download at
+// vpn/download_config/{server_name}/{login} (Content-Type: application/x-openvpn-profile),
+// not as a JSON-wrapped result under vpn/user/{login}/config/openvpn (which 404s).
 func (c *client) GetVPNUserClientConfig(ctx context.Context, login string) (string, error) {
-	response, err := c.get(ctx, fmt.Sprintf("vpn/user/%s/config/openvpn", login), c.withSession(ctx))
+	endpoint := fmt.Sprintf("vpn/download_config/%s/%s", vpnDownloadConfigServerName, login)
+
+	body, err := c.getRaw(ctx, endpoint, c.withSession(ctx))
 	if err != nil {
-		if response != nil && response.ErrorCode == codeVPNUserNotFound {
+		var apiErr *APIError
+		if errors.As(err, &apiErr) && apiErr.Code == codeVPNUserNotFound {
 			return "", ErrVPNUserNotFound
 		}
 
-		return "", fmt.Errorf("failed to GET vpn/user/%s/config/openvpn endpoint: %w", login, err)
+		return "", fmt.Errorf("failed to GET %s endpoint: %w", endpoint, err)
 	}
 
-	var config string
-	if err = json.Unmarshal(response.Result, &config); err != nil {
-		return "", fmt.Errorf("failed to decode VPN client config from response: %w", err)
-	}
-
-	return config, nil
+	return string(body), nil
 }

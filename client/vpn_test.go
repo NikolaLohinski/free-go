@@ -204,7 +204,7 @@ var _ = Describe("vpn", func() {
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
 							"result": [
-								{"login": "perreux", "password": "", "description": "Perreux NAS"}
+								{"login": "perreux", "password_set": true}
 							]
 						}`),
 					),
@@ -214,10 +214,8 @@ var _ = Describe("vpn", func() {
 				Expect(*returnedErr).To(BeNil())
 				Expect(*returnedUsers).To(HaveLen(1))
 				Expect((*returnedUsers)[0]).To(MatchFields(IgnoreExtras, Fields{
-					"VPNUserPayload": MatchFields(IgnoreExtras, Fields{
-						"Login":       Equal("perreux"),
-						"Description": Equal("Perreux NAS"),
-					}),
+					"Login":       Equal("perreux"),
+					"PasswordSet": Equal(true),
 				}))
 			})
 		})
@@ -260,7 +258,7 @@ var _ = Describe("vpn", func() {
 						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
-							"result": {"login": "perreux", "password": "", "description": "Perreux NAS"}
+							"result": {"login": "perreux", "password_set": true}
 						}`),
 					),
 				)
@@ -268,9 +266,7 @@ var _ = Describe("vpn", func() {
 			It("should return the correct user", func() {
 				Expect(*returnedErr).To(BeNil())
 				Expect(*returnedUser).To(MatchFields(IgnoreExtras, Fields{
-					"VPNUserPayload": MatchFields(IgnoreExtras, Fields{
-						"Login": Equal("perreux"),
-					}),
+					"Login": Equal("perreux"),
 				}))
 			})
 		})
@@ -310,9 +306,8 @@ var _ = Describe("vpn", func() {
 		)
 		BeforeEach(func() {
 			*payload = types.VPNUserPayload{
-				Login:       "perreux",
-				Password:    "secret",
-				Description: "Perreux NAS",
+				Login:    "perreux",
+				Password: "secret",
 			}
 		})
 		JustBeforeEach(func() {
@@ -327,12 +322,11 @@ var _ = Describe("vpn", func() {
 						verifyAuth(*sessionToken),
 						ghttp.VerifyJSON(`{
 							"login": "perreux",
-							"password": "secret",
-							"description": "Perreux NAS"
+							"password": "secret"
 						}`),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": true,
-							"result": {"login": "perreux", "password": "", "description": "Perreux NAS"}
+							"result": {"login": "perreux", "password_set": true}
 						}`),
 					),
 				)
@@ -340,9 +334,7 @@ var _ = Describe("vpn", func() {
 			It("should return the created user", func() {
 				Expect(*returnedErr).To(BeNil())
 				Expect(*returnedUser).To(MatchFields(IgnoreExtras, Fields{
-					"VPNUserPayload": MatchFields(IgnoreExtras, Fields{
-						"Login": Equal("perreux"),
-					}),
+					"Login": Equal("perreux"),
 				}))
 			})
 		})
@@ -403,9 +395,7 @@ var _ = Describe("vpn", func() {
 			It("should return the updated user", func() {
 				Expect(*returnedErr).To(BeNil())
 				Expect(*returnedUser).To(MatchFields(IgnoreExtras, Fields{
-					"VPNUserPayload": MatchFields(IgnoreExtras, Fields{
-						"Login": Equal("perreux"),
-					}),
+					"Login": Equal("perreux"),
 				}))
 			})
 		})
@@ -506,12 +496,11 @@ var _ = Describe("vpn", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/vpn/user/%s/config/openvpn", version, login)),
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/vpn/download_config/openvpn_routed/%s", version, login)),
 						verifyAuth(*sessionToken),
-						ghttp.RespondWith(http.StatusOK, `{
-							"success": true,
-							"result": "client\nproto udp\nremote freebox.example.com 1194\n"
-						}`),
+						ghttp.RespondWith(http.StatusOK, "client\nproto udp\nremote freebox.example.com 1194\n", http.Header{
+							"Content-Type": []string{"application/x-openvpn-profile"},
+						}),
 					),
 				)
 			})
@@ -525,7 +514,7 @@ var _ = Describe("vpn", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/vpn/user/%s/config/openvpn", version, login)),
+						ghttp.VerifyRequest(http.MethodGet, fmt.Sprintf("/api/%s/vpn/download_config/openvpn_routed/%s", version, login)),
 						verifyAuth(*sessionToken),
 						ghttp.RespondWith(http.StatusOK, `{
 							"success": false,

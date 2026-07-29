@@ -34,6 +34,48 @@ func (c *client) get(ctx context.Context, path string, options ...HTTPOption) (r
 	return c.do(request, options...)
 }
 
+// getRaw performs a GET request against an endpoint that returns a raw file
+// body (not the usual {success, result} JSON envelope), such as the VPN
+// client config download. On success it returns the body bytes; on failure
+// (including when the Freebox still returns a JSON error envelope for this
+// endpoint) it returns an error, wrapping *APIError when one is present.
+func (c *client) getRaw(ctx context.Context, path string, options ...HTTPOption) ([]byte, error) {
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("%s/%s", c.base, path), nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to forge new request: %w", err)
+	}
+
+	for _, option := range options {
+		if err := option(request); err != nil {
+			return nil, fmt.Errorf("failed to apply option to request: %w", err)
+		}
+	}
+
+	httpResponse, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("failed to perform request: %w", err)
+	}
+	defer httpResponse.Body.Close()
+
+	body, err := io.ReadAll(httpResponse.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	if contentType := httpResponse.Header.Get("Content-Type"); len(body) > 0 && (contentType == "application/json" || body[0] == '{') {
+		generic := new(genericResponse)
+		if jsonErr := json.Unmarshal(body, generic); jsonErr == nil && !generic.Success {
+			return nil, &APIError{Code: generic.ErrorCode, Message: generic.Message}
+		}
+	}
+
+	if httpResponse.StatusCode >= http.StatusBadRequest {
+		return nil, fmt.Errorf("failed with status '%d': server returned '%s'", httpResponse.StatusCode, string(body))
+	}
+
+	return body, nil
+}
+
 func (c *client) delete(ctx context.Context, path string, options ...HTTPOption) (response *genericResponse, err error) {
 	request, err := http.NewRequestWithContext(ctx, http.MethodDelete, fmt.Sprintf("%s/%s", c.base, path), nil)
 	if err != nil {
