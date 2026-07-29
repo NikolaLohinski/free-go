@@ -44,8 +44,8 @@ type VPNServerConfig struct {
 	ID          VPNServerID    `json:"id,omitempty"`           // VPN server id (read-only)
 	Type        VPNServerType  `json:"type,omitempty"`         // VPN server type (read-only)
 	Enabled     bool           `json:"enabled"`                // Whether the VPN server is enabled
-	EnableIPv4  bool           `json:"enable_ipv4"`             // Enable IPv4 (not relevant for openvpn_bridge and pptp)
-	EnableIPv6  bool           `json:"enable_ipv6"`             // Enable IPv6 (not relevant for openvpn_bridge and pptp)
+	EnableIPv4  bool           `json:"enable_ipv4"`            // Enable IPv4 (not relevant for openvpn_bridge and pptp)
+	EnableIPv6  bool           `json:"enable_ipv6"`            // Enable IPv6 (not relevant for openvpn_bridge and pptp)
 	Port        int64          `json:"port"`                   // Server port (only editable when type is openvpn)
 	MinPort     int64          `json:"min_port,omitempty"`     // Read-only lower bound tied to the connection's ipv4_port_range
 	MaxPort     int64          `json:"max_port,omitempty"`     // Read-only upper bound tied to the connection's ipv4_port_range
@@ -59,12 +59,14 @@ type VPNServerConfig struct {
 // VPNUserPayload is the create/update payload for a VPN user.
 // Endpoint: POST /vpn/user/, PUT /vpn/user/{login}
 type VPNUserPayload struct {
-	Login       string `json:"login"`                    // Username (immutable after creation)
-	Password    string `json:"password"`                 // Password
-	Description string `json:"description,omitempty"`   // Optional description
+	Login         string `json:"login"`                    // Username (immutable after creation)
+	Password      string `json:"password,omitempty"`       // Password (8-32 chars), write-only
+	IPReservation string `json:"ip_reservation,omitempty"` // Optional reserved IP for this VPN user
 }
 
 // VPNUser is a VPN user account as returned by the API.
 type VPNUser struct {
-	VPNUserPayload
+	Login         string `json:"login"`                    // Username
+	PasswordSet   bool   `json:"password_set,omitempty"`   // Whether a password has been set (read-only)
+	IPReservation string `json:"ip_reservation,omitempty"` // Reserved IP for this VPN user, if any
 }
